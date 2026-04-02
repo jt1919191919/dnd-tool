@@ -362,20 +362,44 @@ async function saveVisibility() {
 
 // ─── CONFIG VIEW ──────────────────────────────────────────────────────────────
 function renderConfig() {
+  document.getElementById('pat-input').value = getPAT();
   const list = document.getElementById('config-player-list');
   list.innerHTML = '';
-  if (!config?.players) return;
   for (const [token, player] of Object.entries(config.players)) {
     const div = document.createElement('div');
     div.className = 'config-player-row';
-    div.innerHTML = `<strong>${player.name}</strong><br/>Token: <code>${token}</code><br/>URL: <code>#${token}</code>`;
+    div.innerHTML = `<strong>${player.name}</strong> — token: <code>${token}</code>
+      <button onclick="removePlayer('${token}')" style="margin-left:8px;padding:2px 8px;border:1px solid #c44;background:transparent;color:#c44;border-radius:4px;cursor:pointer">Remove</button>`;
     list.appendChild(div);
   }
+}
+
+async function removePlayer(token) {
+  if (!confirm(`Remove player "${config.players[token]?.name}"?`)) return;
+  delete config.players[token];
+  const ok = await githubSave('../config.json', config, `Remove player: ${token}`);
+  if (ok) { renderConfig(); alert('Player removed!'); }
 }
 
 async function saveConfig() {
   const ok = await githubSave('../config.json', config, 'Update config');
   if (ok) alert('Config saved to GitHub!');
+}
+
+function savePAT() {
+  const val = document.getElementById('pat-input').value.trim();
+  if (!val) return;
+  localStorage.setItem('dnd_pat', val);
+  alert('Token saved to browser!');
+}
+
+async function addPlayer() {
+  const token = document.getElementById('new-player-token').value.trim();
+  const name = document.getElementById('new-player-name').value.trim();
+  if (!token || !name) { alert('Token and name required.'); return; }
+  config.players[token] = { name };
+  const ok = await githubSave('../config.json', config, `Add player: ${name}`);
+  if (ok) { renderConfig(); alert(`${name} added!`); }
 }
 
 // ─── FETCH HELPERS ────────────────────────────────────────────────────────────
