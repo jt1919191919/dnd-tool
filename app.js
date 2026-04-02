@@ -3,6 +3,27 @@
 const GITHUB_USER = 'jt1919191919';
 const GITHUB_REPO = 'dnd-tool';
 const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`;
+const GITHUB_API = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data`;
+
+function getPAT() { return localStorage.getItem('dnd_pat') || ''; }
+
+async function githubSave(path, content, commitMsg) {
+  const pat = getPAT();
+  if (!pat) { alert('No GitHub token set. Open DM Settings to add it.'); return false; }
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2))));
+  // Get current SHA (needed for updates)
+  const existing = await fetch(`${GITHUB_API}/${path}`, {
+    headers: { Authorization: `token ${pat}` }
+  });
+  const sha = existing.ok ? (await existing.json()).sha : undefined;
+  const res = await fetch(`${GITHUB_API}/${path}`, {
+    method: 'PUT',
+    headers: { Authorization: `token ${pat}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: commitMsg, content: encoded, ...(sha && { sha }) })
+  });
+  if (!res.ok) { alert('Save failed. Check your token has repo write access.'); return false; }
+  return true;
+}
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let currentPlayer = null; // { token, name, canSee: [], isDM: false }
@@ -256,34 +277,48 @@ function editCurrentPage() {
   document.getElementById('editor-area').innerHTML = page.content || '';
 }
 
-function savePage() {
+async function savePage() {
   const id = document.getElementById('editor-page-id').value.trim();
   const title = document.getElementById('editor-page-title').value.trim();
-  if (!id || !title) { alert('Page ID and Title are required.'); return; }
-
+  if (!id || !title) { alert('Page ID and Title required.'); return; }
+  const isNew = !pages[id];
   const pageData = {
-    id,
-    title,
+    id, title,
     thumbnail: document.getElementById('editor-thumb').value.trim(),
     description: document.getElementById('editor-description').value.trim(),
     content: document.getElementById('editor-area').innerHTML,
     visibleTo: pages[id]?.visibleTo || []
   };
-
   pages[id] = pageData;
+  const ok = await githubSave(`pages/${id}.json`, pageData, `Update page: ${id}`);
+  if (!ok) return;
+  if (isNew) {
+    const idx = Object.keys(pages);
+    await githubSave('pages/index.json', idx, `Add page to index: ${id}`);
+  }
   buildNav();
-
-  // Show save instructions
-  const json = JSON.stringify(pageData, null, 2);
-  alert(`Page saved locally!\n\nTo make it permanent:\n1. Create/update data/pages/${id}.json in your GitHub repo\n2. Add "${id}" to data/pages/index.json if new\n\nContent copied to clipboard.`);
-  navigator.clipboard?.writeText(json);
   showView('home');
+  alert('Saved to GitHub!');
 }
 
-function deleteCurrentPage() {
+async function deleteCurrentPage() {
   if (!currentPageId) return;
-  if (!confirm(`Delete "${pages[currentPageId]?.title}"? You'll still need to remove it from GitHub.`)) return;
+  if (!confirm(`Delete "${pages[currentPageId]?.title}"?`)) return;
+  const pat = getPAT();
+  const existing = await fetch(`${GITHUB_API}/pages/${currentPageId}.json`, {
+    headers: { Authorization: `token ${pat}` }
+  });
+  if (existing.ok) {
+    const { sha } = await existing.json();
+    await fetch(`${GITHUB_API}/pages/${currentPageId}.json`, {
+      method: 'DELETE',
+      headers: { Authorization: `token ${pat}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: `Delete page: ${currentPageId}`, sha })
+    });
+  }
   delete pages[currentPageId];
+  const idx = Object.keys(pages);
+  await githubSave('pages/index.json', idx, 'Update index after delete');
   currentPageId = null;
   buildNav();
   showView('home');
@@ -317,16 +352,12 @@ function buildVisibilityCheckboxes(page) {
   }
 }
 
-function saveVisibility() {
+async function saveVisibility() {
   if (!currentPageId) return;
   const checkboxes = document.querySelectorAll('#visibility-checkboxes input[type=checkbox]');
-  const selected = Array.from(checkboxes).filter(cb => cb.checked).map(cb => cb.value);
-  pages[currentPageId].visibleTo = selected;
-  buildNav();
-
-  const json = JSON.stringify(pages[currentPageId], null, 2);
-  alert(`Visibility updated locally!\n\nTo make permanent, update data/pages/${currentPageId}.json in GitHub.\n\nContent copied to clipboard.`);
-  navigator.clipboard?.writeText(json);
+  pages[currentPageId].visibleTo = Array.from(checkboxes).filter(c=>c.checked).map(c=>c.value);
+  const ok = await githubSave(`pages/${currentPageId}.json`, pages[currentPageId], `Update visibility: ${currentPageId}`);
+  if (ok) alert('Visibility saved!');
 }
 
 // ─── CONFIG VIEW ──────────────────────────────────────────────────────────────
@@ -340,6 +371,11 @@ function renderConfig() {
     div.innerHTML = `<strong>${player.name}</strong><br/>Token: <code>${token}</code><br/>URL: <code>#${token}</code>`;
     list.appendChild(div);
   }
+}
+
+async function saveConfig() {
+  const ok = await githubSave('../config.json', config, 'Update config');
+  if (ok) alert('Config saved to GitHub!');
 }
 
 // ─── FETCH HELPERS ────────────────────────────────────────────────────────────
