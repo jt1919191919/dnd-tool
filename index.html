@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>D&D Tool</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<div id="access-denied" class="hidden">
+  <h2>Access Denied</h2>
+  <p>Invalid or missing player token. Check your link.</p>
+</div>
+
+<div id="app" class="hidden">
+
+  <header>
+    <div class="header-inner">
+      <span id="site-title">📖 Campaign Wiki</span>
+      <div class="header-right">
+        <span id="player-name-display"></span>
+        <button id="hamburger" onclick="toggleMenu()">☰</button>
+      </div>
+    </div>
+    <div id="search-bar-wrap">
+      <input type="text" id="search-input" placeholder="Search..." oninput="handleSearch(this.value)"/>
+    </div>
+  </header>
+
+  <nav id="side-menu" class="hidden">
+    <ul id="nav-links"></ul>
+    <div id="dm-nav" class="hidden">
+      <hr/>
+      <ul>
+        <li><a href="#" onclick="showView('dm-editor')">➕ New Page</a></li>
+        <li><a href="#" onclick="showView('dm-config')">⚙️ Player Config</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <main id="main-content">
+
+    <!-- HOME VIEW -->
+    <div id="view-home">
+      <div id="search-results" class="hidden">
+        <h2>Search Results</h2>
+        <div id="search-results-list"></div>
+      </div>
+      <div id="cards-grid"></div>
+    </div>
+
+    <!-- PAGE VIEW -->
+    <div id="view-page" class="hidden">
+      <div id="page-outline-wrap">
+        <strong>On this page:</strong>
+        <ul id="page-outline"></ul>
+      </div>
+      <div id="dm-page-controls" class="hidden">
+        <button onclick="editCurrentPage()">✏️ Edit</button>
+        <button onclick="deleteCurrentPage()">🗑️ Delete</button>
+        <label>Visible to:
+          <div id="visibility-checkboxes"></div>
+        </label>
+        <button onclick="saveVisibility()">💾 Save Visibility</button>
+      </div>
+      <div id="page-content"></div>
+    </div>
+
+    <!-- DM EDITOR VIEW -->
+    <div id="view-dm-editor" class="hidden">
+      <h2 id="editor-title-label">New Page</h2>
+      <input type="text" id="editor-page-id" placeholder="page-id (no spaces, e.g. npc-demogorgon)"/>
+      <input type="text" id="editor-page-title" placeholder="Page Title"/>
+      <input type="text" id="editor-thumb" placeholder="Thumbnail image URL (optional)"/>
+      <input type="text" id="editor-description" placeholder="Short description (shown on card)"/>
+      <div id="editor-area" contenteditable="true" class="content-editable"></div>
+      <button onclick="savePage()">💾 Save Page</button>
+      <button onclick="showView('home')">Cancel</button>
+    </div>
+
+    <!-- DM CONFIG VIEW -->
+    <div id="view-dm-config" class="hidden">
+      <h2>Player Config</h2>
+      <p>Edit <code>config.json</code> in your GitHub repo to add/change players and passwords.</p>
+      <p>Each player's URL: <code>yourdomain.github.io/dnd-wiki/#THEIR_TOKEN</code></p>
+      <h3>Current Players</h3>
+      <div id="config-player-list"></div>
+    </div>
+
+  </main>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
