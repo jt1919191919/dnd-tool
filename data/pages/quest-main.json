@@ -1,0 +1,8 @@
+{
+  "id": "quest-main",
+  "title": "Main Quest",
+  "thumbnail": "",
+  "description": "The primary objective",
+  "visibleTo": ["swordpass", "dragonfly22"],
+  "content": "<h1>Main Quest</h1><p>Only some players can see this — placeholder secret content.</p><h2>Objectives</h2><p>Placeholder objectives.</p>"
+}

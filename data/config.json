@@ -1,0 +1,14 @@
+{
+  "dmToken": "dm-secret-token",
+  "players": {
+    "swordpass": {
+      "name": "Marcus"
+    },
+    "dragonfly22": {
+      "name": "Sara"
+    },
+    "moonbeam": {
+      "name": "Tyler"
+    }
+  }
+}

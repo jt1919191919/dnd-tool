@@ -1,0 +1,8 @@
+{
+  "id": "npc-gallery",
+  "title": "NPC Gallery",
+  "thumbnail": "",
+  "description": "Faces and names of the world",
+  "visibleTo": ["__ALL__"],
+  "content": "<h1>NPC Gallery</h1><h2>Party</h2><p>Party member images go here.</p><h2>NPCs</h2><p>NPC images go here.</p><h2>Deceased</h2><p>Fallen souls remembered here.</p>"
+}
