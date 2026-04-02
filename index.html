@@ -80,13 +80,21 @@
     </div>
 
     <!-- DM CONFIG VIEW -->
-    <div id="view-dm-config" class="hidden">
-      <h2>Player Config</h2>
-      <p>Edit <code>config.json</code> in your GitHub repo to add/change players and passwords.</p>
-      <p>Each player's URL: <code>yourdomain.github.io/dnd-wiki/#THEIR_TOKEN</code></p>
-      <h3>Current Players</h3>
-      <div id="config-player-list"></div>
-    </div>
+<div id="view-dm-config" class="hidden">
+  <h2>Player Config & Settings</h2>
+  <h3>GitHub Token (DM only)</h3>
+  <p style="font-size:0.8rem;color:#aaa">Stored in your browser only, never sent anywhere except GitHub.</p>
+  <input type="password" id="pat-input" placeholder="GitHub Personal Access Token" style="width:100%;padding:8px;background:#0f3460;border:1px solid #0f3460;border-radius:6px;color:#e0e0e0;margin-bottom:8px"/>
+  <button onclick="savePAT()" style="padding:6px 14px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer">Save Token</button>
+  <hr style="border-color:#0f3460;margin:14px 0"/>
+  <h3>Players</h3>
+  <div id="config-player-list"></div>
+  <hr style="border-color:#0f3460;margin:14px 0"/>
+  <h3>Add Player</h3>
+  <input type="text" id="new-player-token" placeholder="token (their URL password)" style="width:100%;padding:8px;background:#0f3460;border:1px solid #0f3460;border-radius:6px;color:#e0e0e0;margin-bottom:8px"/>
+  <input type="text" id="new-player-name" placeholder="Player name" style="width:100%;padding:8px;background:#0f3460;border:1px solid #0f3460;border-radius:6px;color:#e0e0e0;margin-bottom:8px"/>
+  <button onclick="addPlayer()" style="padding:6px 14px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer">Add & Save</button>
+</div>
 
   </main>
 
