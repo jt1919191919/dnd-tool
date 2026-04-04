@@ -196,7 +196,10 @@ function navigateTo(pageId) {
   const newURL = buildURL(currentPlayer.token, pageId);
   window.history.pushState({}, '', newURL);
 
-  document.getElementById('page-content').innerHTML = page.content || '';
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = page.content || '';
+  tempDiv.querySelectorAll('.h-badge').forEach(b => b.remove());
+  document.getElementById('page-content').innerHTML = tempDiv.innerHTML;
   buildOutline();
 
   if (currentPlayer.isDM) {
@@ -537,7 +540,7 @@ async function savePage() {
     id, title,
     thumbnail: document.getElementById('editor-thumb').value.trim(),
     description: document.getElementById('editor-description').value.trim(),
-    content: document.getElementById('editor-area').innerHTML,
+    content: (() => { const d = document.createElement('div'); d.innerHTML = document.getElementById('editor-area').innerHTML; d.querySelectorAll('.h-badge').forEach(b => b.remove()); return d.innerHTML; })(),
     visibleTo: pages[id]?.visibleTo || []
   };
   pages[id] = pageData;
