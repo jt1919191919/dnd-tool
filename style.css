@@ -247,3 +247,9 @@ main { padding: 16px; }
   margin-bottom: 3px;
 }
 .share-player-row:hover { background: #0f3460; }
+
+/* heading level indicators in editor */
+.content-editable h1::before { content: 'H1 '; font-size:0.6rem; color:#555; vertical-align:super; }
+.content-editable h2::before { content: 'H2 '; font-size:0.6rem; color:#555; vertical-align:super; }
+.content-editable h3::before { content: 'H3 '; font-size:0.6rem; color:#555; vertical-align:super; }
+.content-editable h4::before { content: 'H4 '; font-size:0.6rem; color:#555; vertical-align:super; }
