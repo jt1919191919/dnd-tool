@@ -410,3 +410,29 @@ async function fetchJSON(path) {
     return await res.json();
   } catch { return null; }
 }
+
+// ─── Backups ────────────────────────────────────────────────────────────
+async function downloadBackup() {
+  const { default: JSZip } = await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm');
+  const zip = new JSZip();
+
+  zip.file('index.html', await fetchRaw('index.html'));
+  zip.file('app.js', await fetchRaw('app.js'));
+  zip.file('style.css', await fetchRaw('style.css'));
+  zip.file('data/config.json', JSON.stringify(config, null, 2));
+  zip.file('data/pages/index.json', JSON.stringify(Object.keys(pages), null, 2));
+  for (const [id, page] of Object.entries(pages)) {
+    zip.file(`data/pages/${id}.json`, JSON.stringify(page, null, 2));
+  }
+
+  const blob = await zip.generateAsync({ type: 'blob' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `dnd-wiki-backup-${new Date().toISOString().slice(0,10)}.zip`;
+  a.click();
+}
+
+async function fetchRaw(filename) {
+  const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${filename}`);
+  return res.ok ? await res.text() : '';
+}
