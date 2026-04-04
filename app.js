@@ -449,7 +449,8 @@ function renderConfig() {
     const div = document.createElement('div');
     div.className = 'config-player-row';
     div.innerHTML = `<strong>${player.name}</strong> — token: <code>${token}</code>
-      <button onclick="removePlayer('${token}')" style="margin-left:8px;padding:2px 8px;border:1px solid #c44;background:transparent;color:#c44;border-radius:4px;cursor:pointer">Remove</button>`;
+      <button onclick="previewAsPlayer('${token}','${player.name}')" style="margin-left:8px;padding:2px 8px;border:1px solid #7eb8f7;background:transparent;color:#7eb8f7;border-radius:4px;cursor:pointer">Preview</button>
+      <button onclick="removePlayer('${token}')" style="margin-left:4px;padding:2px 8px;border:1px solid #c44;background:transparent;color:#c44;border-radius:4px;cursor:pointer">Remove</button>`;
     list.appendChild(div);
   }
 }
@@ -480,6 +481,17 @@ async function addPlayer() {
   config.players[token] = { name };
   const ok = await githubSave('config.json', config, `Add player: ${name}`);
   if (ok) { renderConfig(); alert(`${name} added!`); }
+}
+
+function previewAsPlayer(token, name) {
+  if (!confirm(`Preview site as ${name}? Opens in new tab.`)) return;
+  window.open(buildURL(token), '_blank');
+}
+
+function clearDeviceMemory() {
+  if (!confirm('Clear all saved data for this device? (token, PAT, etc)')) return;
+  localStorage.clear();
+  window.location.href = getBaseURL();
 }
 
 // ─── FETCH HELPERS ────────────────────────────────────────────────────────────
