@@ -502,9 +502,9 @@ function openHeadingLevelPopup(badge, headingEl) {
     popup.appendChild(opt);
   });
 
-  setTimeout(() => document.addEventListener('click', (e) => {
+  setTimeout(() => document.addEventListener('pointerup', (e) => {
     if (!popup.contains(e.target)) popup.remove();
-  }, { once: true }), 50);
+  }, { once: true }), 300);
   document.body.appendChild(popup);
 }
 
