@@ -372,7 +372,8 @@ async function savePage() {
   const ok = await githubSave(`pages/${id}.json`, pageData, `Update page: ${id}`);
   if (!ok) return;
   if (isNew) {
-    const idx = Object.keys(pages);
+    const idx = await fetchJSON('pages/index.json') || [];
+    if (!idx.includes(id)) idx.push(id);
     await githubSave('pages/index.json', idx, `Add page to index: ${id}`);
   }
   buildNav();
@@ -571,21 +572,8 @@ function generateShareLink(token, name, canView) {
   alert(`Copied link for ${name || 'All Players'}!\n\n${url}`);
 }
 
-// ─── Temp Debug ────────────────────────────────────────────────────────────
-async function debugSave() {
-  const pat = getPAT();
-  console.log('PAT exists:', !!pat, '| Length:', pat.length);
-  const testURL = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/config.json`;
-  console.log('Testing URL:', testURL);
-  const res = await fetch(testURL, {
-    headers: { Authorization: `token ${pat}` }
-  });
-  const data = await res.json();
-  console.log('Status:', res.status);
-  console.log('Response:', data);
+// ─── Debug ────────────────────────────────────────────────────────────
+function dmLog(label, ...args) {
+  if (!currentPlayer?.isDM) return;
+  console.log(`[DM DEBUG] ${label}`, ...args);
 }
-```
-
-Then open your site, open browser DevTools (F12), go to Console tab, type:
-```
-debugSave()
