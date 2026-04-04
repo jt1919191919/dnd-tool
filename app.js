@@ -64,10 +64,21 @@ window.addEventListener('load', async () => {
 });
 
 function getTokenFromURL() {
-  // Check hash first, then localStorage fallback
-  const hash = window.location.hash.replace('#', '').trim();
-  if (hash) return hash;
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get('token');
+  if (token) { localStorage.setItem('dnd_token', token); return token; }
   return localStorage.getItem('dnd_token') || null;
+}
+
+function getBaseURL() {
+  return `${window.location.origin}${window.location.pathname}`;
+}
+
+function buildURL(token, pageId, headingId) {
+  let url = `${getBaseURL()}?token=${token}`;
+  if (pageId) url += `&page=${pageId}`;
+  if (headingId) url += `#${headingId}`;
+  return url;
 }
 
 function showAccessDenied() {
@@ -81,7 +92,14 @@ function initApp() {
     document.getElementById('dm-nav').classList.remove('hidden');
   }
   buildNav();
-  showView('home');
+  // Check if URL specifies a page to load directly
+  const params = new URLSearchParams(window.location.search);
+  const pageId = params.get('page');
+  if (pageId && pages[pageId] && canSee(pageId)) {
+    navigateTo(pageId);
+  } else {
+    showView('home');
+  }
 }
 
 // ─── NAV ──────────────────────────────────────────────────────────────────────
@@ -119,7 +137,12 @@ function showView(view) {
   document.getElementById('side-menu').classList.add('hidden');
   document.getElementById('search-results').classList.add('hidden');
   document.getElementById('search-input').value = '';
-
+  document.getElementById('share-link-btn').classList.add('hidden');
+  // Update URL back to just token when going home
+  if (view === 'home') {
+    window.history.pushState({}, '', buildURL(currentPlayer.token));
+  }
+  
   if (view === 'home') {
     document.getElementById('view-home').classList.remove('hidden');
     renderCards();
@@ -142,16 +165,17 @@ function navigateTo(pageId) {
   document.getElementById('side-menu').classList.add('hidden');
   document.getElementById('view-page').classList.remove('hidden');
 
-  // Content
-  document.getElementById('page-content').innerHTML = page.content || '';
+  // Update URL to reflect current page without losing token
+  const newURL = buildURL(currentPlayer.token, pageId);
+  window.history.pushState({}, '', newURL);
 
-  // Outline from headings
+  document.getElementById('page-content').innerHTML = page.content || '';
   buildOutline();
 
-  // DM controls
   if (currentPlayer.isDM) {
     document.getElementById('dm-page-controls').classList.remove('hidden');
     buildVisibilityCheckboxes(page);
+    document.getElementById('share-link-btn').classList.remove('hidden');
   }
 }
 
@@ -174,6 +198,9 @@ function buildOutline() {
 
 function scrollToHeading(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  // Update URL with heading anchor, preserving token and page
+  const newURL = buildURL(currentPlayer.token, currentPageId, id);
+  window.history.pushState({}, '', newURL);
 }
 
 // ─── CARDS ────────────────────────────────────────────────────────────────────
@@ -435,4 +462,42 @@ async function downloadBackup() {
 async function fetchRaw(filename) {
   const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${filename}`);
   return res.ok ? await res.text() : '';
+}
+
+// ─── Sharelinks ────────────────────────────────────────────────────────────
+function openSharePanel() {
+  if (!currentPageId) return;
+  const panel = document.getElementById('share-panel');
+  const list = document.getElementById('share-player-list');
+  list.innerHTML = '';
+
+  // ALL players option
+  const allDiv = document.createElement('div');
+  allDiv.className = 'share-player-row';
+  allDiv.innerHTML = `<strong>All Players</strong> (public pages only)`;
+  allDiv.onclick = () => generateShareLink('__ALL__');
+  list.appendChild(allDiv);
+
+  for (const [token, player] of Object.entries(config.players)) {
+    const div = document.createElement('div');
+    div.className = 'share-player-row';
+    const canView = pages[currentPageId]?.visibleTo?.includes(token) || pages[currentPageId]?.visibleTo?.includes('__ALL__');
+    div.innerHTML = `<strong>${player.name}</strong> ${canView ? '✅' : '⛔ no access'}`;
+    div.onclick = () => generateShareLink(token, player.name, canView);
+    list.appendChild(div);
+  }
+
+  panel.classList.toggle('hidden');
+}
+
+function generateShareLink(token, name, canView) {
+  if (canView === false) {
+    alert(`${name} doesn't have access to this page. Update visibility first.`);
+    return;
+  }
+  const heading = window.location.hash || '';
+  const url = buildURL(token, currentPageId) + heading;
+  navigator.clipboard.writeText(url);
+  document.getElementById('share-panel').classList.add('hidden');
+  alert(`Copied link for ${name || 'All Players'}!\n\n${url}`);
 }
