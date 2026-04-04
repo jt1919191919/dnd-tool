@@ -42,6 +42,15 @@
 
   <main id="main-content">
 
+    <!-- Share link button (DM only, shows when on a page) -->
+  <div id="share-link-btn" class="hidden" style="position:fixed;bottom:20px;right:20px;z-index:200">
+    <button onclick="openSharePanel()" style="background:#e2b96f;color:#1a1a2e;border:none;border-radius:50%;width:48px;height:48px;font-size:1.3rem;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.4)">🔗</button>
+    <div id="share-panel" class="hidden" style="position:absolute;bottom:56px;right:0;background:#16213e;border:1px solid #e2b96f;border-radius:8px;padding:12px;width:220px;box-shadow:0 4px 16px rgba(0,0,0,0.5)">
+      <div style="font-size:0.85rem;color:#aaa;margin-bottom:8px">Generate link for:</div>
+      <div id="share-player-list"></div>
+    </div>
+  </div>
+    
     <!-- HOME VIEW -->
     <div id="view-home">
       <div id="search-results" class="hidden">
