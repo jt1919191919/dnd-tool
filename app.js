@@ -430,8 +430,27 @@ function getSnippet(text, query) {
 }
 
 // ─── DM EDITOR ────────────────────────────────────────────────────────────────
+function refreshHeadingBadges() {
+  const area = document.getElementById('editor-area');
+  if (!area) return;
+  area.querySelectorAll('h1,h2,h3,h4').forEach(h => {
+    if (h.querySelector('.h-badge')) return;
+    const badge = document.createElement('span');
+    badge.className = 'h-badge';
+    badge.contentEditable = 'false';
+    badge.textContent = h.tagName;
+    badge.style.cssText = 'font-size:0.6rem;background:#333;color:#aaa;border-radius:3px;padding:1px 4px;margin-right:5px;cursor:pointer;user-select:none;vertical-align:middle;font-family:monospace';
+    badge.onclick = (e) => {
+      e.stopPropagation();
+      openHeadingLevelPopup(badge, h);
+    };
+    h.insertBefore(badge, h.firstChild);
+  });
+}
+
 function initEditor() {
   const area = document.getElementById('editor-area');
+  if (!area) return;
 
   area.addEventListener('paste', (e) => {
     const strip = document.getElementById('strip-links-toggle').checked;
@@ -447,25 +466,8 @@ function initEditor() {
     document.execCommand('insertHTML', false, div.innerHTML);
   });
 
-  function refreshHeadingBadges() {
-    area.querySelectorAll('h1,h2,h3,h4').forEach(h => {
-      if (h.querySelector('.h-badge')) return;
-      const badge = document.createElement('span');
-      badge.className = 'h-badge';
-      badge.contentEditable = 'false';
-      badge.textContent = h.tagName;
-      badge.style.cssText = 'font-size:0.6rem;background:#333;color:#aaa;border-radius:3px;padding:1px 4px;margin-right:5px;cursor:pointer;user-select:none;vertical-align:middle;font-family:monospace';
-      badge.onclick = (e) => {
-        e.stopPropagation();
-        openHeadingLevelPopup(badge, h);
-      };
-      h.insertBefore(badge, h.firstChild);
-    });
-  }
-
   area.addEventListener('input', refreshHeadingBadges);
   area.addEventListener('paste', () => setTimeout(refreshHeadingBadges, 100));
-  refreshHeadingBadges();
 }
 
 function openHeadingLevelPopup(badge, headingEl) {
@@ -508,6 +510,7 @@ function resetEditor() {
   document.getElementById('editor-description').value = '';
   document.getElementById('editor-area').innerHTML = '';
   document.getElementById('editor-page-id').disabled = false;
+  setTimeout(refreshHeadingBadges, 50);
 }
 
 function editCurrentPage() {
@@ -522,6 +525,7 @@ function editCurrentPage() {
   document.getElementById('editor-thumb').value = page.thumbnail || '';
   document.getElementById('editor-description').value = page.description || '';
   document.getElementById('editor-area').innerHTML = page.content || '';
+  setTimeout(refreshHeadingBadges, 50);
 }
 
 async function savePage() {
