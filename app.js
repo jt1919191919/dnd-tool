@@ -372,8 +372,7 @@ async function savePage() {
   const ok = await githubSave(`pages/${id}.json`, pageData, `Update page: ${id}`);
   if (!ok) return;
   if (isNew) {
-    const res = await fetch(`${RAW_BASE}/pages/index.json?_=${Date.now()}`, { cache: 'no-store' });
-    const idx = res.ok ? await res.json() : [];
+    const idx = await fetchJSON('pages/index.json') || [];
     if (!idx.includes(id)) idx.push(id);
     await githubSave('pages/index.json', idx, `Add page to index: ${id}`);
   }
@@ -485,10 +484,15 @@ async function addPlayer() {
 
 // ─── FETCH HELPERS ────────────────────────────────────────────────────────────
 async function fetchJSON(path) {
+  const pat = getPAT();
+  const headers = pat ? { Authorization: `token ${pat}` } : {};
   try {
-    const res = await fetch(`${RAW_BASE}/${path}`);
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/${path}?_=${Date.now()}`, { headers });
     if (!res.ok) return null;
-    return await res.json();
+    const json = await res.json();
+    // GitHub API returns content as base64
+    const decoded = decodeURIComponent(escape(atob(json.content)));
+    return JSON.parse(decoded);
   } catch { return null; }
 }
 
@@ -514,8 +518,14 @@ async function downloadBackup() {
 }
 
 async function fetchRaw(filename) {
-  const res = await fetch(`https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${filename}`);
-  return res.ok ? await res.text() : '';
+  const pat = getPAT();
+  const headers = pat ? { Authorization: `token ${pat}` } : {};
+  try {
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${filename}?_=${Date.now()}`, { headers });
+    if (!res.ok) return '';
+    const json = await res.json();
+    return decodeURIComponent(escape(atob(json.content)));
+  } catch { return ''; }
 }
 
 // ─── Sharelinks ────────────────────────────────────────────────────────────
