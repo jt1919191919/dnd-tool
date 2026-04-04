@@ -43,12 +43,13 @@ window.addEventListener('load', async () => {
   if (!config) { showAccessDenied(); return; }
 
   // Check token against players
-  if (config.players[token]) {
-    currentPlayer = { token, ...config.players[token], isDM: false };
-  } else if (config.dmToken && token === config.dmToken) {
+  if (config.dmToken && token === config.dmToken) {
     currentPlayer = { token, name: 'DM', canSee: '__ALL__', isDM: true };
+  } else if (token && config.players[token]) {
+    currentPlayer = { token, ...config.players[token], isDM: false };
   } else {
-    showAccessDenied(); return;
+    // Public visitor — sees only __ALL__ content
+    currentPlayer = { token: '__PUBLIC__', name: '', canSee: [], isDM: false };
   }
 
   // Load all pages
@@ -67,7 +68,32 @@ function getTokenFromURL() {
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
   if (token) { localStorage.setItem('dnd_token', token); return token; }
-  return localStorage.getItem('dnd_token') || null;
+  return localStorage.getItem('dnd_token') || '__PUBLIC__';
+}
+
+function applyToken() {
+  const val = document.getElementById('token-input').value.trim();
+  if (!val) return;
+  localStorage.setItem('dnd_token', val);
+  const newURL = buildURL(val, new URLSearchParams(window.location.search).get('page'));
+  window.location.href = newURL;
+}
+
+function clearToken() {
+  localStorage.removeItem('dnd_token');
+  window.location.href = getBaseURL();
+}
+
+function updateTokenBar() {
+  const input = document.getElementById('token-input');
+  const clearBtn = document.getElementById('clear-token-btn');
+  const tokenBar = document.getElementById('token-bar');
+  if (currentPlayer.isDM) { tokenBar.style.display = 'none'; return; }
+  if (currentPlayer.token && currentPlayer.token !== '__PUBLIC__') {
+    input.value = currentPlayer.name || currentPlayer.token;
+    input.disabled = true;
+    clearBtn.style.display = '';
+  }
 }
 
 function getBaseURL() {
@@ -86,6 +112,7 @@ function showAccessDenied() {
 }
 
 function initApp() {
+  updateTokenBar();
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('player-name-display').textContent = currentPlayer.name;
   if (currentPlayer.isDM) {
@@ -125,6 +152,7 @@ function canSee(pageId) {
   if (!page) return false;
   if (!page.visibleTo || page.visibleTo.length === 0) return false;
   if (page.visibleTo.includes('__ALL__')) return true;
+  if (!currentPlayer.token || currentPlayer.token === '__PUBLIC__') return false;
   return page.visibleTo.includes(currentPlayer.token);
 }
 
@@ -137,7 +165,6 @@ function showView(view) {
   document.getElementById('side-menu').classList.add('hidden');
   document.getElementById('search-results').classList.add('hidden');
   document.getElementById('search-input').value = '';
-  document.getElementById('share-link-btn').classList.add('hidden');
   // Update URL back to just token when going home
   if (view === 'home') {
     window.history.pushState({}, '', buildURL(currentPlayer.token));
@@ -175,7 +202,6 @@ function navigateTo(pageId) {
   if (currentPlayer.isDM) {
     document.getElementById('dm-page-controls').classList.remove('hidden');
     buildVisibilityCheckboxes(page);
-    document.getElementById('share-link-btn').classList.remove('hidden');
   }
 }
 
@@ -184,16 +210,39 @@ function buildOutline() {
   const headings = content.querySelectorAll('h1,h2,h3');
   const outline = document.getElementById('page-outline');
   outline.innerHTML = '';
+
+  // Page-level share at top of ToC
+  if (currentPlayer.isDM) {
+    const pageShare = document.createElement('li');
+    pageShare.style.marginBottom = '6px';
+    pageShare.innerHTML = `<button class="share-btn" onclick="openSharePanel('${currentPageId}',null)" title="Share page">🔗</button> <em style="color:#aaa;font-size:0.8rem">This page</em>`;
+    outline.appendChild(pageShare);
+  }
+
   headings.forEach((h, i) => {
     const id = `heading-${i}`;
     h.id = id;
+
+    // Add share button to heading in content
+    if (currentPlayer.isDM) {
+      const btn = document.createElement('button');
+      btn.className = 'share-btn';
+      btn.title = 'Share';
+      btn.textContent = '🔗';
+      btn.onclick = (e) => { e.stopPropagation(); openSharePanel(currentPageId, id); };
+      h.insertBefore(btn, h.firstChild);
+    }
+
+    // ToC entry with share button
     const li = document.createElement('li');
     li.style.marginLeft = h.tagName === 'H3' ? '12px' : h.tagName === 'H2' ? '6px' : '0';
-    li.innerHTML = `<a href="#${id}" onclick="scrollToHeading('${id}')">${h.textContent}</a>`;
+    li.innerHTML = `
+      ${currentPlayer.isDM ? `<button class="share-btn" onclick="openSharePanel('${currentPageId}','${id}')" title="Share">🔗</button>` : ''}
+      <a href="#${id}" onclick="scrollToHeading('${id}')">${h.textContent.replace('🔗','').trim()}</a>`;
     outline.appendChild(li);
   });
-  const wrap = document.getElementById('page-outline-wrap');
-  wrap.style.display = headings.length ? '' : 'none';
+
+  document.getElementById('page-outline-wrap').style.display = headings.length ? '' : 'none';
 }
 
 function scrollToHeading(id) {
@@ -211,16 +260,19 @@ function renderCards() {
     if (!canSee(id)) continue;
     const card = document.createElement('div');
     card.className = 'card';
-    card.onclick = () => navigateTo(id);
     const imgHtml = page.thumbnail
       ? `<img src="${page.thumbnail}" alt="${page.title}" loading="lazy"/>`
       : `<div class="card-no-img">📜</div>`;
     card.innerHTML = `
       ${imgHtml}
       <div class="card-body">
-        <div class="card-title">${page.title}</div>
+        <div class="card-title-row">
+          <span class="card-title">${page.title}</span>
+          ${currentPlayer.isDM ? `<button class="share-btn" onclick="event.stopPropagation();openSharePanel('${id}',null)" title="Share">🔗</button>` : ''}
+        </div>
         <div class="card-desc">${page.description || ''}</div>
       </div>`;
+    card.onclick = () => navigateTo(id);
     grid.appendChild(card);
   }
 }
@@ -465,29 +517,46 @@ async function fetchRaw(filename) {
 }
 
 // ─── Sharelinks ────────────────────────────────────────────────────────────
-function openSharePanel() {
-  if (!currentPageId) return;
-  const panel = document.getElementById('share-panel');
-  const list = document.getElementById('share-player-list');
-  list.innerHTML = '';
+function openSharePanel(pageId, headingId) {
+  // Close any existing panel first
+  document.querySelectorAll('.share-panel-popup').forEach(p => p.remove());
 
-  // ALL players option
+  const panel = document.createElement('div');
+  panel.className = 'share-panel-popup';
+  panel.innerHTML = `<div style="font-size:0.8rem;color:#aaa;margin-bottom:6px">Share link for:</div>`;
+
+  // Public/all option
   const allDiv = document.createElement('div');
   allDiv.className = 'share-player-row';
-  allDiv.innerHTML = `<strong>All Players</strong> (public pages only)`;
-  allDiv.onclick = () => generateShareLink('__ALL__');
-  list.appendChild(allDiv);
+  allDiv.textContent = '🌐 All Players (no token)';
+  allDiv.onclick = () => { copyShareLink(null, null, pageId, headingId); panel.remove(); };
+  panel.appendChild(allDiv);
 
   for (const [token, player] of Object.entries(config.players)) {
+    const canView = pages[pageId]?.visibleTo?.includes(token) || pages[pageId]?.visibleTo?.includes('__ALL__');
     const div = document.createElement('div');
     div.className = 'share-player-row';
-    const canView = pages[currentPageId]?.visibleTo?.includes(token) || pages[currentPageId]?.visibleTo?.includes('__ALL__');
-    div.innerHTML = `<strong>${player.name}</strong> ${canView ? '✅' : '⛔ no access'}`;
-    div.onclick = () => generateShareLink(token, player.name, canView);
-    list.appendChild(div);
+    div.innerHTML = `${canView ? '✅' : '⛔'} ${player.name}`;
+    div.onclick = () => {
+      if (!canView) { alert(`${player.name} can't see this page. Update visibility first.`); return; }
+      copyShareLink(token, player.name, pageId, headingId);
+      panel.remove();
+    };
+    panel.appendChild(div);
   }
 
-  panel.classList.toggle('hidden');
+  // Close on outside click
+  setTimeout(() => document.addEventListener('click', () => panel.remove(), { once: true }), 50);
+  document.body.appendChild(panel);
+
+  // Position near mouse — handled by fixed + CSS
+}
+
+function copyShareLink(token, name, pageId, headingId) {
+  const base = token ? buildURL(token, pageId) : `${getBaseURL()}?page=${pageId}`;
+  const url = base + (headingId ? `#${headingId}` : '');
+  navigator.clipboard.writeText(url);
+  alert(`Copied${name ? ' for ' + name : ' public link'}!\n\n${url}`);
 }
 
 function generateShareLink(token, name, canView) {
