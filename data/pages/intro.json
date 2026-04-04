@@ -3,6 +3,8 @@
   "title": "Campaign Introduction",
   "thumbnail": "",
   "description": "The story so far...",
-  "visibleTo": ["__ALL__"],
+  "visibleTo": [
+    "moonbeam"
+  ],
   "content": "<h1>Welcome to the Campaign</h1><p>This is placeholder content. The DM will fill this in.</p><h2>The World</h2><p>Your adventure begins...</p><h2>House Rules</h2><p>Placeholder rules go here.</p>"
 }
