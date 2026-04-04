@@ -85,14 +85,10 @@ function clearToken() {
 }
 
 function updateTokenBar() {
-  const input = document.getElementById('token-input');
-  const clearBtn = document.getElementById('clear-token-btn');
   const tokenBar = document.getElementById('token-bar');
   if (currentPlayer.isDM) { tokenBar.style.display = 'none'; return; }
   if (currentPlayer.token && currentPlayer.token !== '__PUBLIC__') {
-    input.value = currentPlayer.name || currentPlayer.token;
-    input.disabled = true;
-    clearBtn.style.display = '';
+    tokenBar.style.display = 'none';
   }
 }
 
@@ -117,6 +113,9 @@ function initApp() {
   document.getElementById('player-name-display').textContent = currentPlayer.name;
   if (currentPlayer.isDM) {
     document.getElementById('dm-nav').classList.remove('hidden');
+  }
+  if (!currentPlayer.isDM && currentPlayer.token !== '__PUBLIC__') {
+    document.getElementById('player-nav').classList.remove('hidden');
   }
   buildNav();
   // Check if URL specifies a page to load directly
@@ -489,8 +488,10 @@ function previewAsPlayer(token, name) {
 }
 
 function clearDeviceMemory() {
-  if (!confirm('Clear all saved data for this device? (token, PAT, etc)')) return;
+  if (!confirm('Clear your player token from this device?')) return;
+  const pat = localStorage.getItem('dnd_pat');
   localStorage.clear();
+  if (pat) localStorage.setItem('dnd_pat', pat);
   window.location.href = getBaseURL();
 }
 
