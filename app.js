@@ -404,12 +404,12 @@ function renderConfig() {
 async function removePlayer(token) {
   if (!confirm(`Remove player "${config.players[token]?.name}"?`)) return;
   delete config.players[token];
-  const ok = await githubSave('../config.json', config, `Remove player: ${token}`);
+  const ok = await githubSave('config.json', config, `Remove player: ${token}`);
   if (ok) { renderConfig(); alert('Player removed!'); }
 }
 
 async function saveConfig() {
-  const ok = await githubSave('../config.json', config, 'Update config');
+  const ok = await githubSave('config.json', config, 'Update config');
   if (ok) alert('Config saved to GitHub!');
 }
 
@@ -425,7 +425,7 @@ async function addPlayer() {
   const name = document.getElementById('new-player-name').value.trim();
   if (!token || !name) { alert('Token and name required.'); return; }
   config.players[token] = { name };
-  const ok = await githubSave('../config.json', config, `Add player: ${name}`);
+  const ok = await githubSave('config.json', config, `Add player: ${name}`);
   if (ok) { renderConfig(); alert(`${name} added!`); }
 }
 
