@@ -447,7 +447,7 @@ function refreshHeadingBadges() {
       e.preventDefault();
       e.stopPropagation();
       openHeadingLevelPopup(badge, h);
-    });
+    }, true);
     h.insertBefore(badge, h.firstChild);
   });
 }
