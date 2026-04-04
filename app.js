@@ -108,6 +108,7 @@ function showAccessDenied() {
 }
 
 function initApp() {
+  initEditor();
   updateTokenBar();
   document.getElementById('app').classList.remove('hidden');
   document.getElementById('player-name-display').textContent = currentPlayer.name;
@@ -206,42 +207,150 @@ function navigateTo(pageId) {
 
 function buildOutline() {
   const content = document.getElementById('page-content');
-  const headings = content.querySelectorAll('h1,h2,h3');
+  const headings = Array.from(content.querySelectorAll('h1,h2,h3,h4'));
   const outline = document.getElementById('page-outline');
   outline.innerHTML = '';
 
-  // Page-level share at top of ToC
   if (currentPlayer.isDM) {
-    const pageShare = document.createElement('li');
-    pageShare.style.marginBottom = '6px';
-    pageShare.innerHTML = `<button class="share-btn" onclick="openSharePanel('${currentPageId}',null)" title="Share page">🔗</button> <em style="color:#aaa;font-size:0.8rem">This page</em>`;
-    outline.appendChild(pageShare);
+    // DM gets editable ToC builder
+    const addBtn = document.createElement('button');
+    addBtn.textContent = '+ Add Entry';
+    addBtn.style.cssText = 'font-size:0.75rem;padding:2px 8px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;margin-bottom:8px';
+    addBtn.onclick = () => addTocEntry();
+    outline.appendChild(addBtn);
   }
 
-  headings.forEach((h, i) => {
-    const id = `heading-${i}`;
-    h.id = id;
+  // Build from headings if no custom ToC saved
+  const page = pages[currentPageId];
+  const tocData = page.toc || buildTocFromHeadings(headings);
 
-    // Add share button to heading in content
-    if (currentPlayer.isDM) {
-      const btn = document.createElement('button');
-      btn.className = 'share-btn';
-      btn.title = 'Share';
-      btn.textContent = '🔗';
-      btn.onclick = (e) => { e.stopPropagation(); openSharePanel(currentPageId, id); };
-      h.insertBefore(btn, h.firstChild);
+  renderToc(outline, tocData, 0);
+
+  // Assign IDs to headings
+  headings.forEach((h, i) => { h.id = `heading-${i}`; });
+
+  document.getElementById('page-outline-wrap').style.display = headings.length || (page.toc?.length) ? '' : 'none';
+}
+
+function buildTocFromHeadings(headings) {
+  return headings.map((h, i) => ({
+    id: `heading-${i}`,
+    text: h.textContent.replace('🔗','').trim(),
+    level: parseInt(h.tagName[1]),
+    children: []
+  }));
+}
+
+function renderToc(container, items, depth) {
+  const page = pages[currentPageId];
+  const minLevel = Math.min(...items.map(i => i.level || 1));
+
+  items.forEach((item, idx) => {
+    const wrap = document.createElement('div');
+    wrap.style.marginLeft = `${(( item.level || 1) - minLevel) * 12}px`;
+    wrap.style.marginBottom = '3px';
+
+    const hasChildren = item.children && item.children.length > 0;
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:4px;';
+
+    // Collapse toggle
+    if (hasChildren) {
+      const toggle = document.createElement('span');
+      toggle.textContent = '▶';
+      toggle.style.cssText = 'cursor:pointer;font-size:0.65rem;color:#aaa;min-width:10px';
+      const childWrap = document.createElement('div');
+      childWrap.style.display = 'none';
+      toggle.onclick = () => {
+        const collapsed = childWrap.style.display === 'none';
+        childWrap.style.display = collapsed ? '' : 'none';
+        toggle.textContent = collapsed ? '▼' : '▶';
+      };
+      row.appendChild(toggle);
+      wrap.appendChild(row);
+      renderToc(childWrap, item.children, depth + 1);
+      wrap.appendChild(childWrap);
+    } else {
+      const spacer = document.createElement('span');
+      spacer.style.minWidth = '10px';
+      row.appendChild(spacer);
     }
 
-    // ToC entry with share button
-    const li = document.createElement('li');
-    li.style.marginLeft = h.tagName === 'H3' ? '12px' : h.tagName === 'H2' ? '6px' : '0';
-    li.innerHTML = `
-      ${currentPlayer.isDM ? `<button class="share-btn" onclick="openSharePanel('${currentPageId}','${id}')" title="Share">🔗</button>` : ''}
-      <a href="#${id}" onclick="scrollToHeading('${id}')">${h.textContent.replace('🔗','').trim()}</a>`;
-    outline.appendChild(li);
-  });
+    // Share btn
+    if (currentPlayer.isDM) {
+      const shareBtn = document.createElement('button');
+      shareBtn.className = 'share-btn';
+      shareBtn.textContent = '🔗';
+      shareBtn.title = 'Share';
+      shareBtn.onclick = () => openSharePanel(currentPageId, item.id);
+      row.appendChild(shareBtn);
+    }
 
-  document.getElementById('page-outline-wrap').style.display = headings.length ? '' : 'none';
+    // Link
+    const a = document.createElement('a');
+    a.href = `#${item.id}`;
+    a.textContent = item.text;
+    a.style.cssText = 'color:#e2b96f;text-decoration:none;font-size:0.85rem;';
+    a.onclick = (e) => { e.preventDefault(); scrollToHeading(item.id); };
+    row.appendChild(a);
+
+    // DM edit controls
+    if (currentPlayer.isDM) {
+      const editBtn = document.createElement('button');
+      editBtn.textContent = '✏️';
+      editBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:0.65rem;opacity:0.4;padding:0 2px';
+      editBtn.onclick = () => editTocEntry(item, idx, page.toc || buildTocFromHeadings([]));
+      row.appendChild(editBtn);
+
+      const delBtn = document.createElement('button');
+      delBtn.textContent = '✕';
+      delBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:0.65rem;opacity:0.4;color:#c44;padding:0 2px';
+      delBtn.onclick = () => deleteTocEntry(item.id);
+      row.appendChild(delBtn);
+    }
+
+    if (!hasChildren) wrap.appendChild(row);
+    else wrap.insertBefore(row, wrap.children[1] || null);
+
+    container.appendChild(wrap);
+  });
+}
+
+function addTocEntry() {
+  const text = prompt('Entry text:');
+  if (!text) return;
+  const id = prompt('Anchor ID (must match a heading id like heading-0, or any custom id):');
+  if (!id) return;
+  const level = parseInt(prompt('Heading level (1-4):') || '2');
+  const page = pages[currentPageId];
+  if (!page.toc) page.toc = buildTocFromHeadings(Array.from(document.querySelectorAll('#page-content h1,#page-content h2,#page-content h3,#page-content h4')));
+  page.toc.push({ id, text, level, children: [] });
+  buildOutline();
+  saveToc();
+}
+
+function editTocEntry(item, idx, toc) {
+  const text = prompt('Entry text:', item.text);
+  if (text === null) return;
+  const id = prompt('Anchor ID:', item.id);
+  if (id === null) return;
+  item.text = text;
+  item.id = id;
+  pages[currentPageId].toc = toc;
+  buildOutline();
+  saveToc();
+}
+
+function deleteTocEntry(id) {
+  const page = pages[currentPageId];
+  if (!page.toc) return;
+  page.toc = page.toc.filter(i => i.id !== id);
+  buildOutline();
+  saveToc();
+}
+
+async function saveToc() {
+  await githubSave(`pages/${currentPageId}.json`, pages[currentPageId], `Update ToC: ${currentPageId}`);
 }
 
 function scrollToHeading(id) {
@@ -331,6 +440,44 @@ function getSnippet(text, query) {
 }
 
 // ─── DM EDITOR ────────────────────────────────────────────────────────────────
+function initEditor() {
+  const area = document.getElementById('editor-area');
+
+  area.addEventListener('paste', (e) => {
+    const strip = document.getElementById('strip-links-toggle').checked;
+    if (!strip) return; // normal paste
+    e.preventDefault();
+    const html = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    // Remove all <a> tags but keep their text content
+    div.querySelectorAll('a').forEach(a => {
+      const text = document.createTextNode(a.textContent);
+      a.replaceWith(text);
+    });
+    document.execCommand('insertHTML', false, div.innerHTML);
+  });
+
+  // Heading level changer
+  document.getElementById('heading-level-select').addEventListener('change', function() {
+    const newTag = this.value;
+    if (!newTag) return;
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    let node = sel.anchorNode;
+    while (node && node !== area) {
+      if (node.nodeType === 1 && /^H[1-4]$/i.test(node.tagName)) {
+        const newEl = document.createElement(newTag === 'P' ? 'p' : newTag);
+        newEl.innerHTML = node.innerHTML;
+        node.replaceWith(newEl);
+        break;
+      }
+      node = node.parentNode;
+    }
+    this.value = '';
+  });
+}
+
 function resetEditor() {
   document.getElementById('editor-title-label').textContent = 'New Page';
   document.getElementById('editor-page-id').value = '';
