@@ -211,70 +211,73 @@ function buildOutline() {
   const outline = document.getElementById('page-outline');
   outline.innerHTML = '';
 
-  if (currentPlayer.isDM) {
-    // DM gets editable ToC builder
-    const addBtn = document.createElement('button');
-    addBtn.textContent = '+ Add Entry';
-    addBtn.style.cssText = 'font-size:0.75rem;padding:2px 8px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;margin-bottom:8px';
-    addBtn.onclick = () => addTocEntry();
-    outline.appendChild(addBtn);
+  if (!headings.length) {
+    document.getElementById('page-outline-wrap').style.display = 'none';
+    return;
   }
 
-  // Build from headings if no custom ToC saved
-  const page = pages[currentPageId];
-  const tocData = page.toc || buildTocFromHeadings(headings);
-
-  renderToc(outline, tocData, 0);
-
-  // Assign IDs to headings
+  // Assign IDs
   headings.forEach((h, i) => { h.id = `heading-${i}`; });
 
-  document.getElementById('page-outline-wrap').style.display = headings.length || (page.toc?.length) ? '' : 'none';
+  // Level filter dropdown
+  const levels = [...new Set(headings.map(h => parseInt(h.tagName[1])))].sort();
+  const filterWrap = document.createElement('div');
+  filterWrap.style.marginBottom = '8px';
+  filterWrap.innerHTML = `<select id="toc-level-filter" style="background:#0f3460;color:#e0e0e0;border:1px solid #0f3460;border-radius:4px;padding:3px 8px;font-size:0.8rem">
+    <option value="0">Show top level only</option>
+    ${levels.map(l => `<option value="${l}">Expand through H${l}</option>`).join('')}
+  </select>`;
+  outline.appendChild(filterWrap);
+
+  // Build nested structure
+  const tree = buildTocTree(headings);
+  const listEl = document.createElement('div');
+  listEl.id = 'toc-tree';
+  renderTocTree(listEl, tree, true);
+  outline.appendChild(listEl);
+
+  // Filter change handler
+  document.getElementById('toc-level-filter').addEventListener('change', function() {
+    applyTocFilter(parseInt(this.value));
+  });
+
+  document.getElementById('page-outline-wrap').style.display = '';
 }
 
-function buildTocFromHeadings(headings) {
-  return headings.map((h, i) => ({
-    id: `heading-${i}`,
-    text: h.textContent.replace('🔗','').trim(),
-    level: parseInt(h.tagName[1]),
-    children: []
-  }));
+function buildTocTree(headings) {
+  const root = [];
+  const stack = [];
+  headings.forEach((h, i) => {
+    const level = parseInt(h.tagName[1]);
+    const node = { id: `heading-${i}`, text: h.textContent.replace('🔗','').trim(), level, children: [] };
+    while (stack.length && stack[stack.length-1].level >= level) stack.pop();
+    if (!stack.length) root.push(node);
+    else stack[stack.length-1].children.push(node);
+    stack.push(node);
+  });
+  return root;
 }
 
-function renderToc(container, items, depth) {
-  const page = pages[currentPageId];
-  const minLevel = Math.min(...items.map(i => i.level || 1));
-
-  items.forEach((item, idx) => {
+function renderTocTree(container, nodes, isRoot) {
+  nodes.forEach(node => {
     const wrap = document.createElement('div');
-    wrap.style.marginLeft = `${(( item.level || 1) - minLevel) * 12}px`;
+    wrap.dataset.tocLevel = node.level;
+    wrap.dataset.tocId = node.id;
+    wrap.style.marginLeft = isRoot ? '0' : '12px';
     wrap.style.marginBottom = '3px';
 
-    const hasChildren = item.children && item.children.length > 0;
     const row = document.createElement('div');
     row.style.cssText = 'display:flex;align-items:center;gap:4px;';
 
-    // Collapse toggle
-    if (hasChildren) {
-      const toggle = document.createElement('span');
-      toggle.textContent = '▶';
-      toggle.style.cssText = 'cursor:pointer;font-size:0.65rem;color:#aaa;min-width:10px';
-      const childWrap = document.createElement('div');
-      childWrap.style.display = 'none';
-      toggle.onclick = () => {
-        const collapsed = childWrap.style.display === 'none';
-        childWrap.style.display = collapsed ? '' : 'none';
-        toggle.textContent = collapsed ? '▼' : '▶';
-      };
-      row.appendChild(toggle);
-      wrap.appendChild(row);
-      renderToc(childWrap, item.children, depth + 1);
-      wrap.appendChild(childWrap);
+    // Caret (only if has children)
+    const caret = document.createElement('span');
+    if (node.children.length) {
+      caret.textContent = '▶';
+      caret.style.cssText = 'cursor:pointer;font-size:0.65rem;color:#aaa;min-width:10px;flex-shrink:0';
     } else {
-      const spacer = document.createElement('span');
-      spacer.style.minWidth = '10px';
-      row.appendChild(spacer);
+      caret.style.cssText = 'min-width:10px;flex-shrink:0;display:inline-block';
     }
+    row.appendChild(caret);
 
     // Share btn
     if (currentPlayer.isDM) {
@@ -282,75 +285,62 @@ function renderToc(container, items, depth) {
       shareBtn.className = 'share-btn';
       shareBtn.textContent = '🔗';
       shareBtn.title = 'Share';
-      shareBtn.onclick = () => openSharePanel(currentPageId, item.id);
+      shareBtn.onclick = (e) => { e.stopPropagation(); openSharePanel(currentPageId, node.id); };
       row.appendChild(shareBtn);
     }
 
     // Link
     const a = document.createElement('a');
-    a.href = `#${item.id}`;
-    a.textContent = item.text;
+    a.href = `#${node.id}`;
+    a.textContent = node.text;
     a.style.cssText = 'color:#e2b96f;text-decoration:none;font-size:0.85rem;';
-    a.onclick = (e) => { e.preventDefault(); scrollToHeading(item.id); };
+    a.onclick = (e) => { e.preventDefault(); scrollToHeading(node.id); };
     row.appendChild(a);
 
-    // DM edit controls
-    if (currentPlayer.isDM) {
-      const editBtn = document.createElement('button');
-      editBtn.textContent = '✏️';
-      editBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:0.65rem;opacity:0.4;padding:0 2px';
-      editBtn.onclick = () => editTocEntry(item, idx, page.toc || buildTocFromHeadings([]));
-      row.appendChild(editBtn);
+    wrap.appendChild(row);
 
-      const delBtn = document.createElement('button');
-      delBtn.textContent = '✕';
-      delBtn.style.cssText = 'background:none;border:none;cursor:pointer;font-size:0.65rem;opacity:0.4;color:#c44;padding:0 2px';
-      delBtn.onclick = () => deleteTocEntry(item.id);
-      row.appendChild(delBtn);
+    // Children container — collapsed by default
+    if (node.children.length) {
+      const childWrap = document.createElement('div');
+      childWrap.style.display = 'none';
+      childWrap.dataset.childWrap = 'true';
+      renderTocTree(childWrap, node.children, false);
+      wrap.appendChild(childWrap);
+
+      caret.onclick = (e) => {
+        e.stopPropagation();
+        const collapsed = childWrap.style.display === 'none';
+        childWrap.style.display = collapsed ? '' : 'none';
+        caret.textContent = collapsed ? '▼' : '▶';
+      };
     }
-
-    if (!hasChildren) wrap.appendChild(row);
-    else wrap.insertBefore(row, wrap.children[1] || null);
 
     container.appendChild(wrap);
   });
 }
 
-function addTocEntry() {
-  const text = prompt('Entry text:');
-  if (!text) return;
-  const id = prompt('Anchor ID (must match a heading id like heading-0, or any custom id):');
-  if (!id) return;
-  const level = parseInt(prompt('Heading level (1-4):') || '2');
-  const page = pages[currentPageId];
-  if (!page.toc) page.toc = buildTocFromHeadings(Array.from(document.querySelectorAll('#page-content h1,#page-content h2,#page-content h3,#page-content h4')));
-  page.toc.push({ id, text, level, children: [] });
-  buildOutline();
-  saveToc();
-}
-
-function editTocEntry(item, idx, toc) {
-  const text = prompt('Entry text:', item.text);
-  if (text === null) return;
-  const id = prompt('Anchor ID:', item.id);
-  if (id === null) return;
-  item.text = text;
-  item.id = id;
-  pages[currentPageId].toc = toc;
-  buildOutline();
-  saveToc();
-}
-
-function deleteTocEntry(id) {
-  const page = pages[currentPageId];
-  if (!page.toc) return;
-  page.toc = page.toc.filter(i => i.id !== id);
-  buildOutline();
-  saveToc();
-}
-
-async function saveToc() {
-  await githubSave(`pages/${currentPageId}.json`, pages[currentPageId], `Update ToC: ${currentPageId}`);
+function applyTocFilter(maxLevel) {
+  const tree = document.getElementById('toc-tree');
+  if (!tree) return;
+  // First collapse everything
+  tree.querySelectorAll('[data-child-wrap]').forEach(el => {
+    el.style.display = 'none';
+    const caret = el.parentElement.querySelector('span');
+    if (caret && caret.textContent === '▼') caret.textContent = '▶';
+  });
+  if (maxLevel === 0) return;
+  // Expand up to maxLevel
+  tree.querySelectorAll('[data-toc-level]').forEach(wrap => {
+    const level = parseInt(wrap.dataset.tocLevel);
+    if (level < maxLevel) {
+      const childWrap = wrap.querySelector('[data-child-wrap]');
+      if (childWrap) {
+        childWrap.style.display = '';
+        const caret = wrap.querySelector('span');
+        if (caret) caret.textContent = '▼';
+      }
+    }
+  });
 }
 
 function scrollToHeading(id) {
@@ -445,12 +435,11 @@ function initEditor() {
 
   area.addEventListener('paste', (e) => {
     const strip = document.getElementById('strip-links-toggle').checked;
-    if (!strip) return; // normal paste
+    if (!strip) return;
     e.preventDefault();
     const html = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
     const div = document.createElement('div');
     div.innerHTML = html;
-    // Remove all <a> tags but keep their text content
     div.querySelectorAll('a').forEach(a => {
       const text = document.createTextNode(a.textContent);
       a.replaceWith(text);
@@ -458,24 +447,57 @@ function initEditor() {
     document.execCommand('insertHTML', false, div.innerHTML);
   });
 
-  // Heading level changer
-  document.getElementById('heading-level-select').addEventListener('change', function() {
-    const newTag = this.value;
-    if (!newTag) return;
-    const sel = window.getSelection();
-    if (!sel.rangeCount) return;
-    let node = sel.anchorNode;
-    while (node && node !== area) {
-      if (node.nodeType === 1 && /^H[1-4]$/i.test(node.tagName)) {
-        const newEl = document.createElement(newTag === 'P' ? 'p' : newTag);
-        newEl.innerHTML = node.innerHTML;
-        node.replaceWith(newEl);
-        break;
-      }
-      node = node.parentNode;
-    }
-    this.value = '';
+  function refreshHeadingBadges() {
+    area.querySelectorAll('h1,h2,h3,h4').forEach(h => {
+      if (h.querySelector('.h-badge')) return;
+      const badge = document.createElement('span');
+      badge.className = 'h-badge';
+      badge.contentEditable = 'false';
+      badge.textContent = h.tagName;
+      badge.style.cssText = 'font-size:0.6rem;background:#333;color:#aaa;border-radius:3px;padding:1px 4px;margin-right:5px;cursor:pointer;user-select:none;vertical-align:middle;font-family:monospace';
+      badge.onclick = (e) => {
+        e.stopPropagation();
+        openHeadingLevelPopup(badge, h);
+      };
+      h.insertBefore(badge, h.firstChild);
+    });
+  }
+
+  area.addEventListener('input', refreshHeadingBadges);
+  area.addEventListener('paste', () => setTimeout(refreshHeadingBadges, 100));
+  refreshHeadingBadges();
+}
+
+function openHeadingLevelPopup(badge, headingEl) {
+  document.querySelectorAll('.heading-level-popup').forEach(p => p.remove());
+  const popup = document.createElement('div');
+  popup.className = 'heading-level-popup';
+  popup.style.cssText = 'position:fixed;background:#16213e;border:1px solid #e2b96f;border-radius:8px;padding:10px;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,0.5);font-size:0.85rem;';
+  const rect = badge.getBoundingClientRect();
+  popup.style.top = `${rect.bottom + 6}px`;
+  popup.style.left = `${rect.left}px`;
+
+  ['H1','H2','H3','H4','P'].forEach(tag => {
+    const opt = document.createElement('div');
+    opt.textContent = tag === 'P' ? 'Paragraph' : tag;
+    opt.style.cssText = 'padding:6px 12px;cursor:pointer;border-radius:4px;';
+    opt.onmouseenter = () => opt.style.background = '#0f3460';
+    opt.onmouseleave = () => opt.style.background = '';
+    opt.onclick = () => {
+      const newEl = document.createElement(tag.toLowerCase());
+      // Move all children except the badge itself
+      Array.from(headingEl.childNodes).forEach(n => {
+        if (!n.classList?.contains('h-badge')) newEl.appendChild(n.cloneNode(true));
+      });
+      headingEl.replaceWith(newEl);
+      popup.remove();
+      setTimeout(refreshHeadingBadges, 50);
+    };
+    popup.appendChild(opt);
   });
+
+  setTimeout(() => document.addEventListener('click', () => popup.remove(), { once: true }), 50);
+  document.body.appendChild(popup);
 }
 
 function resetEditor() {
