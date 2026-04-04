@@ -570,3 +570,22 @@ function generateShareLink(token, name, canView) {
   document.getElementById('share-panel').classList.add('hidden');
   alert(`Copied link for ${name || 'All Players'}!\n\n${url}`);
 }
+
+// ─── Temp Debug ────────────────────────────────────────────────────────────
+async function debugSave() {
+  const pat = getPAT();
+  console.log('PAT exists:', !!pat, '| Length:', pat.length);
+  const testURL = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/config.json`;
+  console.log('Testing URL:', testURL);
+  const res = await fetch(testURL, {
+    headers: { Authorization: `token ${pat}` }
+  });
+  const data = await res.json();
+  console.log('Status:', res.status);
+  console.log('Response:', data);
+}
+```
+
+Then open your site, open browser DevTools (F12), go to Console tab, type:
+```
+debugSave()
