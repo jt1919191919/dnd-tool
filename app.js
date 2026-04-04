@@ -443,10 +443,11 @@ function refreshHeadingBadges() {
     badge.contentEditable = 'false';
     badge.textContent = h.tagName;
     badge.style.cssText = 'font-size:0.6rem;background:#333;color:#aaa;border-radius:3px;padding:1px 4px;margin-right:5px;cursor:pointer;user-select:none;vertical-align:middle;font-family:monospace';
-    badge.onclick = (e) => {
+    badge.addEventListener('mousedown', (e) => {
+      e.preventDefault();
       e.stopPropagation();
       openHeadingLevelPopup(badge, h);
-    };
+    });
     h.insertBefore(badge, h.firstChild);
   });
 }
