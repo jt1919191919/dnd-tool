@@ -207,11 +207,43 @@ main { padding: 16px; }
 .config-player-row strong { color: #e2b96f; }
 
 /* Share Links */
+.share-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.7rem;
+  opacity: 0.35;
+  padding: 0 3px;
+  vertical-align: middle;
+  transition: opacity 0.15s;
+}
+.share-btn:hover { opacity: 1; }
+
+.card-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.share-panel-popup {
+  position: fixed;
+  bottom: 80px;
+  right: 16px;
+  background: #16213e;
+  border: 1px solid #e2b96f;
+  border-radius: 8px;
+  padding: 12px;
+  width: 200px;
+  z-index: 500;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+
 .share-player-row {
-  padding: 8px;
+  padding: 7px 8px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.85rem;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 }
 .share-player-row:hover { background: #0f3460; }
