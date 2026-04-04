@@ -437,7 +437,7 @@ function refreshHeadingBadges() {
   const area = document.getElementById('editor-area');
   if (!area) return;
   area.querySelectorAll('h1,h2,h3,h4').forEach(h => {
-    if (h.querySelector('.h-badge')) return;
+    h.querySelectorAll('.h-badge').forEach(b => b.remove());
     const badge = document.createElement('span');
     badge.className = 'h-badge';
     badge.contentEditable = 'false';
@@ -530,7 +530,10 @@ function editCurrentPage() {
   document.getElementById('editor-page-title').value = page.title || '';
   document.getElementById('editor-thumb').value = page.thumbnail || '';
   document.getElementById('editor-description').value = page.description || '';
-  document.getElementById('editor-area').innerHTML = page.content || '';
+  const cleanDiv = document.createElement('div');
+  cleanDiv.innerHTML = page.content || '';
+  cleanDiv.querySelectorAll('.h-badge').forEach(b => b.remove());
+  document.getElementById('editor-area').innerHTML = cleanDiv.innerHTML;
   setTimeout(refreshHeadingBadges, 50);
 }
 
