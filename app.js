@@ -372,7 +372,8 @@ async function savePage() {
   const ok = await githubSave(`pages/${id}.json`, pageData, `Update page: ${id}`);
   if (!ok) return;
   if (isNew) {
-    const idx = await fetchJSON('pages/index.json') || [];
+    const res = await fetch(`${RAW_BASE}/pages/index.json?_=${Date.now()}`, { cache: 'no-store' });
+    const idx = res.ok ? await res.json() : [];
     if (!idx.includes(id)) idx.push(id);
     await githubSave('pages/index.json', idx, `Add page to index: ${id}`);
   }
