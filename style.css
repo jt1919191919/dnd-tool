@@ -260,3 +260,15 @@ mark {
   color: #7eb8f7;
   margin: 3px 0;
 }
+
+/* Save Cancel made sticky */
+#editor-actions {
+  position: sticky;
+  bottom: 0;
+  background: #1a1a2e;
+  padding: 10px 0;
+  display: flex;
+  gap: 8px;
+  border-top: 1px solid #0f3460;
+  z-index: 100;
+}
