@@ -248,3 +248,15 @@ main { padding: 16px; }
 }
 .share-player-row:hover { background: #0f3460; }
 
+/* highlight and heading breadcrumb */
+mark {
+  background: #e2b96f;
+  color: #1a1a2e;
+  border-radius: 2px;
+  padding: 0 2px;
+}
+.search-result-heading {
+  font-size: 0.75rem;
+  color: #7eb8f7;
+  margin: 3px 0;
+}
