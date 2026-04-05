@@ -370,7 +370,8 @@ function renderCards() {
       <div class="card-body">
         <div class="card-title-row">
           <span class="card-title">${page.title}</span>
-          ${currentPlayer.isDM ? `<button class="share-btn" onclick="event.stopPropagation();openSharePanel('${id}',null)" title="Share">🔗</button>` : ''}
+          ${currentPlayer.isDM ? `<button class="share-btn" onclick="event.stopPropagation();openSharePanel('${id}',null)" title="Share">🔗</button>
+          <button class="share-btn" onclick="event.stopPropagation();openVisibilityPopup('${id}',this)" title="Visibility">👁️</button>` : ''}
         </div>
         <div class="card-desc">${page.description || ''}</div>
       </div>`;
@@ -688,12 +689,28 @@ function buildVisibilityCheckboxes(page) {
   wrap.innerHTML = '';
   if (!config?.players) return;
 
-  // ALL option
+  const noneLabel = document.createElement('label');
+  const noneCb = document.createElement('input');
+  noneCb.type = 'checkbox';
+  noneCb.value = '__NONE__';
+  noneCb.checked = !page.visibleTo || page.visibleTo.length === 0;
+  noneCb.onchange = () => {
+    if (noneCb.checked) {
+      wrap.querySelectorAll('input[type=checkbox]').forEach(cb => {
+        if (cb !== noneCb) cb.checked = false;
+      });
+    }
+  };
+  noneLabel.appendChild(noneCb);
+  noneLabel.append(' None');
+  wrap.appendChild(noneLabel);
+
   const allLabel = document.createElement('label');
   const allCb = document.createElement('input');
   allCb.type = 'checkbox';
   allCb.value = '__ALL__';
   allCb.checked = page.visibleTo?.includes('__ALL__');
+  allCb.onchange = () => { if (allCb.checked) noneCb.checked = false; };
   allLabel.appendChild(allCb);
   allLabel.append(' ALL');
   wrap.appendChild(allLabel);
@@ -704,10 +721,88 @@ function buildVisibilityCheckboxes(page) {
     cb.type = 'checkbox';
     cb.value = token;
     cb.checked = page.visibleTo?.includes(token) || page.visibleTo?.includes('__ALL__');
+    cb.onchange = () => { if (cb.checked) noneCb.checked = false; };
     label.appendChild(cb);
     label.append(` ${player.name}`);
     wrap.appendChild(label);
   }
+}
+
+function openVisibilityPopup(pageId, btn) {
+  document.querySelectorAll('.visibility-popup').forEach(p => p.remove());
+  const page = pages[pageId];
+  const popup = document.createElement('div');
+  popup.className = 'visibility-popup';
+  popup.style.cssText = 'position:fixed;background:#16213e;border:1px solid #e2b96f;border-radius:8px;padding:12px;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,0.5);font-size:0.85rem;min-width:160px;';
+
+  const rect = btn.getBoundingClientRect();
+  popup.style.top = `${rect.bottom + 6}px`;
+  popup.style.left = `${rect.left}px`;
+
+  const title = document.createElement('div');
+  title.style.cssText = 'color:#aaa;font-size:0.75rem;margin-bottom:8px;';
+  title.textContent = 'Visible to:';
+  popup.appendChild(title);
+
+  const checkboxes = [];
+
+  // None
+  const noneLabel = document.createElement('label');
+  noneLabel.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 0;';
+  const noneCb = document.createElement('input');
+  noneCb.type = 'checkbox';
+  noneCb.value = '__NONE__';
+  noneCb.checked = !page.visibleTo || page.visibleTo.length === 0;
+  noneCb.onchange = () => { if (noneCb.checked) checkboxes.forEach(cb => { if (cb !== noneCb) cb.checked = false; }); };
+  noneLabel.appendChild(noneCb);
+  noneLabel.append(' None');
+  popup.appendChild(noneLabel);
+  checkboxes.push(noneCb);
+
+  // All
+  const allLabel = document.createElement('label');
+  allLabel.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 0;';
+  const allCb = document.createElement('input');
+  allCb.type = 'checkbox';
+  allCb.value = '__ALL__';
+  allCb.checked = page.visibleTo?.includes('__ALL__');
+  allCb.onchange = () => { if (allCb.checked) noneCb.checked = false; };
+  allLabel.appendChild(allCb);
+  allLabel.append(' ALL');
+  popup.appendChild(allLabel);
+  checkboxes.push(allCb);
+
+  for (const [token, player] of Object.entries(config.players)) {
+    const label = document.createElement('label');
+    label.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 0;';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = token;
+    cb.checked = page.visibleTo?.includes(token) || page.visibleTo?.includes('__ALL__');
+    cb.onchange = () => { if (cb.checked) noneCb.checked = false; };
+    label.appendChild(cb);
+    label.append(` ${player.name}`);
+    popup.appendChild(label);
+    checkboxes.push(cb);
+  }
+
+  const saveBtn = document.createElement('button');
+  saveBtn.textContent = '💾 Save';
+  saveBtn.style.cssText = 'margin-top:10px;width:100%;padding:6px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;';
+  saveBtn.onclick = async (e) => {
+    e.stopPropagation();
+    const selected = checkboxes.filter(cb => cb.checked && cb.value !== '__NONE__').map(cb => cb.value);
+    pages[pageId].visibleTo = selected;
+    const ok = await githubSave(`pages/${pageId}.json`, pages[pageId], `Update visibility: ${pageId}`);
+    if (ok) { popup.remove(); alert('Visibility saved!'); }
+  };
+  popup.appendChild(saveBtn);
+
+  setTimeout(() => document.addEventListener('click', (e) => {
+    if (!popup.contains(e.target)) popup.remove();
+  }, { once: true }), 50);
+
+  document.body.appendChild(popup);
 }
 
 async function saveVisibility() {
