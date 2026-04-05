@@ -647,7 +647,6 @@ async function savePage() {
     await githubSave('pages/index.json', idx, `Add page to index: ${id}`);
   }
   buildNav();
-  showView('home');
   alert('Saved to GitHub!');
 }
 
