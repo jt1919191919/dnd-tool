@@ -464,30 +464,44 @@ function findNearestHeading(htmlContent, query) {
   div.innerHTML = htmlContent;
   div.querySelectorAll('.h-badge').forEach(b => b.remove());
 
-  const elements = Array.from(div.querySelectorAll('*'));
-  let lastHeading = null;
-  let lastHeadingIndex = -1;
-  let matchIndex = -1;
-
-  elements.forEach((el, i) => {
-    if (/^H[1-4]$/.test(el.tagName)) {
-      lastHeading = el;
-      lastHeadingIndex = i;
-    }
-    if (el.textContent.toLowerCase().includes(query.toLowerCase()) && matchIndex === -1) {
-      matchIndex = i;
-    }
-  });
-
-  if (!lastHeading || lastHeadingIndex > matchIndex) return { headingText: null, headingId: null };
-
-  // Find the heading index to match heading-N id
   const allHeadings = Array.from(div.querySelectorAll('h1,h2,h3,h4'));
-  const headingIdx = allHeadings.indexOf(lastHeading);
+  if (!allHeadings.length) return { headingText: null, headingId: null };
+
+  // Walk all nodes in order, track last heading seen before we hit a match
+  const walker = document.createTreeWalker(div, NodeFilter.SHOW_TEXT);
+  let lastHeading = null;
+  let matchFound = false;
+  const q = query.toLowerCase();
+
+  // Map each heading to its index for ID lookup
+  const headingIndexMap = new Map(allHeadings.map((h, i) => [h, i]));
+
+  // For each heading, check if query appears in content before the next heading
+  for (let i = 0; i < allHeadings.length; i++) {
+    const current = allHeadings[i];
+    const next = allHeadings[i + 1];
+
+    // Get all text between this heading and the next
+    let node = current.nextSibling;
+    let textBetween = current.textContent.toLowerCase();
+    while (node && node !== next) {
+      textBetween += (node.textContent || '').toLowerCase();
+      node = node.nextSibling;
+    }
+
+    if (textBetween.includes(q)) {
+      lastHeading = current;
+      matchFound = true;
+      break;
+    }
+  }
+
+  // Fallback: query might be in content before any heading
+  if (!matchFound) return { headingText: null, headingId: null };
 
   return {
     headingText: lastHeading.textContent.trim(),
-    headingId: `heading-${headingIdx}`
+    headingId: `heading-${headingIndexMap.get(lastHeading)}`
   };
 }
 
