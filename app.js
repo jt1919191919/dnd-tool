@@ -426,9 +426,17 @@ function handleSearch(query) {
       item.onclick = () => {
         document.getElementById('search-input').value = '';
         handleSearch('');
-        navigateTo(id);
-        if (headingInfo.headingId) {
-          setTimeout(() => scrollToHeading(headingInfo.headingId), 300);
+         navigateTo(id);
+         if (headingInfo.headingId) {
+          const tryScroll = (attempts) => {
+            const el = document.getElementById(headingInfo.headingId);
+            if (el) {
+               el.scrollIntoView({ behavior: 'smooth' });
+            } else if (attempts > 0) {
+              setTimeout(() => tryScroll(attempts - 1), 100);
+            }
+           };
+          setTimeout(() => tryScroll(10), 100);
         }
       };
 
