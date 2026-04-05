@@ -626,6 +626,14 @@ function editCurrentPage() {
   setTimeout(refreshHeadingBadges, 50);
 }
 
+function cancelEdit() {
+  if (currentPageId) {
+    navigateTo(currentPageId);
+  } else {
+    showView('home');
+  }
+}
+
 async function savePage() {
   const id = document.getElementById('editor-page-id').value.trim();
   const title = document.getElementById('editor-page-title').value.trim();
