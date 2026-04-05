@@ -424,19 +424,23 @@ function handleSearch(query) {
       const item = document.createElement('div');
       item.className = 'search-result-item';
       item.onclick = () => {
+        const targetHeadingId = headingInfo.headingId;
+        const targetText = headingInfo.headingText;
         document.getElementById('search-input').value = '';
         handleSearch('');
-         navigateTo(id);
-         if (headingInfo.headingId) {
+        navigateTo(id);
+        if (targetHeadingId && targetText) {
           const tryScroll = (attempts) => {
-            const el = document.getElementById(headingInfo.headingId);
-            if (el) {
-               el.scrollIntoView({ behavior: 'smooth' });
+            // Find heading by its text content since IDs are reassigned on render
+            const allH = document.querySelectorAll('#page-content h1,#page-content h2,#page-content h3,#page-content h4');
+            const match = Array.from(allH).find(h => h.textContent.replace('🔗','').trim() === targetText);
+            if (match) {
+              match.scrollIntoView({ behavior: 'smooth' });
             } else if (attempts > 0) {
               setTimeout(() => tryScroll(attempts - 1), 100);
             }
-           };
-          setTimeout(() => tryScroll(10), 100);
+          };
+          setTimeout(() => tryScroll(15), 150);
         }
       };
 
@@ -475,41 +479,37 @@ function findNearestHeading(htmlContent, query) {
   const allHeadings = Array.from(div.querySelectorAll('h1,h2,h3,h4'));
   if (!allHeadings.length) return { headingText: null, headingId: null };
 
-  // Walk all nodes in order, track last heading seen before we hit a match
-  const walker = document.createTreeWalker(div, NodeFilter.SHOW_TEXT);
-  let lastHeading = null;
-  let matchFound = false;
   const q = query.toLowerCase();
+  let lastHeading = null;
+  let lastHeadingIdx = null;
 
-  // Map each heading to its index for ID lookup
-  const headingIndexMap = new Map(allHeadings.map((h, i) => [h, i]));
-
-  // For each heading, check if query appears in content before the next heading
-  for (let i = 0; i < allHeadings.length; i++) {
-    const current = allHeadings[i];
-    const next = allHeadings[i + 1];
-
-    // Get all text between this heading and the next
-    let node = current.nextSibling;
-    let textBetween = current.textContent.toLowerCase();
-    while (node && node !== next) {
-      textBetween += (node.textContent || '').toLowerCase();
-      node = node.nextSibling;
+  // Walk the DOM in order
+  const walk = (node, idx) => {
+    if (node.nodeType === 1) {
+      if (/^H[1-4]$/.test(node.tagName)) {
+        lastHeading = node;
+        lastHeadingIdx = allHeadings.indexOf(node);
+      }
+      if (node.textContent.toLowerCase().includes(q) && lastHeading && node.tagName !== 'H1' && node.tagName !== 'H2' && node.tagName !== 'H3' && node.tagName !== 'H4') {
+        return true; // found match after a heading
+      }
+      for (const child of node.childNodes) {
+        if (walk(child)) return true;
+      }
+    } else if (node.nodeType === 3) {
+      if (node.textContent.toLowerCase().includes(q) && lastHeading) {
+        return true;
+      }
     }
+    return false;
+  };
 
-    if (textBetween.includes(q)) {
-      lastHeading = current;
-      matchFound = true;
-      break;
-    }
-  }
+  walk(div);
 
-  // Fallback: query might be in content before any heading
-  if (!matchFound) return { headingText: null, headingId: null };
-
+  if (!lastHeading) return { headingText: null, headingId: null };
   return {
     headingText: lastHeading.textContent.trim(),
-    headingId: `heading-${headingIndexMap.get(lastHeading)}`
+    headingId: `heading-${lastHeadingIdx}`
   };
 }
 
