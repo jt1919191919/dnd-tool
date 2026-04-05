@@ -4,5 +4,7 @@
   "thumbnail": "",
   "description": "The story so far...",
   "content": "<h2>Welcome to the Campaign</h2><p>This is placeholder content. The DM will fill this in.</p><h2>The World</h2><p>Your adventure begins...</p><h2>House Rules</h2><p>Placeholder rules go here.</p><p><br></p><h2>House Rules2</h2><div><br></div><p>only one player can see this</p>",
-  "visibleTo": []
+  "visibleTo": [
+    "__ALL__"
+  ]
 }
