@@ -165,6 +165,7 @@ function showView(view) {
   document.getElementById('side-menu').classList.add('hidden');
   document.getElementById('search-results').classList.add('hidden');
   document.getElementById('search-input').value = '';
+  document.getElementById('cards-grid').classList.remove('hidden');
   // Update URL back to just token when going home
   if (view === 'home') {
     window.history.pushState({}, '', buildURL(currentPlayer.token));
@@ -387,9 +388,19 @@ function handleSearch(query) {
   if (!query.trim()) {
     resultsWrap.classList.add('hidden');
     cards.classList.remove('hidden');
+    // If we're on a page view, restore it
+    if (currentPageId) {
+      document.getElementById('view-home').classList.add('hidden');
+      document.getElementById('view-page').classList.remove('hidden');
+    }
     return;
   }
 
+  // Always show home view container for results
+  document.getElementById('view-page').classList.add('hidden');
+  document.getElementById('view-dm-editor').classList.add('hidden');
+  document.getElementById('view-dm-config').classList.add('hidden');
+  document.getElementById('view-home').classList.remove('hidden');
   cards.classList.add('hidden');
   resultsWrap.classList.remove('hidden');
   resultsList.innerHTML = '';
@@ -406,11 +417,29 @@ function handleSearch(query) {
 
     if (titleMatch || contentMatch || descMatch) {
       found = true;
-      const snippet = getSnippet(contentText, q);
+
+      // Find which heading the match is under
+      const headingInfo = findNearestHeading(page.content || '', q);
+
       const item = document.createElement('div');
       item.className = 'search-result-item';
-      item.onclick = () => { document.getElementById('search-input').value = ''; handleSearch(''); navigateTo(id); };
-      item.innerHTML = `<div class="search-result-title">${page.title}</div><div class="search-result-snippet">${snippet}</div>`;
+      item.onclick = () => {
+        document.getElementById('search-input').value = '';
+        handleSearch('');
+        navigateTo(id);
+        if (headingInfo.headingId) {
+          setTimeout(() => scrollToHeading(headingInfo.headingId), 300);
+        }
+      };
+
+      const snippet = getSnippet(contentText, q);
+      const highlightedSnippet = highlightMatch(snippet, query);
+      const highlightedTitle = highlightMatch(page.title, query);
+
+      item.innerHTML = `
+        <div class="search-result-title">${highlightedTitle}</div>
+        ${headingInfo.headingText ? `<div class="search-result-heading">Under: ${headingInfo.headingText}</div>` : ''}
+        <div class="search-result-snippet">${highlightedSnippet}</div>`;
       resultsList.appendChild(item);
     }
   }
@@ -422,6 +451,44 @@ function stripHTML(html) {
   const div = document.createElement('div');
   div.innerHTML = html;
   return div.textContent || '';
+}
+
+function highlightMatch(text, query) {
+  if (!text || !query) return text;
+  const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>');
+}
+
+function findNearestHeading(htmlContent, query) {
+  const div = document.createElement('div');
+  div.innerHTML = htmlContent;
+  div.querySelectorAll('.h-badge').forEach(b => b.remove());
+
+  const elements = Array.from(div.querySelectorAll('*'));
+  let lastHeading = null;
+  let lastHeadingIndex = -1;
+  let matchIndex = -1;
+
+  elements.forEach((el, i) => {
+    if (/^H[1-4]$/.test(el.tagName)) {
+      lastHeading = el;
+      lastHeadingIndex = i;
+    }
+    if (el.textContent.toLowerCase().includes(query.toLowerCase()) && matchIndex === -1) {
+      matchIndex = i;
+    }
+  });
+
+  if (!lastHeading || lastHeadingIndex > matchIndex) return { headingText: null, headingId: null };
+
+  // Find the heading index to match heading-N id
+  const allHeadings = Array.from(div.querySelectorAll('h1,h2,h3,h4'));
+  const headingIdx = allHeadings.indexOf(lastHeading);
+
+  return {
+    headingText: lastHeading.textContent.trim(),
+    headingId: `heading-${headingIdx}`
+  };
 }
 
 function getSnippet(text, query) {
