@@ -627,8 +627,9 @@ function editCurrentPage() {
 }
 
 function cancelEdit() {
+  document.getElementById('view-dm-editor').classList.add('hidden');
   if (currentPageId) {
-    navigateTo(currentPageId);
+    document.getElementById('view-page').classList.remove('hidden');
   } else {
     showView('home');
   }
