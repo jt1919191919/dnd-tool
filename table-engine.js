@@ -299,13 +299,14 @@ async function openTableConfig(tableId) {
     <h3 style="color:#e2b96f;margin:12px 0 8px;font-size:0.9rem">Popup visible fields:</h3>
     <p style="color:#aaa;font-size:0.75rem;margin-bottom:8px">Uncheck to hide fields in the spell detail popup.</p>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
-      ${SPELL_COLUMNS.filter(c => !['Name','Level','School','_concentration','_ritual'].includes(c.key)).map(c => {
+      ${(() => {
         const hiddenList = config.popupHiddenCols || DEFAULT_POPUP_HIDDEN;
-        const checked = !hiddenList.includes(c.key);
-        return `<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem">
-          <input type="checkbox" id="cfg-popup-${tableId}-${c.key.replace(/[^a-z0-9]/gi,'_')}" ${checked ? 'checked' : ''}/> ${c.label}
-        </label>`;
-      }).join('')}
+        return SPELL_COLUMNS.filter(c => !['Name','Level','School','_concentration','_ritual'].includes(c.key)).map(c => {
+          const checked = !hiddenList.includes(c.key);
+          const safeKey = c.key.replace(/[^a-z0-9]/gi,'_');
+          return '<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem"><input type="checkbox" id="cfg-popup-' + tableId + '-' + safeKey + '" ' + (checked ? 'checked' : '') + '/> ' + c.label + '</label>';
+        }).join('');
+      })()}
     </div>
     <button onclick="saveTableConfig('${tableId}')" style="padding:8px 16px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:6px;cursor:pointer">💾 Save Defaults</button>
   `;
