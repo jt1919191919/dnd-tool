@@ -1,6 +1,9 @@
 // Default visible columns (first 7 = no horizontal scroll)
 const DEFAULT_VISIBLE = ['Name','Level','Casting Time','School','_concentration','_ritual','Range'];
 
+// Popup fields hidden by default
+const DEFAULT_POPUP_HIDDEN = ['Classes', 'Optional/Variant Classes', 'Subclasses'];
+
 // Column definitions - order matters for default display
 const SPELL_COLUMNS = [
   { key: 'Name',        label: 'Name',   minWidth: '120px', alwaysShow: false },
@@ -114,6 +117,7 @@ async function renderTableBlock(container, tableId, isDM) {
   const rows = tableData.rows.map(processSpellRow);
   const config = tableData.config || {};
   const visibleCols = config.visibleCols || DEFAULT_VISIBLE;
+  const popupHiddenCols = config.popupHiddenCols || DEFAULT_POPUP_HIDDEN;
   const defaultSort = config.defaultSort || 'Name';
   const defaultSortDir = config.defaultSortDir || 'asc';
 
@@ -220,6 +224,9 @@ function openSpellPopup(e, tableId, idx) {
   if (!wrap) return;
   const row = wrap.__rows[idx];
   if (!row) return;
+  const tableCfg = wrap.__config || {};
+  const popupHidden = tableCfg.popupHiddenCols || DEFAULT_POPUP_HIDDEN;
+  const showField = (key) => !popupHidden.includes(key);
 
   document.querySelectorAll('.spell-popup-overlay').forEach(p => p.remove());
 
@@ -244,12 +251,12 @@ function openSpellPopup(e, tableId, idx) {
       <div><strong>Range</strong><span>${row['Range'] || ''}</span></div>
       <div><strong>Duration</strong><span>${row['_durationClean'] || ''}</span></div>
       <div><strong>Components</strong><span>${row['Components'] || ''}</span></div>
-      ${row['Classes'] ? `<div class="spell-popup-full"><strong>Classes</strong><span>${row['Classes']}</span></div>` : ''}
-      ${row['Optional/Variant Classes'] ? `<div class="spell-popup-full"><strong>Variant Classes</strong><span>${row['Optional/Variant Classes']}</span></div>` : ''}
-      ${row['Subclasses'] ? `<div class="spell-popup-full"><strong>Subclasses</strong><span>${row['Subclasses']}</span></div>` : ''}
+      ${(showField('Classes') && row['Classes']) ? `<div class="spell-popup-full"><strong>Classes</strong><span>${row['Classes']}</span></div>` : ''}
+      ${(showField('Optional/Variant Classes') && row['Optional/Variant Classes']) ? `<div class="spell-popup-full"><strong>Variant Classes</strong><span>${row['Optional/Variant Classes']}</span></div>` : ''}
+      ${(showField('Subclasses') && row['Subclasses']) ? `<div class="spell-popup-full"><strong>Subclasses</strong><span>${row['Subclasses']}</span></div>` : ''}
     </div>
-    <div class="spell-popup-text">${(row['Text'] || '').replace(/\n/g, '<br/>')}</div>
-    ${row['At Higher Levels'] ? `<div class="spell-popup-higher"><strong>At Higher Levels:</strong> ${row['At Higher Levels']}</div>` : ''}
+    ${showField('Text') ? `<div class="spell-popup-text">${(row['Text'] || '').replace(/\n/g, '<br/>')}</div>` : ''}
+    ${(showField('At Higher Levels') && row['At Higher Levels']) ? `<div class="spell-popup-higher"><strong>At Higher Levels:</strong> ${row['At Higher Levels']}</div>` : ''}
   `;
 
   overlay.appendChild(popup);
@@ -289,8 +296,20 @@ async function openTableConfig(tableId) {
         <input type="checkbox" id="cfg-col-${tableId}-${c.key.replace(/[^a-z0-9]/gi,'_')}" ${(config.visibleCols || DEFAULT_VISIBLE).includes(c.key) ? 'checked' : ''}/> ${c.label}
       </label>`).join('')}
     </div>
+    <h3 style="color:#e2b96f;margin:12px 0 8px;font-size:0.9rem">Popup visible fields:</h3>
+    <p style="color:#aaa;font-size:0.75rem;margin-bottom:8px">Uncheck to hide fields in the spell detail popup.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+      ${SPELL_COLUMNS.filter(c => !['Name','Level','School','_concentration','_ritual'].includes(c.key)).map(c => {
+        const hiddenList = config.popupHiddenCols || DEFAULT_POPUP_HIDDEN;
+        const checked = !hiddenList.includes(c.key);
+        return `<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem">
+          <input type="checkbox" id="cfg-popup-${tableId}-${c.key.replace(/[^a-z0-9]/gi,'_')}" ${checked ? 'checked' : ''}/> ${c.label}
+        </label>`;
+      }).join('')}
+    </div>
     <button onclick="saveTableConfig('${tableId}')" style="padding:8px 16px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:6px;cursor:pointer">💾 Save Defaults</button>
   `;
+    `;
 
   overlay.appendChild(popup);
   document.body.appendChild(overlay);
@@ -306,7 +325,12 @@ async function saveTableConfig(tableId) {
     .filter(c => document.getElementById(`cfg-col-${tableId}-${c.key.replace(/[^a-z0-9]/gi,'_')}`)?.checked)
     .map(c => c.key);
 
-  tableData.config = { defaultSort: sortCol, defaultSortDir: sortDir, visibleCols };
+  const popupHiddenCols = SPELL_COLUMNS
+    .filter(c => !['Name','Level','School','_concentration','_ritual'].includes(c.key))
+    .filter(c => !document.getElementById(`cfg-popup-${tableId}-${c.key.replace(/[^a-z0-9]/gi,'_')}`)?.checked)
+    .map(c => c.key);
+
+  tableData.config = { defaultSort: sortCol, defaultSortDir: sortDir, visibleCols, popupHiddenCols };
   const ok = await saveTableData(tableId, tableData);
   if (ok) {
     alert('Table config saved!');
