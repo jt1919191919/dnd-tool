@@ -7620,6 +7620,8 @@
     }
   ],
   "config": {
+    "defaultSort": "Name",
+    "defaultSortDir": "asc",
     "visibleCols": [
       "Name",
       "Level",
@@ -7627,9 +7629,10 @@
       "School",
       "_concentration",
       "_ritual",
-      "Range"
-    ],
-    "defaultSort": "Name",
-    "defaultSortDir": "asc"
+      "Range",
+      "_durationClean",
+      "Text",
+      "At Higher Levels"
+    ]
   }
 }
