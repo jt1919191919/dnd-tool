@@ -201,6 +201,7 @@ function navigateTo(pageId) {
   tempDiv.innerHTML = page.content || '';
   tempDiv.querySelectorAll('.h-badge').forEach(b => b.remove());
   document.getElementById('page-content').innerHTML = tempDiv.innerHTML;
+  renderAllTableBlocks(currentPlayer.isDM);
   buildOutline();
 
   if (currentPlayer.isDM) {
