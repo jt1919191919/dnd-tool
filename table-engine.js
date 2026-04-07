@@ -1,6 +1,28 @@
+// Default visible columns (first 7 = no horizontal scroll)
+const DEFAULT_VISIBLE = ['Name','Level','Casting Time','School','_concentration','_ritual','Range'];
+
+// Column definitions - order matters for default display
+const SPELL_COLUMNS = [
+  { key: 'Name',        label: 'Name',   minWidth: '120px', alwaysShow: false },
+  { key: 'Level',       label: 'Lvl',    minWidth: '36px',  sortKey: '_levelNum' },
+  { key: 'Casting Time',label: 'Time',   minWidth: '60px'  },
+  { key: 'School',      label: 'School', minWidth: '80px'  },
+  { key: '_concentration', label: 'C',   minWidth: '24px'  },
+  { key: '_ritual',     label: 'R',      minWidth: '24px'  },
+  { key: 'Range',       label: 'Range',  minWidth: '70px'  },
+  { key: 'Source',      label: 'Src',    minWidth: '40px'  },
+  { key: '_durationClean', label: 'Duration', minWidth: '80px' },
+  { key: 'Components',  label: 'Comp',   minWidth: '80px'  },
+  { key: 'Classes',     label: 'Classes', minWidth: '120px' },
+  { key: 'Optional/Variant Classes', label: 'Variants', minWidth: '120px' },
+  { key: 'Subclasses',  label: 'Subclasses', minWidth: '120px' },
+  { key: 'Text',        label: 'Text',   minWidth: '200px' },
+  { key: 'At Higher Levels', label: 'Higher', minWidth: '120px' },
+];
+
 // ─── TABLE ENGINE ─────────────────────────────────────────────────────────────
 
-const TABLE_API = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/tables`;
+function getTableAPI() { return `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/tables`; }
 
 // Parse CSV string into array of objects
 function parseCSV(text) {
@@ -56,28 +78,6 @@ function processSpellRow(row) {
     'School': school.replace(/\s*\(ritual\)/i, '').trim(),
   };
 }
-
-// Column definitions - order matters for default display
-const SPELL_COLUMNS = [
-  { key: 'Name',        label: 'Name',   minWidth: '120px', alwaysShow: false },
-  { key: 'Level',       label: 'Lvl',    minWidth: '36px',  sortKey: '_levelNum' },
-  { key: 'Casting Time',label: 'Time',   minWidth: '60px'  },
-  { key: 'School',      label: 'School', minWidth: '80px'  },
-  { key: '_concentration', label: 'C',   minWidth: '24px'  },
-  { key: '_ritual',     label: 'R',      minWidth: '24px'  },
-  { key: 'Range',       label: 'Range',  minWidth: '70px'  },
-  { key: 'Source',      label: 'Src',    minWidth: '40px'  },
-  { key: '_durationClean', label: 'Duration', minWidth: '80px' },
-  { key: 'Components',  label: 'Comp',   minWidth: '80px'  },
-  { key: 'Classes',     label: 'Classes', minWidth: '120px' },
-  { key: 'Optional/Variant Classes', label: 'Variants', minWidth: '120px' },
-  { key: 'Subclasses',  label: 'Subclasses', minWidth: '120px' },
-  { key: 'Text',        label: 'Text',   minWidth: '200px' },
-  { key: 'At Higher Levels', label: 'Higher', minWidth: '120px' },
-];
-
-// Default visible columns (first 7 = no horizontal scroll)
-const DEFAULT_VISIBLE = ['Name','Level','Casting Time','School','_concentration','_ritual','Range'];
 
 async function loadTableData(tableId) {
   const pat = typeof getPAT === 'function' ? getPAT() : '';
@@ -332,7 +332,7 @@ async function getNextTableId() {
   const pat = typeof getPAT === 'function' ? getPAT() : '';
   const headers = pat ? { Authorization: `token ${pat}` } : {};
   try {
-    const res = await fetch(`${TABLE_API}?_=${Date.now()}`, { headers });
+    const res = await fetch(`${getTableAPI()}?_=${Date.now()}`, { headers });
     if (!res.ok) return 'table-1';
     const files = await res.json();
     const nums = files
