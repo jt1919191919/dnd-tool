@@ -7633,6 +7633,10 @@
       "_durationClean",
       "Text",
       "At Higher Levels"
+    ],
+    "popupHiddenCols": [
+      "Optional/Variant Classes",
+      "Subclasses"
     ]
   }
 }
