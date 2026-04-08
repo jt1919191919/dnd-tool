@@ -338,6 +338,9 @@ mark {
   vertical-align: top;
   max-width: 180px;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 160px;
 }
 
 .spell-table td > span,
