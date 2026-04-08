@@ -344,6 +344,8 @@ async function saveTableConfig(tableId) {
     document.querySelectorAll(`[data-table-id="${tableId}"]`).forEach(el => {
       const rows = wrap.__rows;
       renderTable(el, tableId, rows, tableData.config.visibleCols, tableData.config.defaultSort, tableData.config.defaultSortDir, currentPlayer?.isDM, tableData.config);
+      const newWrap = document.getElementById(`tbl-${tableId}`);
+      if (newWrap) newWrap.__config = tableData.config;
     });
   }
 }
