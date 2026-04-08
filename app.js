@@ -210,6 +210,7 @@ function showView(view) {
   document.getElementById('view-page').classList.add('hidden');
   document.getElementById('view-dm-editor').classList.add('hidden');
   document.getElementById('view-dm-config').classList.add('hidden');
+  document.getElementById('view-dm-tables').classList.add('hidden');
   document.getElementById('side-menu').classList.add('hidden');
   document.getElementById('search-results').classList.add('hidden');
   document.getElementById('search-input').value = '';
@@ -228,6 +229,10 @@ function showView(view) {
   } else if (view === 'dm-config') {
     document.getElementById('view-dm-config').classList.remove('hidden');
     renderConfig();
+  }
+  } else if (view === 'dm-tables') {
+    document.getElementById('view-dm-tables').classList.remove('hidden');
+    renderManageTables();
   }
 }
 
@@ -1049,4 +1054,56 @@ function generateShareLink(token, name, canView) {
 function dmLog(label, ...args) {
   if (!currentPlayer?.isDM) return;
   console.log(`[DM DEBUG] ${label}`, ...args);
+}
+
+// ─── Manage Tables DM Config ────────────────────────────────────────────────────────────
+async function renderManageTables() {
+  const list = document.getElementById('tables-list');
+  list.innerHTML = '<p style="color:#aaa">Loading...</p>';
+
+  // Get all table files from GitHub
+  const pat = getPAT();
+  const headers = pat ? { Authorization: `token ${pat}` } : {};
+  const res = await fetch(`${GITHUB_API}/tables?_=${Date.now()}`, { headers });
+  if (!res.ok) { list.innerHTML = '<p style="color:#c44">Could not load tables folder.</p>'; return; }
+  const files = (await res.json()).filter(f => f.name.endsWith('.json') && f.name !== '.gitkeep');
+
+  // Find all table IDs referenced in pages
+  const referenced = new Set();
+  for (const page of Object.values(pages)) {
+    const div = document.createElement('div');
+    div.innerHTML = page.content || '';
+    div.querySelectorAll('.dnd-table-block[data-table-id]').forEach(b => referenced.add(b.dataset.tableId));
+  }
+
+  list.innerHTML = '';
+  if (!files.length) { list.innerHTML = '<p style="color:#aaa">No tables found.</p>'; return; }
+
+  for (const file of files) {
+    const tableId = file.name.replace('.json', '');
+    const isReferenced = referenced.has(tableId);
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:#16213e;border:1px solid #0f3460;border-radius:6px;padding:10px;margin-bottom:8px;';
+    row.innerHTML = `
+      <span>${isReferenced ? '✅' : '⚠️'} <strong style="color:#e2b96f">${tableId}</strong> <span style="color:#aaa;font-size:0.75rem">${isReferenced ? 'In use' : 'Orphaned'}</span></span>
+      ${!isReferenced ? `<button onclick="deleteOrphanTable('${tableId}', '${file.sha}', this)" style="padding:4px 10px;border:1px solid #c44;background:transparent;color:#c44;border-radius:4px;cursor:pointer;font-size:0.8rem">🗑️ Delete</button>` : ''}
+    `;
+    list.appendChild(row);
+  }
+}
+
+async function deleteOrphanTable(tableId, sha, btn) {
+  if (!confirm(`Delete table "${tableId}"? This cannot be undone.`)) return;
+  const pat = getPAT();
+  const res = await fetch(`${GITHUB_API}/tables/${tableId}.json`, {
+    method: 'DELETE',
+    headers: { Authorization: `token ${pat}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message: `Delete orphan table: ${tableId}`, sha })
+  });
+  if (res.ok) {
+    btn.closest('div').remove();
+    alert(`${tableId} deleted.`);
+  } else {
+    alert('Delete failed. Check your token permissions.');
+  }
 }
