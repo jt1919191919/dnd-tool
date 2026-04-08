@@ -403,3 +403,30 @@ async function insertTableFromCSV() {
   };
   input.click();
 }
+
+// Called from search results to highlight and open a spell by name
+function navigateToSpellRow(tableId, spellName) {
+  const wrap = document.getElementById(`tbl-${tableId}`);
+  if (!wrap) {
+    // Table not yet rendered - try again shortly
+    setTimeout(() => navigateToSpellRow(tableId, spellName), 150);
+    return;
+  }
+  const rows = wrap.__rows;
+  if (!rows) return;
+  const idx = rows.findIndex(r => (r['Name'] || '').toLowerCase() === spellName.toLowerCase());
+  if (idx === -1) return;
+
+  // Find the <tr> for this row
+  const tbody = wrap.querySelector('tbody');
+  const trs = tbody ? Array.from(tbody.querySelectorAll('tr[data-idx]')) : [];
+  const targetTr = trs.find(tr => parseInt(tr.dataset.idx) === idx);
+  if (targetTr) {
+    targetTr.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    // Flash highlight
+    targetTr.style.outline = '2px solid #e2b96f';
+    setTimeout(() => { targetTr.style.outline = ''; }, 2000);
+    // Open popup
+    setTimeout(() => openSpellPopup(null, tableId, idx), 300);
+  }
+}
