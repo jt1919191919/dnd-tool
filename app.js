@@ -229,7 +229,6 @@ function showView(view) {
   } else if (view === 'dm-config') {
     document.getElementById('view-dm-config').classList.remove('hidden');
     renderConfig();
-  }
   } else if (view === 'dm-tables') {
     document.getElementById('view-dm-tables').classList.remove('hidden');
     renderManageTables();
