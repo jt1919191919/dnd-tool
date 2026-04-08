@@ -165,7 +165,8 @@ async function buildSpellIndex() {
             pageTitle: page.title,
             tableId,
             nearestHeading,
-            page: row['Page'] || null
+            page: row['Page'] || null,
+            allText: Object.values(row).join(' ').toLowerCase()
           });
         }
       }
@@ -503,7 +504,7 @@ function handleSearch(query) {
   }
 
   // Also search spell index
-  const spellMatches = spellIndex.filter(s => s.name.toLowerCase().includes(q));
+  const spellMatches = spellIndex.filter(s => s.allText && s.allText.includes(q) || s.name.toLowerCase().includes(q));
   for (const spell of spellMatches) {
     // Don't show if we already showed the page as a full result
     found = true;
@@ -518,9 +519,7 @@ function handleSearch(query) {
     };
     item.innerHTML = `
       <div class="search-result-title">🔮 ${highlightMatch(spell.name, query)}</div>
-      <div class="search-result-heading">
-        ${spell.pageTitle}${spell.nearestHeading ? ` › ${spell.nearestHeading}` : ''}${spell.page ? ` · Page ${spell.page}` : ''}
-      </div>`;
+      <div class="search-result-heading">${spell.pageTitle}${spell.nearestHeading ? ` › ${spell.nearestHeading}` : ''}${spell.page ? ` · p${spell.page}` : ''}</div>`;
     resultsList.appendChild(item);
   }
   if (!found) resultsList.innerHTML = '<p style="color:#aaa;padding:10px">No results found.</p>';
