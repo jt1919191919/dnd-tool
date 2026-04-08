@@ -1,6 +1,5 @@
 {
   "id": "table-3",
-  "name": "Cleric-Grave-Spells",
   "rows": [
     {
       "Name": "Aid",
@@ -89,7 +88,7 @@
       "Level": "2nd",
       "Casting Time": "1 Min.",
       "Duration": "Instantaneous",
-      "School": "Divination (ritual)",
+      "School": "Divination",
       "Range": "Self",
       "Components": "V, S, M (specially marked sticks, bones, cards, or other divinatory tokens worth 25+ GP)",
       "Classes": "Cleric (PHB'24), Druid (PHB'24), Wizard (PHB'24)",
@@ -297,7 +296,7 @@
       "Level": "1st",
       "Casting Time": "1 Hr.",
       "Duration": "Instantaneous",
-      "School": "Abjuration (ritual)",
+      "School": "Abjuration",
       "Range": "Touch",
       "Components": "V, S, M (25 gp worth of powdered silver, which the spell consumes)",
       "Classes": "",
@@ -361,7 +360,7 @@
       "Level": "5th",
       "Casting Time": "1 Min.",
       "Duration": "1 minute",
-      "School": "Divination (ritual)",
+      "School": "Divination",
       "Range": "Self",
       "Components": "V, S, M (incense)",
       "Classes": "Cleric (PHB'24)",
@@ -585,7 +584,7 @@
       "Level": "1st",
       "Casting Time": "Action",
       "Duration": "Concentration, up to 10 minutes",
-      "School": "Divination (ritual)",
+      "School": "Divination",
       "Range": "Self",
       "Components": "V, S",
       "Classes": "Artificer (EFA), Bard (PHB'24), Cleric (PHB'24), Druid (PHB'24), Paladin (PHB'24), Ranger (PHB'24), Sorcerer (PHB'24), Warlock (PHB'24), Wizard (PHB'24)",
@@ -601,7 +600,7 @@
       "Level": "1st",
       "Casting Time": "Action",
       "Duration": "Concentration, up to 10 minutes",
-      "School": "Divination (ritual)",
+      "School": "Divination",
       "Range": "Self",
       "Components": "V, S, M (a yew leaf)",
       "Classes": "Cleric (PHB'24), Druid (PHB'24), Paladin (PHB'24), Ranger (PHB'24)",
@@ -649,7 +648,7 @@
       "Level": "4th",
       "Casting Time": "Action",
       "Duration": "Instantaneous",
-      "School": "Divination (ritual)",
+      "School": "Divination",
       "Range": "Self",
       "Components": "V, S, M (incense worth 25+ GP, which the spell consumes)",
       "Classes": "Cleric (PHB'24), Druid (PHB'24), Wizard (PHB'24)",
@@ -745,7 +744,7 @@
       "Level": "3rd",
       "Casting Time": "Action",
       "Duration": "1 hour",
-      "School": "Necromancy (ritual)",
+      "School": "Necromancy",
       "Range": "Touch",
       "Components": "V, S, M (a pinch of graveyard dirt)",
       "Classes": "Bard (PHB'24), Cleric (PHB'24), Druid (PHB'24), Wizard (PHB'24)",
@@ -825,7 +824,7 @@
       "Level": "6th",
       "Casting Time": "10 Min.",
       "Duration": "1 day",
-      "School": "Abjuration (ritual)",
+      "School": "Abjuration",
       "Range": "Touch",
       "Components": "V, S, M (ruby dust worth 1,000+ GP)",
       "Classes": "Cleric (PHB'24)",
@@ -889,7 +888,7 @@
       "Level": "2nd",
       "Casting Time": "Action",
       "Duration": "10 days",
-      "School": "Necromancy (ritual)",
+      "School": "Necromancy",
       "Range": "Touch",
       "Components": "V, S, M (2 Copper Pieces, which the spell consumes)",
       "Classes": "Cleric (PHB'24), Paladin (PHB'24), Wizard (PHB'24)",
@@ -1305,7 +1304,7 @@
       "Level": "3rd",
       "Casting Time": "Action",
       "Duration": "8 hours",
-      "School": "Transmutation (ritual)",
+      "School": "Transmutation",
       "Range": "Touch",
       "Components": "V, S",
       "Classes": "Cleric (PHB'24), Druid (PHB'24), Ranger (PHB'24)",
@@ -1481,7 +1480,7 @@
       "Level": "1st",
       "Casting Time": "Action",
       "Duration": "Instantaneous",
-      "School": "Transmutation (ritual)",
+      "School": "Transmutation",
       "Range": "10 feet",
       "Components": "V, S",
       "Classes": "Artificer (EFA), Cleric (PHB'24), Druid (PHB'24), Paladin (PHB'24)",
@@ -1689,7 +1688,7 @@
       "Level": "2nd",
       "Casting Time": "Action",
       "Duration": "Concentration, up to 10 minutes",
-      "School": "Illusion (ritual)",
+      "School": "Illusion",
       "Range": "120 feet",
       "Components": "V, S",
       "Classes": "Bard (PHB'24), Cleric (PHB'24), Ranger (PHB'24)",
@@ -1977,7 +1976,7 @@
       "Level": "3rd",
       "Casting Time": "Action",
       "Duration": "1 hour",
-      "School": "Transmutation (ritual)",
+      "School": "Transmutation",
       "Range": "30 feet",
       "Components": "V, S, M (a piece of cork)",
       "Classes": "Artificer (EFA), Cleric (PHB'24), Druid (PHB'24), Ranger (PHB'24), Sorcerer (PHB'24)",
@@ -2036,6 +2035,8 @@
     }
   ],
   "config": {
+    "defaultSort": "Name",
+    "defaultSortDir": "asc",
     "visibleCols": [
       "Name",
       "Level",
@@ -2043,9 +2044,12 @@
       "School",
       "_concentration",
       "_ritual",
-      "Range"
+      "Range",
+      "_durationClean"
     ],
-    "defaultSort": "Name",
-    "defaultSortDir": "asc"
+    "popupHiddenCols": [
+      "Optional/Variant Classes",
+      "Subclasses"
+    ]
   }
 }
