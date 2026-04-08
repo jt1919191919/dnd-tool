@@ -266,9 +266,9 @@ function openSpellPopup(e, tableId, idx) {
 // DM config panel for table defaults
 async function openTableConfig(tableId) {
   document.querySelectorAll('.table-config-overlay').forEach(p => p.remove());
-  const tableData = await loadTableData(tableId);
-  if (!tableData) return;
-  const config = tableData.config || {};
+  const wrap = document.getElementById(`tbl-${tableId}`);
+  if (!wrap) return;
+  const config = wrap.__config || {};
 
   const overlay = document.createElement('div');
   overlay.className = 'spell-popup-overlay';
@@ -316,6 +316,8 @@ async function openTableConfig(tableId) {
 }
 
 async function saveTableConfig(tableId) {
+  const wrap = document.getElementById(`tbl-${tableId}`);
+  if (!wrap) return;
   const tableData = await loadTableData(tableId);
   if (!tableData) return;
 
