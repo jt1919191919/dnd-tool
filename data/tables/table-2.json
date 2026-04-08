@@ -7631,10 +7631,10 @@
       "_ritual",
       "Range",
       "_durationClean",
-      "Text",
-      "At Higher Levels"
+      "Text"
     ],
     "popupHiddenCols": [
+      "Classes",
       "Optional/Variant Classes",
       "Subclasses"
     ]
