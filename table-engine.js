@@ -318,8 +318,7 @@ async function openTableConfig(tableId) {
 async function saveTableConfig(tableId) {
   const wrap = document.getElementById(`tbl-${tableId}`);
   if (!wrap) return;
-  const tableData = await loadTableData(tableId);
-  if (!tableData) return;
+  const tableData = { id: tableId, rows: wrap.__rows.map(r => { const clean = {...r}; delete clean._concentration; delete clean._ritual; delete clean._levelNum; delete clean._durationClean; return clean; }) };
 
   const sortCol = document.getElementById(`cfg-sort-${tableId}`)?.value;
   const sortDir = document.getElementById(`cfg-dir-${tableId}`)?.value;
