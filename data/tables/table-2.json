@@ -7631,7 +7631,8 @@
       "_ritual",
       "Range",
       "_durationClean",
-      "Text"
+      "Text",
+      "At Higher Levels"
     ],
     "popupHiddenCols": [
       "Classes",
