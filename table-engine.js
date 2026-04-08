@@ -339,7 +339,8 @@ async function saveTableConfig(tableId) {
     document.querySelectorAll('.spell-popup-overlay').forEach(p => p.remove());
     // Re-render all instances of this table
     document.querySelectorAll(`[data-table-id="${tableId}"]`).forEach(el => {
-      renderTableBlock(el, tableId, currentPlayer?.isDM);
+      const rows = wrap.__rows;
+      renderTable(el, tableId, rows, tableData.config.visibleCols, tableData.config.defaultSort, tableData.config.defaultSortDir, currentPlayer?.isDM, tableData.config);
     });
   }
 }
