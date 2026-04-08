@@ -7633,9 +7633,6 @@
       "Text",
       "At Higher Levels"
     ],
-    "popupHiddenCols": [
-      "Optional/Variant Classes",
-      "Subclasses"
-    ]
+    "popupHiddenCols": []
   }
 }
