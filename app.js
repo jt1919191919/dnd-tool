@@ -107,7 +107,7 @@ function showAccessDenied() {
   document.getElementById('access-denied').classList.remove('hidden');
 }
 
-function initApp() {
+async function initApp() {
   initEditor();
   updateTokenBar();
   document.getElementById('app').classList.remove('hidden');
