@@ -169,7 +169,7 @@ function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, is
 
   // Store rows on element for filtering/sorting
   container.querySelector(`#tbl-${tableId}`).__rows = rows;
-  container.querySelector(`#tbl-${tableId}`).__config = { visibleCols, sortCol, sortDir, tableId };
+  container.querySelector(`#tbl-${tableId}`).__config = { visibleCols, sortCol, sortDir, tableId, popupHiddenCols: config?.popupHiddenCols || DEFAULT_POPUP_HIDDEN };
 }
 
 function sortRows(rows, col, dir) {
