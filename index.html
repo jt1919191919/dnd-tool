@@ -43,6 +43,7 @@
       <ul>
         <li><a href="#" onclick="showView('dm-editor')">➕ New Page</a></li>
         <li><a href="#" onclick="showView('dm-config')">⚙️ Player Config</a></li>
+        <li><a href="#" onclick="showView('dm-tables')">🗂️ Manage Tables</a></li>
         <li><a href="#" onclick="clearDeviceMemory()">🗑️ Clear Device Memory</a></li>
         <li><a href="#" onclick="downloadBackup()">💾 Backup</a></li>
       </ul>
@@ -97,6 +98,14 @@
       </div>
     </div>
 
+    <!-- DM TABLES VIEW -->
+    <div id="view-dm-tables" class="hidden">
+      <h2>Manage Tables</h2>
+      <p style="font-size:0.8rem;color:#aaa;margin-bottom:12px">Tables still referenced in a page are marked ✅. Orphaned tables can be safely deleted.</p>
+      <div id="tables-list"></div>
+      <button onclick="showView('dm-config')" style="margin-top:12px;padding:6px 14px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer">← Back</button>
+    </div>
+    
     <!-- DM CONFIG VIEW -->
 <div id="view-dm-config" class="hidden">
   <h2>Player Config & Settings</h2>
