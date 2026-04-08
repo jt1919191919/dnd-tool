@@ -4,5 +4,7 @@
   "thumbnail": "https://static.vecteezy.com/system/resources/previews/014/891/639/non_2x/dice-d20-icon-design-free-vector.jpg",
   "description": "spells-page-example",
   "content": "<h2 id=\"editor-title-label\" style=\"background-color: rgb(26, 26, 46);\">H2 example</h2><div><br></div><div><div class=\"dnd-table-block\" data-table-id=\"table-3\" contenteditable=\"false\" style=\"background-image: initial; background-position: initial; background-size: initial; background-repeat: initial; background-attachment: initial; background-origin: initial; background-clip: initial; border: 1px solid rgb(226, 185, 111); border-radius: 6px; padding: 12px; margin-top: 10px; margin-bottom: 10px; color: rgb(226, 185, 111); font-size: 0.85rem;\">📊 Table: Cleric-Grave-Spells (127 rows) — ID: table-3</div></div>",
-  "visibleTo": []
+  "visibleTo": [
+    "__ALL__"
+  ]
 }
