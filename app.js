@@ -159,13 +159,16 @@ async function buildSpellIndex() {
       if (!tableData || !tableData.rows) continue;
       for (const row of tableData.rows) {
         if (row['Name']) {
+          // Store each cell separately for snippet finding
+        const cells = {};
+        for (const [k, v] of Object.entries(row)) { if (v && v.toString().trim()) cells[k] = v.toString().trim(); }
           spellIndex.push({
             name: row['Name'],
             pageId,
             pageTitle: page.title,
             tableId,
             nearestHeading,
-            page: row['Page'] || null,
+            cells,
             allText: Object.values(row).join(' ').toLowerCase()
           });
         }
@@ -504,7 +507,7 @@ function handleSearch(query) {
   }
 
   // Also search spell index
-  const spellMatches = spellIndex.filter(s => s.allText && s.allText.includes(q) || s.name.toLowerCase().includes(q));
+  const spellMatches = spellIndex.filter(s => s.allText && s.allText.includes(q));
   for (const spell of spellMatches) {
     // Don't show if we already showed the page as a full result
     found = true;
@@ -517,9 +520,16 @@ function handleSearch(query) {
       // After page renders, scroll to and open the spell row
       setTimeout(() => navigateToSpellRow(spell.tableId, spell.name), 400);
     };
+    // Find which cell matched and build snippet
+    let snippet = '';
+    for (const [k, v] of Object.entries(spell.cells)) {
+      if (k === 'Name') continue;
+      if (v.toLowerCase().includes(q)) { snippet = `<em>${k}:</em> ${highlightMatch(getSnippet(v, query), query)}`; break; }
+    }
     item.innerHTML = `
       <div class="search-result-title">🔮 ${highlightMatch(spell.name, query)}</div>
-      <div class="search-result-heading">${spell.pageTitle}${spell.nearestHeading ? ` › ${spell.nearestHeading}` : ''}${spell.page ? ` · p${spell.page}` : ''}</div>`;
+      <div class="search-result-heading">${spell.pageTitle}${spell.nearestHeading ? ` › ${spell.nearestHeading}` : ''}</div>
+      ${snippet ? `<div class="search-result-snippet">${snippet}</div>` : ''}`;
     resultsList.appendChild(item);
   }
   if (!found) resultsList.innerHTML = '<p style="color:#aaa;padding:10px">No results found.</p>';
