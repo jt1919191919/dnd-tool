@@ -333,6 +333,7 @@ async function saveTableConfig(tableId) {
 
   tableData.config = { defaultSort: sortCol, defaultSortDir: sortDir, visibleCols, popupHiddenCols };
   const ok = await saveTableData(tableId, tableData);
+  if (ok) wrap.__config = tableData.config;
   if (ok) {
     alert('Table config saved!');
     document.querySelectorAll('.spell-popup-overlay').forEach(p => p.remove());
