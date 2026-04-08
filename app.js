@@ -127,6 +127,50 @@ function initApp() {
   } else {
     showView('home');
   }
+  // Build spell search index from all table blocks in visible pages
+  await buildSpellIndex();
+}
+
+// ─── SPELL INDEX ──────────────────────────────────────────────────────────────
+let spellIndex = []; // [{ name, pageId, pageTitle, tableId, nearestHeading }]
+
+async function buildSpellIndex() {
+  spellIndex = [];
+  for (const [pageId, page] of Object.entries(pages)) {
+    if (!canSee(pageId)) continue;
+    // Find all table block IDs embedded in this page's content
+    const div = document.createElement('div');
+    div.innerHTML = page.content || '';
+    const tableBlocks = div.querySelectorAll('.dnd-table-block[data-table-id]');
+    for (const block of tableBlocks) {
+      const tableId = block.dataset.tableId;
+      // Find nearest heading above this block in the page content
+      let nearestHeading = null;
+      let prev = block.previousElementSibling;
+      while (prev) {
+        if (/^H[1-4]$/.test(prev.tagName)) {
+          nearestHeading = prev.textContent.replace('🔗','').trim();
+          break;
+        }
+        prev = prev.previousElementSibling;
+      }
+      // Load table data
+      const tableData = await loadTableData(tableId);
+      if (!tableData || !tableData.rows) continue;
+      for (const row of tableData.rows) {
+        if (row['Name']) {
+          spellIndex.push({
+            name: row['Name'],
+            pageId,
+            pageTitle: page.title,
+            tableId,
+            nearestHeading,
+            page: row['Page'] || null
+          });
+        }
+      }
+    }
+  }
 }
 
 // ─── NAV ──────────────────────────────────────────────────────────────────────
@@ -458,6 +502,27 @@ function handleSearch(query) {
     }
   }
 
+  // Also search spell index
+  const spellMatches = spellIndex.filter(s => s.name.toLowerCase().includes(q));
+  for (const spell of spellMatches) {
+    // Don't show if we already showed the page as a full result
+    found = true;
+    const item = document.createElement('div');
+    item.className = 'search-result-item';
+    item.onclick = () => {
+      document.getElementById('search-input').value = '';
+      handleSearch('');
+      navigateTo(spell.pageId);
+      // After page renders, scroll to and open the spell row
+      setTimeout(() => navigateToSpellRow(spell.tableId, spell.name), 400);
+    };
+    item.innerHTML = `
+      <div class="search-result-title">🔮 ${highlightMatch(spell.name, query)}</div>
+      <div class="search-result-heading">
+        ${spell.pageTitle}${spell.nearestHeading ? ` › ${spell.nearestHeading}` : ''}${spell.page ? ` · Page ${spell.page}` : ''}
+      </div>`;
+    resultsList.appendChild(item);
+  }
   if (!found) resultsList.innerHTML = '<p style="color:#aaa;padding:10px">No results found.</p>';
 }
 
