@@ -331,6 +331,9 @@ async function saveTableConfig(tableId) {
     .filter(c => !document.getElementById(`cfg-popup-${tableId}-${c.key.replace(/[^a-z0-9]/gi,'_')}`)?.checked)
     .map(c => c.key);
 
+  console.log('popupHiddenCols:', popupHiddenCols);
+  console.log('Classes checkbox:', document.getElementById(`cfg-popup-${tableId}-Classes`)?.checked);
+  
   tableData.config = { defaultSort: sortCol, defaultSortDir: sortDir, visibleCols, popupHiddenCols };
   const ok = await saveTableData(tableId, tableData);
   if (ok) wrap.__config = tableData.config;
