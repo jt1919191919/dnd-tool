@@ -297,17 +297,20 @@ function openSpellPopup(e, tableId, idx) {
 
   const level = row['Level'] || '';
   const school = row['School'] || '';
-  const concentration = row['_concentration'] ? ' • Concentration' : '';
+  const levelLabel = level.toLowerCase() === 'cantrip' ? 'Cantrip' : `${level} Level`;
   const ritual = row['_ritual'] ? ' • Ritual' : '';
+  const durationDisplay = (row['_concentration']
+    ? `<span style="color:#e2b96f;font-weight:bold">Concentration</span>, up to ${row['_durationClean']}`
+    : row['_durationClean'] || '');
 
   popup.innerHTML = `
     <button class="spell-popup-close" onclick="this.closest('.spell-popup-overlay').remove()">✕</button>
     <h2 class="spell-popup-title">${row['Name'] || ''}</h2>
-    <div class="spell-popup-meta">${level} ${school}${concentration}${ritual}</div>
+    <div class="spell-popup-meta">${levelLabel} ${school}${ritual}</div>
     <div class="spell-popup-grid">
       <div><strong>Casting Time</strong><span>${row['Casting Time'] || ''}</span></div>
       <div><strong>Range</strong><span>${row['Range'] || ''}</span></div>
-      <div><strong>Duration</strong><span>${row['_durationClean'] || ''}</span></div>
+      <div><strong>Duration</strong><span>${durationDisplay}</span></div>
       <div><strong>Components</strong><span>${row['Components'] || ''}</span></div>
       ${(showField('Classes') && row['Classes']) ? `<div class="spell-popup-full"><strong>Classes</strong><span>${row['Classes']}</span></div>` : ''}
       ${(showField('Optional/Variant Classes') && row['Optional/Variant Classes']) ? `<div class="spell-popup-full"><strong>Variant Classes</strong><span>${row['Optional/Variant Classes']}</span></div>` : ''}
