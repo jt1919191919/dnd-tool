@@ -89,7 +89,8 @@
         <label style="font-size:0.85rem;display:flex;align-items:center;gap:6px">
           <input type="checkbox" id="strip-links-toggle"/> Strip hyperlinks on paste
         </label>
-        <button type="button" onclick="insertTableFromCSV()" style="padding:4px 10px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;font-size:0.85rem">📊 Insert Table</button>
+        <button type="button" onclick="insertTableFromCSV('spell')" style="padding:4px 10px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;font-size:0.85rem">📊 Insert Spell Table</button>
+        <button type="button" onclick="insertTableFromCSV('monster')" style="padding:4px 10px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;font-size:0.85rem">🐉 Insert Monster Table</button>
       </div> 
       <div id="editor-area" contenteditable="true" class="content-editable"></div>
       <div id="editor-actions">
