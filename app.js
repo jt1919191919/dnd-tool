@@ -167,7 +167,9 @@ async function buildSpellIndex() {
             pageId,
             pageTitle: page.title,
             tableId,
+            tableType: tableData.tableType || 'spell',
             nearestHeading,
+            page: row['Page'] || null,
             cells,
             allText: Object.values(row).join(' ').toLowerCase()
           });
@@ -530,8 +532,9 @@ function handleSearch(query) {
       if (k === 'Name') continue;
       if (v.toLowerCase().includes(q)) { snippet = `<em>${k}:</em> ${highlightMatch(getSnippet(v, query), query)}`; break; }
     }
+    const resultIcon = spell.tableType === 'monster' ? '🐉' : '🔮';
     item.innerHTML = `
-      <div class="search-result-title">🔮 ${highlightMatch(spell.name, query)}</div>
+      <div class="search-result-title">${resultIcon} ${highlightMatch(spell.name, query)}</div>
       <div class="search-result-heading">${spell.pageTitle}${spell.nearestHeading ? ` › ${spell.nearestHeading}` : ''}</div>
       ${snippet ? `<div class="search-result-snippet">${snippet}</div>` : ''}`;
     resultsList.appendChild(item);
