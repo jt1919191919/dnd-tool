@@ -169,12 +169,12 @@ async function renderTableBlock(container, tableId, isDM) {
   const popupHiddenCols = config.popupHiddenCols || DEFAULT_POPUP_HIDDEN;
   const tableType = tableData.tableType || 'spell';
   const rows = tableType === 'monster' ? tableData.rows : tableData.rows.map(processSpellRow);
-  const config = tableData.config || {};
-  const visibleCols = config.visibleCols || getDefaultVisible(tableType);
-  const defaultSort = config.defaultSort || 'Name';
-  const defaultSortDir = config.defaultSortDir || 'asc';
+  const tblConfig = tableData.config || {};
+  const visibleCols = tblConfig.visibleCols || getDefaultVisible(tableType);
+  const defaultSort = tblConfig.defaultSort || 'Name';
+  const defaultSortDir = tblConfig.defaultSortDir || 'asc';
 
-  renderTable(container, tableId, rows, visibleCols, defaultSort, defaultSortDir, isDM, config, tableType);
+  renderTable(container, tableId, rows, visibleCols, defaultSort, defaultSortDir, isDM, tblConfig, tableType);
 }
 
 function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, isDM, config, tableType) {
