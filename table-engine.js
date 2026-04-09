@@ -23,6 +23,58 @@ const SPELL_COLUMNS = [
   { key: 'At Higher Levels', label: 'Higher', minWidth: '120px' },
 ];
 
+const MONSTER_COLUMNS = [
+  { key: 'Name',        label: 'Name',        minWidth: '120px' },
+  { key: 'CR',          label: 'CR',          minWidth: '40px'  },
+  { key: 'Type',        label: 'Type',        minWidth: '80px'  },
+  { key: 'Size',        label: 'Size',        minWidth: '60px'  },
+  { key: 'AC',          label: 'AC',          minWidth: '40px'  },
+  { key: 'HP',          label: 'HP',          minWidth: '60px'  },
+  { key: 'Speed',       label: 'Speed',       minWidth: '80px'  },
+  { key: 'Alignment',   label: 'Alignment',   minWidth: '80px'  },
+  { key: 'Source',      label: 'Src',         minWidth: '40px'  },
+  { key: 'Page',        label: 'Pg',          minWidth: '30px'  },
+  { key: 'Strength',    label: 'STR',         minWidth: '36px'  },
+  { key: 'Dexterity',   label: 'DEX',         minWidth: '36px'  },
+  { key: 'Constitution',label: 'CON',         minWidth: '36px'  },
+  { key: 'Intelligence',label: 'INT',         minWidth: '36px'  },
+  { key: 'Wisdom',      label: 'WIS',         minWidth: '36px'  },
+  { key: 'Charisma',    label: 'CHA',         minWidth: '36px'  },
+  { key: 'Saving Throws',   label: 'Saves',   minWidth: '100px' },
+  { key: 'Skills',          label: 'Skills',  minWidth: '100px' },
+  { key: 'Damage Vulnerabilities', label: 'Vuln', minWidth: '80px' },
+  { key: 'Damage Resistances',     label: 'Res',  minWidth: '80px' },
+  { key: 'Damage Immunities',      label: 'Imm',  minWidth: '80px' },
+  { key: 'Condition Immunities',   label: 'Cond', minWidth: '80px' },
+  { key: 'Senses',      label: 'Senses',      minWidth: '100px' },
+  { key: 'Languages',   label: 'Languages',   minWidth: '100px' },
+  { key: 'Traits',      label: 'Traits',      minWidth: '200px' },
+  { key: 'Actions',     label: 'Actions',     minWidth: '200px' },
+  { key: 'Bonus Actions',   label: 'Bonus',   minWidth: '120px' },
+  { key: 'Reactions',       label: 'Reactions', minWidth: '120px' },
+  { key: 'Legendary Actions', label: 'Legendary', minWidth: '120px' },
+  { key: 'Mythic Actions',    label: 'Mythic',    minWidth: '120px' },
+  { key: 'Lair Actions',      label: 'Lair',      minWidth: '120px' },
+  { key: 'Regional Effects',  label: 'Regional',  minWidth: '120px' },
+  { key: 'Environment', label: 'Environment', minWidth: '100px' },
+  { key: 'Treasure',    label: 'Treasure',    minWidth: '100px' },
+];
+
+const DEFAULT_MONSTER_VISIBLE = ['Name','CR','Type','Size','AC','HP','Speed'];
+const DEFAULT_MONSTER_POPUP_HIDDEN = ['Source','Page','Alignment','Legendary Actions','Mythic Actions','Lair Actions','Regional Effects','Environment','Treasure'];
+
+// ─── tableType detection helper ─────────────────────────────────────────────────────────────
+
+function getTableColumns(tableType) {
+  return tableType === 'monster' ? MONSTER_COLUMNS : SPELL_COLUMNS;
+}
+function getDefaultVisible(tableType) {
+  return tableType === 'monster' ? DEFAULT_MONSTER_VISIBLE : DEFAULT_VISIBLE;
+}
+function getDefaultPopupHidden(tableType) {
+  return tableType === 'monster' ? DEFAULT_MONSTER_POPUP_HIDDEN : DEFAULT_POPUP_HIDDEN;
+}
+
 // ─── TABLE ENGINE ─────────────────────────────────────────────────────────────
 
 function getTableAPI() { return `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/tables`; }
@@ -114,20 +166,22 @@ async function renderTableBlock(container, tableId, isDM) {
   const tableData = await loadTableData(tableId);
   if (!tableData) { container.innerHTML = '<div style="color:#c44;padding:16px">Table not found: ' + tableId + '</div>'; return; }
 
-  const rows = tableData.rows.map(processSpellRow);
-  const config = tableData.config || {};
-  const visibleCols = config.visibleCols || DEFAULT_VISIBLE;
   const popupHiddenCols = config.popupHiddenCols || DEFAULT_POPUP_HIDDEN;
+  const tableType = tableData.tableType || 'spell';
+  const rows = tableType === 'monster' ? tableData.rows : tableData.rows.map(processSpellRow);
+  const config = tableData.config || {};
+  const visibleCols = config.visibleCols || getDefaultVisible(tableType);
   const defaultSort = config.defaultSort || 'Name';
   const defaultSortDir = config.defaultSortDir || 'asc';
 
-  renderTable(container, tableId, rows, visibleCols, defaultSort, defaultSortDir, isDM, config);
+  renderTable(container, tableId, rows, visibleCols, defaultSort, defaultSortDir, isDM, config, tableType);
 }
 
-function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, isDM, config) {
+function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, isDM, config, tableType) {
+  tableType = tableType || config?.tableType || 'spell';
+  const COLS = getTableColumns(tableType);
   const sortedRows = sortRows(rows, sortCol, sortDir);
-  const cols = SPELL_COLUMNS.filter(c => visibleCols.includes(c.key));
-  const extraCols = SPELL_COLUMNS.filter(c => !visibleCols.includes(c.key));
+  const cols = COLS.filter(c => visibleCols.includes(c.key));
 
   let html = `<div class="spell-table-wrap" id="tbl-${tableId}">`;
 
@@ -138,9 +192,9 @@ function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, is
     ${isDM ? `<button class="tbl-btn" onclick="openTableConfig('${tableId}')">⚙️</button>` : ''}
   </div>`;
 
-  // Column toggle panel
+// Column toggle panel
   html += `<div id="col-panel-${tableId}" class="col-panel hidden">
-    ${SPELL_COLUMNS.map(c => `<label style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:0.8rem">
+    ${COLS.map(c => `<label style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:0.8rem">
       <input type="checkbox" ${visibleCols.includes(c.key) ? 'checked' : ''} onchange="toggleCol('${tableId}','${c.key}',this.checked)"/> ${c.label}
     </label>`).join('')}
   </div>`;
@@ -169,7 +223,7 @@ function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, is
 
   // Store rows on element for filtering/sorting
   container.querySelector(`#tbl-${tableId}`).__rows = rows;
-  container.querySelector(`#tbl-${tableId}`).__config = { visibleCols, sortCol, sortDir, tableId, popupHiddenCols: config?.popupHiddenCols || DEFAULT_POPUP_HIDDEN };
+  container.querySelector(`#tbl-${tableId}`).__config = { visibleCols, sortCol, sortDir, tableId, tableType, popupHiddenCols: config?.popupHiddenCols || getDefaultPopupHidden(tableType) };
 }
 
 function sortRows(rows, col, dir) {
@@ -191,7 +245,7 @@ function sortTable(tableId, col) {
   const newDir = cfg.sortCol === col && cfg.sortDir === 'asc' ? 'desc' : 'asc';
   cfg.sortCol = col; cfg.sortDir = newDir;
   const container = wrap.parentElement;
-  renderTable(container, tableId, wrap.__rows, cfg.visibleCols, col, newDir, typeof currentPlayer !== 'undefined' && currentPlayer.isDM, cfg);
+  renderTable(container, tableId, wrap.__rows, cfg.visibleCols, col, newDir, typeof currentPlayer !== 'undefined' && currentPlayer.isDM, cfg, cfg.tableType);
 }
 
 function filterTable(tableId, query) {
@@ -216,7 +270,7 @@ function toggleCol(tableId, colKey, show) {
   if (show && !cfg.visibleCols.includes(colKey)) cfg.visibleCols.push(colKey);
   else if (!show) cfg.visibleCols = cfg.visibleCols.filter(k => k !== colKey);
   const container = wrap.parentElement;
-  renderTable(container, tableId, wrap.__rows, cfg.visibleCols, cfg.sortCol, cfg.sortDir, typeof currentPlayer !== 'undefined' && currentPlayer.isDM, cfg);
+  renderTable(container, tableId, wrap.__rows, cfg.visibleCols, cfg.sortCol, cfg.sortDir, typeof currentPlayer !== 'undefined' && currentPlayer.isDM, cfg, cfg.tableType);
 }
 
 function openSpellPopup(e, tableId, idx) {
@@ -227,6 +281,8 @@ function openSpellPopup(e, tableId, idx) {
   const tableCfg = wrap.__config || {};
   const popupHidden = tableCfg.popupHiddenCols || DEFAULT_POPUP_HIDDEN;
   const showField = (key) => !popupHidden.includes(key);
+  const tableType = tableCfg.tableType || 'spell';
+  if (tableType === 'monster') { openMonsterPopup(row, showField); return; }
 
   document.querySelectorAll('.spell-popup-overlay').forEach(p => p.remove());
 
@@ -292,16 +348,16 @@ async function openTableConfig(tableId) {
     </label>
     <h3 style="color:#e2b96f;margin:12px 0 8px;font-size:0.9rem">Default visible columns:</h3>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
-      ${SPELL_COLUMNS.map(c => `<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem">
-        <input type="checkbox" id="cfg-col-${tableId}-${c.key.replace(/[^a-z0-9]/gi,'_')}" ${(config.visibleCols || DEFAULT_VISIBLE).includes(c.key) ? 'checked' : ''}/> ${c.label}
-      </label>`).join('')}
+      ${getTableColumns(config.tableType || 'spell').map(c => '<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem"><input type="checkbox" id="cfg-col-' + tableId + '-' + c.key.replace(/[^a-z0-9]/gi,'_') + '" ' + ((config.visibleCols || getDefaultVisible(config.tableType || 'spell')).includes(c.key) ? 'checked' : '') + '/> ' + c.label + '</label>').join('')}
     </div>
     <h3 style="color:#e2b96f;margin:12px 0 8px;font-size:0.9rem">Popup visible fields:</h3>
     <p style="color:#aaa;font-size:0.75rem;margin-bottom:8px">Uncheck to hide fields in the spell detail popup.</p>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
       ${(() => {
-        const hiddenList = config.popupHiddenCols || DEFAULT_POPUP_HIDDEN;
-        return SPELL_COLUMNS.filter(c => !['Name','Level','School','_concentration','_ritual'].includes(c.key)).map(c => {
+        const tType = config.tableType || 'spell';
+        const hiddenList = config.popupHiddenCols || getDefaultPopupHidden(tType);
+        const excludeFromToggle = tType === 'monster' ? ['Name'] : ['Name','Level','School','_concentration','_ritual'];
+        return getTableColumns(tType).filter(c => !excludeFromToggle.includes(c.key)).map(c => {
           const checked = !hiddenList.includes(c.key);
           const safeKey = c.key.replace(/[^a-z0-9]/gi,'_');
           return '<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem"><input type="checkbox" id="cfg-popup-' + tableId + '-' + safeKey + '" ' + (checked ? 'checked' : '') + '/> ' + c.label + '</label>';
@@ -322,19 +378,21 @@ async function saveTableConfig(tableId) {
 
   const sortCol = document.getElementById(`cfg-sort-${tableId}`)?.value;
   const sortDir = document.getElementById(`cfg-dir-${tableId}`)?.value;
-  const visibleCols = SPELL_COLUMNS
+  const tType = wrap.__config?.tableType || 'spell';
+  const COLS = getTableColumns(tType);
+  const excludeFromToggle = tType === 'monster' ? ['Name'] : ['Name','Level','School','_concentration','_ritual'];
+  const visibleCols = COLS
     .filter(c => document.getElementById(`cfg-col-${tableId}-${c.key.replace(/[^a-z0-9]/gi,'_')}`)?.checked)
     .map(c => c.key);
-
-  const popupHiddenCols = SPELL_COLUMNS
-    .filter(c => !['Name','Level','School','_concentration','_ritual'].includes(c.key))
+  const popupHiddenCols = COLS
+    .filter(c => !excludeFromToggle.includes(c.key))
     .filter(c => !document.getElementById(`cfg-popup-${tableId}-${c.key.replace(/[^a-z0-9]/gi,'_')}`)?.checked)
     .map(c => c.key);
 
   console.log('popupHiddenCols:', popupHiddenCols);
   console.log('Classes checkbox:', document.getElementById(`cfg-popup-${tableId}-Classes`)?.checked);
   
-  tableData.config = { defaultSort: sortCol, defaultSortDir: sortDir, visibleCols, popupHiddenCols };
+  tableData.config = { defaultSort: sortCol, defaultSortDir: sortDir, visibleCols, popupHiddenCols, tableType: tType };
   const ok = await saveTableData(tableId, tableData);
   if (ok) wrap.__config = tableData.config;
   if (ok) {
@@ -437,4 +495,65 @@ function navigateToSpellRow(tableId, spellName) {
     // Open popup
     setTimeout(() => openSpellPopup(null, tableId, idx), 300);
   }
+}
+
+function openMonsterPopup(row, showField) {
+  document.querySelectorAll('.spell-popup-overlay').forEach(p => p.remove());
+  const overlay = document.createElement('div');
+  overlay.className = 'spell-popup-overlay';
+  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+
+  const popup = document.createElement('div');
+  popup.className = 'spell-popup';
+
+  const stat = (key, label) => `<div><strong>${label}</strong><span>${row[key] || '—'}</span></div>`;
+  const block = (key, label) => row[key] ? `<div class="spell-popup-full"><strong>${label}</strong><p style="margin:4px 0 0;font-size:0.82rem;line-height:1.6">${row[key].replace(/\n/g,'<br/>')}</p></div>` : '';
+
+  popup.innerHTML = `
+    <button class="spell-popup-close" onclick="this.closest('.spell-popup-overlay').remove()">✕</button>
+    <h2 class="spell-popup-title">🐉 ${row['Name'] || ''}</h2>
+    <div class="spell-popup-meta">${[row['Size'],row['Type'],showField('Alignment') ? row['Alignment'] : ''].filter(Boolean).join(' • ')}</div>
+
+    <div class="spell-popup-grid" style="grid-template-columns:1fr 1fr 1fr">
+      ${stat('AC','Armor Class')}
+      ${stat('HP','Hit Points')}
+      ${stat('Speed','Speed')}
+      ${stat('CR','Challenge')}
+      ${stat('Saving Throws','Saving Throws')}
+      ${stat('Skills','Skills')}
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px;text-align:center">
+      ${['Strength','Dexterity','Constitution','Intelligence','Wisdom','Charisma'].map(s =>
+        `<div style="background:#0f3460;border-radius:6px;padding:6px 4px">
+          <strong style="color:#e2b96f;font-size:0.65rem;display:block">${s.slice(0,3).toUpperCase()}</strong>
+          <span style="font-size:0.9rem">${row[s] || '—'}</span>
+        </div>`
+      ).join('')}
+    </div>
+
+    <div class="spell-popup-grid">
+      ${showField('Damage Vulnerabilities') ? stat('Damage Vulnerabilities','Vulnerabilities') : ''}
+      ${showField('Damage Resistances') ? stat('Damage Resistances','Resistances') : ''}
+      ${showField('Damage Immunities') ? stat('Damage Immunities','Immunities') : ''}
+      ${showField('Condition Immunities') ? stat('Condition Immunities','Conditions') : ''}
+      <div class="spell-popup-full"><strong>Senses</strong><span>${row['Senses'] || '—'}</span></div>
+      <div class="spell-popup-full"><strong>Languages</strong><span>${row['Languages'] || '—'}</span></div>
+    </div>
+
+    ${showField('Traits') ? block('Traits','Traits') : ''}
+    ${showField('Actions') ? block('Actions','Actions') : ''}
+    ${showField('Bonus Actions') ? block('Bonus Actions','Bonus Actions') : ''}
+    ${showField('Reactions') ? block('Reactions','Reactions') : ''}
+    ${showField('Legendary Actions') ? block('Legendary Actions','Legendary Actions') : ''}
+    ${showField('Mythic Actions') ? block('Mythic Actions','Mythic Actions') : ''}
+    ${showField('Lair Actions') ? block('Lair Actions','Lair Actions') : ''}
+    ${showField('Regional Effects') ? block('Regional Effects','Regional Effects') : ''}
+    ${showField('Environment') ? block('Environment','Environment') : ''}
+    ${showField('Treasure') ? block('Treasure','Treasure') : ''}
+    ${showField('Source') ? `<div style="color:#aaa;font-size:0.75rem;margin-top:8px">${row['Source'] || ''}${row['Page'] ? ' p'+row['Page'] : ''}</div>` : ''}
+  `;
+
+  overlay.appendChild(popup);
+  document.body.appendChild(overlay);
 }
