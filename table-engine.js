@@ -183,11 +183,12 @@ function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, is
   const sortedRows = sortRows(rows, sortCol, sortDir);
   const cols = COLS.filter(c => visibleCols.includes(c.key));
 
+  const displayName = config?.displayName || tableId;
   let html = `<div class="spell-table-wrap" id="tbl-${tableId}">`;
 
   // Toolbar
   html += `<div class="spell-table-toolbar">
-    <input type="text" class="spell-search" placeholder="Filter spells..." oninput="filterTable('${tableId}', this.value)" style="flex:1;padding:6px 10px;background:#0f3460;border:1px solid #0f3460;border-radius:6px;color:#e0e0e0;font-size:0.85rem"/>
+    <input type="text" class="spell-search" placeholder="Filter ${config?.tableType === 'monster' ? 'monsters' : 'spells'}..." oninput="filterTable('${tableId}', this.value)" style="flex:1;padding:6px 10px;background:#0f3460;border:1px solid #0f3460;border-radius:6px;color:#e0e0e0;font-size:0.85rem"/>
     <button class="tbl-btn" onclick="toggleColPanel('${tableId}')">Columns</button>
     ${isDM ? `<button class="tbl-btn" onclick="openTableConfig('${tableId}')">⚙️</button>` : ''}
   </div>`;
@@ -334,7 +335,10 @@ async function openTableConfig(tableId) {
   popup.className = 'spell-popup table-config-overlay';
   popup.innerHTML = `
     <button class="spell-popup-close" onclick="this.closest('.spell-popup-overlay').remove()">✕</button>
-    <h2 style="color:#e2b96f;margin-bottom:12px">Table Settings: ${tableId}</h2>
+    <h2 style="color:#e2b96f;margin-bottom:12px">${config.tableType === 'monster' ? '🐉' : '📊'} Table Settings</h2>
+    <label style="display:block;margin-bottom:12px;font-size:0.85rem">Display name:
+      <input id="cfg-name-${tableId}" type="text" value="${config.displayName || tableId}" style="margin-left:8px;background:#0f3460;color:#e0e0e0;border:1px solid #0f3460;border-radius:4px;padding:3px 8px;width:60%"/>
+    </label>
     <label style="display:block;margin-bottom:8px;font-size:0.85rem">Default sort column:
       <select id="cfg-sort-${tableId}" style="margin-left:8px;background:#0f3460;color:#e0e0e0;border:1px solid #0f3460;border-radius:4px;padding:3px 8px">
         ${SPELL_COLUMNS.map(c => `<option value="${c.key}" ${config.defaultSort === c.key ? 'selected' : ''}>${c.label}</option>`).join('')}
@@ -392,7 +396,8 @@ async function saveTableConfig(tableId) {
   console.log('popupHiddenCols:', popupHiddenCols);
   console.log('Classes checkbox:', document.getElementById(`cfg-popup-${tableId}-Classes`)?.checked);
   
-  tableData.config = { defaultSort: sortCol, defaultSortDir: sortDir, visibleCols, popupHiddenCols, tableType: tType };
+  const displayName = document.getElementById(`cfg-name-${tableId}`)?.value.trim() || tableId;
+  tableData.config = { defaultSort: sortCol, defaultSortDir: sortDir, visibleCols, popupHiddenCols, tableType: tType, displayName };
   const ok = await saveTableData(tableId, tableData);
   if (ok) wrap.__config = tableData.config;
   if (ok) {
@@ -435,7 +440,8 @@ async function getNextTableId() {
 }
 
 // Insert table block into editor
-async function insertTableFromCSV() {
+async function insertTableFromCSV(tableType) {
+  tableType = tableType || 'spell';
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.csv';
@@ -450,22 +456,25 @@ async function insertTableFromCSV() {
     const tableData = {
       id: tableId,
       name: file.name.replace('.csv',''),
+      tableType,
       rows,
       config: {
-        visibleCols: DEFAULT_VISIBLE,
+        visibleCols: getDefaultVisible(tableType),
         defaultSort: 'Name',
-        defaultSortDir: 'asc'
+        defaultSortDir: 'asc',
+        tableType
       }
     };
 
     const ok = await saveTableData(tableId, tableData);
     if (!ok) { alert('Failed to save table data.'); return; }
 
-    // Insert placeholder into editor
+    const icon = tableType === 'monster' ? '🐉' : '📊';
+    const label = tableType === 'monster' ? 'Monster Table' : 'Spell Table';
     const area = document.getElementById('editor-area');
-    const placeholder = `<div class="dnd-table-block" data-table-id="${tableId}" contenteditable="false" style="background:#0f3460;border:1px solid #e2b96f;border-radius:6px;padding:12px;margin:10px 0;color:#e2b96f;font-size:0.85rem">📊 Table: ${tableData.name} (${rows.length} rows) — ID: ${tableId}</div>`;
+    const placeholder = `<div class="dnd-table-block" data-table-id="${tableId}" data-table-type="${tableType}" contenteditable="false" style="background:#0f3460;border:1px solid #e2b96f;border-radius:6px;padding:12px;margin:10px 0;color:#e2b96f;font-size:0.85rem">${icon} ${label}: ${tableData.name} (${rows.length} rows) — ID: ${tableId}</div>`;
     document.execCommand('insertHTML', false, placeholder);
-    alert(`Table "${tableId}" saved! It will render fully when you view the page.`);
+    alert(`${label} "${tableId}" saved!`);
   };
   input.click();
 }
