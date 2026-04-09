@@ -196,7 +196,7 @@ function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, is
 // Column toggle panel
   html += `<div id="col-panel-${tableId}" class="col-panel hidden">
     ${COLS.map(c => `<label style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:0.8rem">
-      <input type="checkbox" ${visibleCols.includes(c.key) ? 'checked' : ''} onchange="toggleCol('${tableId}','${c.key}',this.checked)"/> ${c.label}
+      <input type="checkbox" ${visibleCols.includes(c.key) ? 'checked' : ''} onchange="toggleCol('${tableId}','${c.key}',this.checked)" onclick="event.stopPropagation()"/> ${c.label}
     </label>`).join('')}
   </div>`;
 
@@ -272,6 +272,7 @@ function toggleCol(tableId, colKey, show) {
   else if (!show) cfg.visibleCols = cfg.visibleCols.filter(k => k !== colKey);
   const container = wrap.parentElement;
   renderTable(container, tableId, wrap.__rows, cfg.visibleCols, cfg.sortCol, cfg.sortDir, typeof currentPlayer !== 'undefined' && currentPlayer.isDM, cfg, cfg.tableType);
+  document.getElementById(`col-panel-${tableId}`)?.classList.remove('hidden');
 }
 
 function openSpellPopup(e, tableId, idx) {
