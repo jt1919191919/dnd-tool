@@ -183,12 +183,6 @@ async function buildSpellIndex() {
 function buildNav() {
   const ul = document.getElementById('nav-links');
   ul.innerHTML = '<li><a href="#" onclick="showView(\'home\')">🏠 Home</a></li>';
-  for (const [id, page] of Object.entries(pages)) {
-    if (!canSee(id)) continue;
-    const li = document.createElement('li');
-    li.innerHTML = `<a href="#" onclick="navigateTo('${id}')">${page.title}</a>`;
-    ul.appendChild(li);
-  }
 }
 
 function toggleMenu() {
