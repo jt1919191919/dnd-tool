@@ -25,7 +25,7 @@ const SPELL_COLUMNS = [
 
 const MONSTER_COLUMNS = [
   { key: 'Name',        label: 'Name',        minWidth: '120px' },
-  { key: 'CR',          label: 'CR',          minWidth: '40px'  },
+  { key: 'CR',          label: 'CR',          minWidth: '40px', sortKey: '_crNum' },
   { key: 'Type',        label: 'Type',        minWidth: '80px'  },
   { key: 'Size',        label: 'Size',        minWidth: '60px'  },
   { key: 'AC',          label: 'AC',          minWidth: '40px'  },
@@ -40,12 +40,12 @@ const MONSTER_COLUMNS = [
   { key: 'Intelligence',label: 'INT',         minWidth: '36px'  },
   { key: 'Wisdom',      label: 'WIS',         minWidth: '36px'  },
   { key: 'Charisma',    label: 'CHA',         minWidth: '36px'  },
-  { key: 'Saving Throws',   label: 'Saves',   minWidth: '100px' },
-  { key: 'Skills',          label: 'Skills',  minWidth: '100px' },
+  { key: 'Saving Throws',   label: 'Proficient Saves',   minWidth: '100px' },
+  { key: 'Skills',          label: 'Proficient Skills',  minWidth: '100px' },
   { key: 'Damage Vulnerabilities', label: 'Vuln', minWidth: '80px' },
   { key: 'Damage Resistances',     label: 'Res',  minWidth: '80px' },
   { key: 'Damage Immunities',      label: 'Imm',  minWidth: '80px' },
-  { key: 'Condition Immunities',   label: 'Cond', minWidth: '80px' },
+  { key: 'Condition Immunities',   label: 'Condition Immunities', minWidth: '120px' },
   { key: 'Senses',      label: 'Senses',      minWidth: '100px' },
   { key: 'Languages',   label: 'Languages',   minWidth: '100px' },
   { key: 'Traits',      label: 'Traits',      minWidth: '200px' },
@@ -512,6 +512,119 @@ function navigateToSpellRow(tableId, spellName) {
 
 function openMonsterPopup(row, showField) {
   document.querySelectorAll('.spell-popup-overlay').forEach(p => p.remove());
+
+  // ── Helpers ──────────────────────────────────────────────────────
+  const abilityMod = (score) => Math.floor((parseInt(score) || 10) - 10) / 2 | 0;
+  const fmtMod = (n) => (n >= 0 ? '+' : '') + n;
+
+  // Parse PB from CR string e.g. "1/4 (XP 50; PB +2)"
+  const crRaw = row['CR'] || '';
+  const pbMatch = crRaw.match(/PB\s*([+-]\d+)/i);
+  const pb = pbMatch ? parseInt(pbMatch[1]) : 2;
+  const crDisplay = crRaw.split(' ')[0];
+
+  // Parse proficient saves e.g. "Str +5, Dex +3"
+  const savesRaw = (row['Saving Throws'] || '').toLowerCase();
+  const profSaveMap = {};
+  savesRaw.split(',').forEach(s => {
+    const m = s.trim().match(/^(\w+)\s*([+-]\d+)/);
+    if (m) profSaveMap[m[1].toLowerCase()] = parseInt(m[2]);
+  });
+
+  // Parse proficient skills e.g. "Perception +4, Stealth +6"
+  const skillsRaw = (row['Skills'] || '').toLowerCase();
+  const profSkillMap = {};
+  skillsRaw.split(',').forEach(s => {
+    const m = s.trim().match(/^([\w\s]+?)\s*([+-]\d+)$/);
+    if (m) profSkillMap[m[1].trim()] = parseInt(m[2]);
+  });
+
+  // All 6 abilities
+  const abilities = [
+    { key: 'Strength',     short: 'STR', saveAbbr: 'str' },
+    { key: 'Dexterity',    short: 'DEX', saveAbbr: 'dex' },
+    { key: 'Constitution', short: 'CON', saveAbbr: 'con' },
+    { key: 'Intelligence', short: 'INT', saveAbbr: 'int' },
+    { key: 'Wisdom',       short: 'WIS', saveAbbr: 'wis' },
+    { key: 'Charisma',     short: 'CHA', saveAbbr: 'cha' },
+  ];
+
+  // All 18 skills mapped to ability
+  const ALL_SKILLS = [
+    { name: 'Acrobatics',       ability: 'Dexterity' },
+    { name: 'Animal Handling',  ability: 'Wisdom' },
+    { name: 'Arcana',           ability: 'Intelligence' },
+    { name: 'Athletics',        ability: 'Strength' },
+    { name: 'Deception',        ability: 'Charisma' },
+    { name: 'History',          ability: 'Intelligence' },
+    { name: 'Insight',          ability: 'Wisdom' },
+    { name: 'Intimidation',     ability: 'Charisma' },
+    { name: 'Investigation',    ability: 'Intelligence' },
+    { name: 'Medicine',         ability: 'Wisdom' },
+    { name: 'Nature',           ability: 'Intelligence' },
+    { name: 'Perception',       ability: 'Wisdom' },
+    { name: 'Performance',      ability: 'Charisma' },
+    { name: 'Persuasion',       ability: 'Charisma' },
+    { name: 'Religion',         ability: 'Intelligence' },
+    { name: 'Sleight of Hand',  ability: 'Dexterity' },
+    { name: 'Stealth',          ability: 'Dexterity' },
+    { name: 'Survival',         ability: 'Wisdom' },
+  ];
+
+  // Initiative from DEX
+  const dexMod = abilityMod(row['Dexterity']);
+  const initiative = fmtMod(dexMod);
+
+  // Bold name in trait/action text (format: "Name. description" or "Name: description")
+  const formatEntries = (text) => {
+    if (!text) return '';
+    return text.split('\n').filter(l => l.trim()).map(line => {
+      const formatted = line.replace(/^([^.:\n]+[.:])\s*/, '<strong>$1</strong> ');
+      return `<div style="padding:6px 0;border-bottom:1px solid #0f3460;font-size:0.82rem;line-height:1.6">${formatted}</div>`;
+    }).join('');
+  };
+
+  const sectionBlock = (key, label) => {
+    if (!showField(key) || !row[key]) return '';
+    return `<div style="margin-bottom:12px">
+      <div style="color:#e2b96f;font-weight:bold;font-size:0.85rem;margin-bottom:4px">${label}</div>
+      ${formatEntries(row[key])}
+    </div>`;
+  };
+
+  const inlineBlock = (key, label) => {
+    if (!showField(key) || !row[key]) return '';
+    return `<div class="spell-popup-full"><strong>${label}</strong><span>${row[key]}</span></div>`;
+  };
+
+  // Ability score + mod/save row
+  const abilityBoxes = abilities.map(a => {
+    const score = parseInt(row[a.key]) || 10;
+    const mod = abilityMod(score);
+    const isProfSave = a.saveAbbr in profSaveMap;
+    const saveVal = isProfSave ? profSaveMap[a.saveAbbr] : mod;
+    const saveStyle = isProfSave ? 'color:#e2b96f;font-weight:bold' : 'color:#e0e0e0';
+    return `<div style="background:#0f3460;border-radius:6px;padding:6px 4px;text-align:center">
+      <strong style="color:#e2b96f;font-size:0.65rem;display:block">${a.short}</strong>
+      <span style="font-size:0.95rem;display:block">${score}</span>
+      <span style="font-size:0.75rem;display:block;color:#aaa">${fmtMod(mod)}</span>
+      <span style="font-size:0.72rem;display:block;${saveStyle}" title="Save">${fmtMod(saveVal)}</span>
+    </div>`;
+  }).join('');
+
+  // Skills grid
+  const skillBoxes = ALL_SKILLS.map(sk => {
+    const mod = abilityMod(row[sk.ability]);
+    const key = sk.name.toLowerCase();
+    const isProfSkill = key in profSkillMap;
+    const val = isProfSkill ? profSkillMap[key] : mod;
+    const style = isProfSkill ? 'color:#e2b96f;font-weight:bold' : 'color:#aaa';
+    return `<div style="display:flex;justify-content:space-between;padding:2px 6px;font-size:0.75rem;border-bottom:1px solid rgba(15,52,96,0.5)">
+      <span style="${style}">${sk.name}</span>
+      <span style="${style}">${fmtMod(val)}</span>
+    </div>`;
+  }).join('');
+
   const overlay = document.createElement('div');
   overlay.className = 'spell-popup-overlay';
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
@@ -519,52 +632,49 @@ function openMonsterPopup(row, showField) {
   const popup = document.createElement('div');
   popup.className = 'spell-popup';
 
-  const stat = (key, label) => `<div><strong>${label}</strong><span>${row[key] || '—'}</span></div>`;
-  const block = (key, label) => row[key] ? `<div class="spell-popup-full"><strong>${label}</strong><p style="margin:4px 0 0;font-size:0.82rem;line-height:1.6">${row[key].replace(/\n/g,'<br/>')}</p></div>` : '';
-
   popup.innerHTML = `
     <button class="spell-popup-close" onclick="this.closest('.spell-popup-overlay').remove()">✕</button>
     <h2 class="spell-popup-title">🐉 ${row['Name'] || ''}</h2>
-    <div class="spell-popup-meta">${[row['Size'],row['Type'],showField('Alignment') ? row['Alignment'] : ''].filter(Boolean).join(' • ')}</div>
+    <div class="spell-popup-meta">${[row['Size'], row['Type'], showField('Alignment') ? row['Alignment'] : ''].filter(Boolean).join(' • ')}</div>
 
-    <div class="spell-popup-grid" style="grid-template-columns:1fr 1fr 1fr">
-      ${stat('AC','Armor Class')}
-      ${stat('HP','Hit Points')}
-      ${stat('Speed','Speed')}
-      ${stat('CR','Challenge')}
-      ${stat('Saving Throws','Saving Throws')}
-      ${stat('Skills','Skills')}
+    <div class="spell-popup-grid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:10px">
+      <div><strong>Armor Class</strong><span>${row['AC'] || '—'}</span></div>
+      <div><strong>Hit Points</strong><span>${row['HP'] || '—'}</span></div>
+      <div><strong>Speed</strong><span>${row['Speed'] || '—'}</span></div>
+      <div><strong>Challenge</strong><span>${crDisplay}</span></div>
+      <div><strong>Initiative</strong><span>${initiative}</span></div>
     </div>
 
-    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:14px;text-align:center">
-      ${['Strength','Dexterity','Constitution','Intelligence','Wisdom','Charisma'].map(s =>
-        `<div style="background:#0f3460;border-radius:6px;padding:6px 4px">
-          <strong style="color:#e2b96f;font-size:0.65rem;display:block">${s.slice(0,3).toUpperCase()}</strong>
-          <span style="font-size:0.9rem">${row[s] || '—'}</span>
-        </div>`
-      ).join('')}
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:10px">
+      ${abilityBoxes}
     </div>
+    <div style="font-size:0.65rem;color:#aaa;text-align:center;margin-bottom:2px">Score / Mod / Save (gold = proficient)</div>
+
+    <div style="background:#0f3460;border-radius:6px;padding:6px;margin-bottom:12px;columns:2;column-gap:8px">
+      ${skillBoxes}
+    </div>
+    <div style="font-size:0.65rem;color:#aaa;margin-bottom:10px">Skills (gold = proficient)</div>
 
     <div class="spell-popup-grid">
-      ${showField('Damage Vulnerabilities') ? stat('Damage Vulnerabilities','Vulnerabilities') : ''}
-      ${showField('Damage Resistances') ? stat('Damage Resistances','Resistances') : ''}
-      ${showField('Damage Immunities') ? stat('Damage Immunities','Immunities') : ''}
-      ${showField('Condition Immunities') ? stat('Condition Immunities','Conditions') : ''}
+      ${inlineBlock('Damage Vulnerabilities','Damage Vulnerabilities')}
+      ${inlineBlock('Damage Resistances','Damage Resistances')}
+      ${inlineBlock('Damage Immunities','Damage Immunities')}
+      ${inlineBlock('Condition Immunities','Condition Immunities')}
       <div class="spell-popup-full"><strong>Senses</strong><span>${row['Senses'] || '—'}</span></div>
       <div class="spell-popup-full"><strong>Languages</strong><span>${row['Languages'] || '—'}</span></div>
     </div>
 
-    ${showField('Traits') ? block('Traits','Traits') : ''}
-    ${showField('Actions') ? block('Actions','Actions') : ''}
-    ${showField('Bonus Actions') ? block('Bonus Actions','Bonus Actions') : ''}
-    ${showField('Reactions') ? block('Reactions','Reactions') : ''}
-    ${showField('Legendary Actions') ? block('Legendary Actions','Legendary Actions') : ''}
-    ${showField('Mythic Actions') ? block('Mythic Actions','Mythic Actions') : ''}
-    ${showField('Lair Actions') ? block('Lair Actions','Lair Actions') : ''}
-    ${showField('Regional Effects') ? block('Regional Effects','Regional Effects') : ''}
-    ${showField('Environment') ? block('Environment','Environment') : ''}
-    ${showField('Treasure') ? block('Treasure','Treasure') : ''}
-    ${showField('Source') ? `<div style="color:#aaa;font-size:0.75rem;margin-top:8px">${row['Source'] || ''}${row['Page'] ? ' p'+row['Page'] : ''}</div>` : ''}
+    ${sectionBlock('Traits','Traits')}
+    ${sectionBlock('Actions','Actions')}
+    ${sectionBlock('Bonus Actions','Bonus Actions')}
+    ${sectionBlock('Reactions','Reactions')}
+    ${sectionBlock('Legendary Actions','Legendary Actions')}
+    ${sectionBlock('Mythic Actions','Mythic Actions')}
+    ${sectionBlock('Lair Actions','Lair Actions')}
+    ${sectionBlock('Regional Effects','Regional Effects')}
+    ${showField('Environment') && row['Environment'] ? `<div style="color:#aaa;font-size:0.8rem;margin-top:6px">Environment: ${row['Environment']}</div>` : ''}
+    ${showField('Treasure') && row['Treasure'] ? `<div style="color:#aaa;font-size:0.8rem">Treasure: ${row['Treasure']}</div>` : ''}
+    ${showField('Source') ? `<div style="color:#555;font-size:0.75rem;margin-top:8px">${row['Source'] || ''}${row['Page'] ? ' p'+row['Page'] : ''}</div>` : ''}
   `;
 
   overlay.appendChild(popup);
