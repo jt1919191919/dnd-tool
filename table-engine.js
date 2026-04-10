@@ -134,6 +134,16 @@ function processSpellRow(row) {
   };
 }
 
+function processMonsterRow(row) {
+  const crRaw = row['CR'] || '';
+  return {
+    ...row,
+    _crRaw: crRaw,
+    _crNum: crRaw.includes('/') ? eval(crRaw.split(' ')[0]) : parseFloat(crRaw) || 0,
+    CR: crRaw.split(' ')[0]
+  };
+}
+
 async function loadTableData(tableId) {
   const pat = typeof getPAT === 'function' ? getPAT() : '';
   const headers = pat ? { Authorization: `token ${pat}` } : {};
@@ -168,7 +178,7 @@ async function renderTableBlock(container, tableId, isDM) {
 
   const popupHiddenCols = config.popupHiddenCols || DEFAULT_POPUP_HIDDEN;
   const tableType = tableData.tableType || 'spell';
-  const rows = tableType === 'monster' ? tableData.rows : tableData.rows.map(processSpellRow);
+  const rows = tableType === 'monster' ? tableData.rows.map(processMonsterRow) : tableData.rows.map(processSpellRow);
   const tblConfig = tableData.config || {};
   const visibleCols = tblConfig.visibleCols || getDefaultVisible(tableType);
   const defaultSort = tblConfig.defaultSort || 'Name';
@@ -518,7 +528,7 @@ function openMonsterPopup(row, showField) {
   const fmtMod = (n) => (n >= 0 ? '+' : '') + n;
 
   // Parse PB from CR string e.g. "1/4 (XP 50; PB +2)"
-  const crRaw = row['CR'] || '';
+  const crRaw = row['_crRaw'] || row['CR'] || '';
   const pbMatch = crRaw.match(/PB\s*([+-]\d+)/i);
   const pb = pbMatch ? parseInt(pbMatch[1]) : 2;
   const crDisplay = crRaw.split(' ')[0];
