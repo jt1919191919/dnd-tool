@@ -607,8 +607,8 @@ function openMonsterPopup(row, showField) {
     return `<div style="background:#0f3460;border-radius:6px;padding:6px 4px;text-align:center">
       <strong style="color:#e2b96f;font-size:0.65rem;display:block">${a.short}</strong>
       <span style="font-size:0.95rem;display:block">${score}</span>
-      <span style="font-size:0.75rem;display:block;color:#aaa">${fmtMod(mod)}</span>
-      <span style="font-size:0.72rem;display:block;${saveStyle}" title="Save">${fmtMod(saveVal)}</span>
+      <span style="font-size:0.72rem;display:block;color:#aaa">Mod ${fmtMod(mod)}</span>
+      <span style="font-size:0.72rem;display:block;${saveStyle}">Save ${fmtMod(saveVal)}</span>
     </div>`;
   }).join('');
 
@@ -635,25 +635,22 @@ function openMonsterPopup(row, showField) {
   popup.innerHTML = `
     <button class="spell-popup-close" onclick="this.closest('.spell-popup-overlay').remove()">✕</button>
     <h2 class="spell-popup-title">🐉 ${row['Name'] || ''}</h2>
-    <div class="spell-popup-meta">${[row['Size'], row['Type'], showField('Alignment') ? row['Alignment'] : ''].filter(Boolean).join(' • ')}</div>
+    <div class="spell-popup-meta">${[row['Size'], row['Type'], showField('Alignment') ? row['Alignment'] : '', `CR ${crDisplay}`].filter(Boolean).join(' • ')}</div>
 
-    <div class="spell-popup-grid" style="grid-template-columns:1fr 1fr 1fr;margin-bottom:10px">
+    <div class="spell-popup-grid" style="grid-template-columns:1fr 1fr;margin-bottom:10px">
       <div><strong>Armor Class</strong><span>${row['AC'] || '—'}</span></div>
       <div><strong>Hit Points</strong><span>${row['HP'] || '—'}</span></div>
       <div><strong>Speed</strong><span>${row['Speed'] || '—'}</span></div>
-      <div><strong>Challenge</strong><span>${crDisplay}</span></div>
       <div><strong>Initiative</strong><span>${initiative}</span></div>
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:10px">
       ${abilityBoxes}
     </div>
-    <div style="font-size:0.65rem;color:#aaa;text-align:center;margin-bottom:2px">Score / Mod / Save (gold = proficient)</div>
 
     <div style="background:#0f3460;border-radius:6px;padding:6px;margin-bottom:12px;columns:2;column-gap:8px">
       ${skillBoxes}
     </div>
-    <div style="font-size:0.65rem;color:#aaa;margin-bottom:10px">Skills (gold = proficient)</div>
 
     <div class="spell-popup-grid">
       ${inlineBlock('Damage Vulnerabilities','Damage Vulnerabilities')}
