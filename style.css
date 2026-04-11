@@ -516,9 +516,13 @@ mark {
   border: 1px solid #e2b96f;
   border-radius: 6px 6px 0 0;
   padding: 10px;
-  z-index: 49;
-  position: sticky;
+  z-index: 200;
+  position: fixed;
   bottom: 52px;
+  left: 0;
+  right: 0;
+  max-width: 700px;
+  margin: 0 auto;
 }
 
 .color-swatches {
