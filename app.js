@@ -108,6 +108,12 @@ function showAccessDenied() {
   document.getElementById('access-denied').classList.remove('hidden');
 }
 
+window.addEventListener('scroll', () => {
+  const btn = document.getElementById('back-to-top');
+  if (!btn) return;
+  btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+});
+
 async function initApp() {
   initEditor();
   updateTokenBar();
