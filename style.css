@@ -143,7 +143,10 @@ main { padding: 16px; }
   padding-left: 8px;
 }
 .content-editable li { margin-bottom: 4px; }
-#page-content a { color: #7eb8f7; }
+#page-content a { color: #ffffff; }
+#page-content a[style*="color"] { color: unset; }
+.content-editable a { color: #ffffff; }
+.content-editable a[style*="color"] { color: unset; }
 #page-content img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
 
 /* EDITOR */
