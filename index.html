@@ -81,10 +81,10 @@
     <!-- DM EDITOR VIEW -->
     <div id="view-dm-editor" class="hidden">
       <h2 id="editor-title-label">New Page</h2>
-      <input type="text" id="editor-page-id" placeholder="page-id (no spaces, e.g. npc-demogorgon)"/>
-      <input type="text" id="editor-page-title" placeholder="Page Title"/>
-      <input type="text" id="editor-thumb" placeholder="Thumbnail image URL (optional)"/>
-      <input type="text" id="editor-description" placeholder="Short description (shown on card)"/>
+      <input type="text" id="editor-page-id" placeholder="page-id (no spaces, e.g. npc-demogorgon)" title="Unique ID for this page. No spaces or special characters. Used in URLs. Cannot be changed after saving."/>
+      <input type="text" id="editor-page-title" placeholder="Page Title" title="Display name shown on the card and page header."/>
+      <input type="text" id="editor-thumb" placeholder="Thumbnail image URL (optional)" title="URL of the image shown on the home card. Leave blank for default icon."/>
+      <input type="text" id="editor-description" placeholder="Short description (shown on card)" title="Brief description shown under the title on the home card."/>
       <div style="margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         <label style="font-size:0.85rem;display:flex;align-items:center;gap:6px">
           <input type="checkbox" id="strip-links-toggle"/> Strip hyperlinks on paste
