@@ -1265,8 +1265,11 @@ async function applyImage() {
     const originalSize = file.size;
     // Compress via canvas
     const compressed = await compressImage(file, 500 * 1024);
+    console.log('file selected:', file.name, file.size);
     const filename = await promptImageName(file.name);
+    console.log('filename returned:', filename);
     if (!filename) return;
+    console.log('proceeding with upload...');
     const path = `data/images/${filename}`;
     const base64 = compressed.split(',')[1];
     const pat = getPAT();
