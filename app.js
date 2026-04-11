@@ -1343,6 +1343,27 @@ function promptImageName(originalName) {
   });
 }
 
+function toolbarClearFormat() {
+  const area = document.getElementById('editor-area');
+  area.focus();
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  // Remove inline formatting
+  document.execCommand('removeFormat', false, null);
+  document.execCommand('unlink', false, null);
+  // Convert block element to paragraph
+  const range = sel.getRangeAt(0);
+  let block = range.startContainer;
+  while (block && block.parentNode !== area) block = block.parentNode;
+  if (block && block !== area && block.tagName !== 'P') {
+    const p = document.createElement('p');
+    Array.from(block.childNodes).forEach(n => {
+      if (!n.classList?.contains('h-badge')) p.appendChild(n.cloneNode(true));
+    });
+    block.replaceWith(p);
+  }
+}
+
 function toolbarTable() {
   document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
   saveSelection();
