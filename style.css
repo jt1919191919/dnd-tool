@@ -459,7 +459,7 @@ mark {
   border-radius: 6px 6px 0 0;
   margin-bottom: 0;
   position: sticky;
-  top: 0;
+  top: 92px;
   z-index: 50;
   align-items: center;
 }
