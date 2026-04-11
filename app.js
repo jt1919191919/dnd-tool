@@ -207,6 +207,7 @@ function showView(view) {
   document.getElementById('view-dm-editor').classList.add('hidden');
   document.getElementById('view-dm-config').classList.add('hidden');
   document.getElementById('view-dm-tables').classList.add('hidden');
+  document.getElementById('view-dm-images').classList.add('hidden');
   document.getElementById('side-menu').classList.add('hidden');
   document.getElementById('search-results').classList.add('hidden');
   document.getElementById('search-input').value = '';
@@ -228,6 +229,9 @@ function showView(view) {
   } else if (view === 'dm-tables') {
     document.getElementById('view-dm-tables').classList.remove('hidden');
     renderManageTables();
+  } else if (view === 'dm-images') {
+    document.getElementById('view-dm-images').classList.remove('hidden');
+    renderLargeImages();
   }
 }
 
@@ -1102,4 +1106,421 @@ async function deleteOrphanTable(tableId, sha, btn) {
   } else {
     alert('Delete failed. Check your token permissions.');
   }
+}
+
+// ─── WYSIWYG TOOLBAR ──────────────────────────────────────────────────────────
+
+const PALETTE_COLORS = [
+  '#ffffff','#e0e0e0','#aaaaaa','#666666','#1a1a2e',
+  '#e2b96f','#f7c59f','#f4a261','#e76f51','#c44',
+  '#7eb8f7','#0f3460','#16213e','#4ecdc4','#2d6a4f',
+  '#a8dadc','#457b9d','#9b5de5','#f15bb5','#fee440'
+];
+
+const HIGHLIGHT_COLORS = [
+  '#fff3cd','#ffeeba','#f8d7da','#d4edda','#d1ecf1',
+  '#e2b96f44','#7eb8f744','#9b5de544','#4ecdc444','#f15bb544',
+  'transparent'
+];
+
+let colorPickerMode = null; // 'text' or 'highlight'
+let savedRange = null;
+
+function saveSelection() {
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount > 0) savedRange = sel.getRangeAt(0).cloneRange();
+}
+
+function restoreSelection() {
+  if (!savedRange) return;
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(savedRange);
+}
+
+function toolbarExec(cmd) {
+  document.getElementById('editor-area').focus();
+  document.execCommand(cmd, false, null);
+}
+
+function toolbarHeading(tag) {
+  const area = document.getElementById('editor-area');
+  area.focus();
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  let block = range.startContainer;
+  while (block && block.parentNode !== area) block = block.parentNode;
+  if (!block || block === area) {
+    document.execCommand('formatBlock', false, tag === 'p' ? 'p' : tag);
+    setTimeout(refreshHeadingBadges, 50);
+    return;
+  }
+  const newEl = document.createElement(tag);
+  Array.from(block.childNodes).forEach(n => {
+    if (!n.classList?.contains('h-badge')) newEl.appendChild(n.cloneNode(true));
+  });
+  block.replaceWith(newEl);
+  setTimeout(refreshHeadingBadges, 50);
+}
+
+function toolbarBlockquote() {
+  const area = document.getElementById('editor-area');
+  area.focus();
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  let block = range.startContainer;
+  while (block && block.parentNode !== area) block = block.parentNode;
+  if (block && block.tagName === 'BLOCKQUOTE') {
+    const p = document.createElement('p');
+    Array.from(block.childNodes).forEach(n => p.appendChild(n.cloneNode(true)));
+    block.replaceWith(p);
+  } else {
+    document.execCommand('formatBlock', false, 'blockquote');
+  }
+}
+
+function toolbarLink() {
+  saveSelection();
+  document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+  const sel = window.getSelection();
+  let existingUrl = '';
+  if (sel && sel.rangeCount) {
+    let node = sel.getRangeAt(0).commonAncestorContainer;
+    while (node && node.tagName !== 'A') node = node.parentNode;
+    if (node && node.tagName === 'A') existingUrl = node.href;
+  }
+  const popup = document.createElement('div');
+  popup.className = 'toolbar-popup';
+  popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#16213e;border:1px solid #e2b96f;border-radius:8px;padding:16px;z-index:200;min-width:300px;box-shadow:0 4px 16px rgba(0,0,0,0.5)';
+  popup.innerHTML = `
+    <div style="font-size:0.85rem;color:#aaa;margin-bottom:8px">Insert / Edit Link</div>
+    <input id="link-url-input" type="text" value="${existingUrl}" placeholder="https://..." style="width:100%;padding:7px;background:#0f3460;border:1px solid #0f3460;border-radius:4px;color:#e0e0e0;margin-bottom:8px;font-size:0.9rem"/>
+    <div style="display:flex;gap:8px">
+      <button onclick="applyLink()" style="flex:1;padding:6px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer">Apply</button>
+      ${existingUrl ? `<button onclick="removeLink()" style="flex:1;padding:6px;border:1px solid #c44;background:transparent;color:#c44;border-radius:4px;cursor:pointer">Remove</button>` : ''}
+      <button onclick="this.closest('.toolbar-popup').remove()" style="flex:1;padding:6px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer">Cancel</button>
+    </div>`;
+  document.body.appendChild(popup);
+  setTimeout(() => document.getElementById('link-url-input')?.focus(), 50);
+}
+
+function applyLink() {
+  const url = document.getElementById('link-url-input')?.value.trim();
+  if (!url) return;
+  restoreSelection();
+  document.execCommand('createLink', false, url);
+  document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+}
+
+function removeLink() {
+  restoreSelection();
+  document.execCommand('unlink', false, null);
+  document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+}
+
+function toolbarImage() {
+  document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+  saveSelection();
+  const popup = document.createElement('div');
+  popup.className = 'toolbar-popup';
+  popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#16213e;border:1px solid #e2b96f;border-radius:8px;padding:16px;z-index:200;min-width:320px;box-shadow:0 4px 16px rgba(0,0,0,0.5)';
+  popup.innerHTML = `
+    <div style="font-size:0.85rem;color:#aaa;margin-bottom:10px">Insert Image</div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:0.8rem;color:#aaa;margin-bottom:4px">From URL:</div>
+      <input id="img-url-input" type="text" placeholder="https://..." style="width:100%;padding:7px;background:#0f3460;border:1px solid #0f3460;border-radius:4px;color:#e0e0e0;font-size:0.9rem"/>
+    </div>
+    <div style="margin-bottom:10px">
+      <div style="font-size:0.8rem;color:#aaa;margin-bottom:4px">Or upload from device:</div>
+      <input id="img-file-input" type="file" accept="image/*" style="font-size:0.8rem;color:#aaa"/>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button onclick="applyImage()" style="flex:1;padding:6px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer">Insert</button>
+      <button onclick="this.closest('.toolbar-popup').remove()" style="flex:1;padding:6px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer">Cancel</button>
+    </div>`;
+  document.body.appendChild(popup);
+}
+
+async function applyImage() {
+  const urlInput = document.getElementById('img-url-input')?.value.trim();
+  const fileInput = document.getElementById('img-file-input');
+  const file = fileInput?.files?.[0];
+
+  if (urlInput) {
+    restoreSelection();
+    document.execCommand('insertHTML', false, `<img src="${urlInput}" style="max-width:100%;border-radius:6px;margin:10px 0"/>`);
+    document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+    return;
+  }
+
+  if (file) {
+    const originalSize = file.size;
+    // Compress via canvas
+    const compressed = await compressImage(file, 500 * 1024);
+    const filename = await promptImageName(file.name);
+    if (!filename) return;
+    const path = `data/images/${filename}`;
+    const base64 = compressed.split(',')[1];
+    const pat = getPAT();
+    const headers = { Authorization: `token ${pat}`, 'Content-Type': 'application/json' };
+    const existing = await fetch(`${GITHUB_API}/${path}`, { headers });
+    const sha = existing.ok ? (await existing.json()).sha : undefined;
+    const res = await fetch(`${GITHUB_API}/${path}`, {
+      method: 'PUT', headers,
+      body: JSON.stringify({ message: `Upload image: ${filename}`, content: base64, ...(sha && { sha }) })
+    });
+    if (!res.ok) { alert('Image upload failed.'); return; }
+    const imgUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${path}`;
+    const flagged = originalSize > 500 * 1024;
+    // Store flagged image info
+    if (flagged) {
+      const flags = JSON.parse(localStorage.getItem('flagged_images') || '[]');
+      flags.push({ filename, pageId: currentPageId, size: originalSize, url: imgUrl });
+      localStorage.setItem('flagged_images', JSON.stringify(flags));
+    }
+    restoreSelection();
+    document.execCommand('insertHTML', false, `<img src="${imgUrl}" data-filename="${filename}" data-size="${originalSize}" style="max-width:100%;border-radius:6px;margin:10px 0"${flagged ? ' data-flagged="true"' : ''}/>`);
+    document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+  }
+}
+
+function compressImage(file, maxBytes) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        let { width, height } = img;
+        let quality = 0.85;
+        const canvas = document.createElement('canvas');
+        // Scale down if very large
+        const maxDim = 1800;
+        if (width > maxDim || height > maxDim) {
+          const ratio = Math.min(maxDim / width, maxDim / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        // Reduce quality until under maxBytes
+        const tryCompress = (q) => {
+          const data = canvas.toDataURL('image/jpeg', q);
+          const size = Math.round((data.length - 22) * 3 / 4);
+          if (size <= maxBytes || q <= 0.3) resolve(data);
+          else tryCompress(Math.max(q - 0.1, 0.3));
+        };
+        tryCompress(quality);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function promptImageName(originalName) {
+  return new Promise((resolve) => {
+    document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+    const popup = document.createElement('div');
+    popup.className = 'toolbar-popup';
+    popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#16213e;border:1px solid #e2b96f;border-radius:8px;padding:16px;z-index:201;min-width:300px;box-shadow:0 4px 16px rgba(0,0,0,0.5)';
+    popup.innerHTML = `
+      <div style="font-size:0.85rem;color:#aaa;margin-bottom:8px">Save image as:</div>
+      <input id="img-name-input" type="text" value="${originalName}" style="width:100%;padding:7px;background:#0f3460;border:1px solid #0f3460;border-radius:4px;color:#e0e0e0;margin-bottom:8px;font-size:0.9rem"/>
+      <div style="display:flex;gap:8px">
+        <button onclick="document.querySelectorAll('.toolbar-popup').forEach(p=>p.remove());window._imgNameResolve(document.getElementById('img-name-input')?.value.trim())" style="flex:1;padding:6px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer">Upload</button>
+        <button onclick="document.querySelectorAll('.toolbar-popup').forEach(p=>p.remove());window._imgNameResolve(null)" style="flex:1;padding:6px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer">Cancel</button>
+      </div>`;
+    window._imgNameResolve = resolve;
+    document.body.appendChild(popup);
+    setTimeout(() => {
+      const inp = document.getElementById('img-name-input');
+      if (inp) { inp.focus(); inp.select(); }
+    }, 50);
+  });
+}
+
+function toolbarTable() {
+  document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+  saveSelection();
+  const popup = document.createElement('div');
+  popup.className = 'toolbar-popup';
+  popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#16213e;border:1px solid #e2b96f;border-radius:8px;padding:16px;z-index:200;min-width:260px;box-shadow:0 4px 16px rgba(0,0,0,0.5)';
+  popup.innerHTML = `
+    <div style="font-size:0.85rem;color:#aaa;margin-bottom:10px">Insert Table</div>
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px">
+      <input id="tbl-rows" type="number" value="3" min="1" max="20" style="width:60px;padding:6px;background:#0f3460;border:1px solid #0f3460;border-radius:4px;color:#e0e0e0"/> rows
+      ×
+      <input id="tbl-cols" type="number" value="3" min="1" max="10" style="width:60px;padding:6px;background:#0f3460;border:1px solid #0f3460;border-radius:4px;color:#e0e0e0"/> cols
+    </div>
+    <label style="font-size:0.8rem;display:flex;align-items:center;gap:6px;margin-bottom:10px">
+      <input type="checkbox" id="tbl-header" checked/> First row is header
+    </label>
+    <div style="display:flex;gap:8px">
+      <button onclick="applyTable()" style="flex:1;padding:6px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer">Insert</button>
+      <button onclick="this.closest('.toolbar-popup').remove()" style="flex:1;padding:6px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer">Cancel</button>
+    </div>`;
+  document.body.appendChild(popup);
+}
+
+function applyTable() {
+  const rows = parseInt(document.getElementById('tbl-rows')?.value) || 3;
+  const cols = parseInt(document.getElementById('tbl-cols')?.value) || 3;
+  const hasHeader = document.getElementById('tbl-header')?.checked;
+  let html = '<table class="editor-table" style="border-collapse:collapse;width:100%;margin:10px 0"><tbody>';
+  for (let r = 0; r < rows; r++) {
+    html += '<tr>';
+    for (let c = 0; c < cols; c++) {
+      const tag = (r === 0 && hasHeader) ? 'th' : 'td';
+      html += `<${tag} style="border:1px solid #0f3460;padding:6px 10px;min-width:60px" contenteditable="true"><br/></${tag}>`;
+    }
+    html += '</tr>';
+  }
+  html += '</tbody></table><p><br/></p>';
+  restoreSelection();
+  document.execCommand('insertHTML', false, html);
+  document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+}
+
+function toggleColorPicker(mode) {
+  const panel = document.getElementById('color-picker-panel');
+  if (colorPickerMode === mode && !panel.classList.contains('hidden')) {
+    panel.classList.add('hidden');
+    colorPickerMode = null;
+    return;
+  }
+  colorPickerMode = mode;
+  saveSelection();
+  const colors = mode === 'text' ? PALETTE_COLORS : HIGHLIGHT_COLORS;
+  const label = mode === 'text' ? 'Text Color' : 'Highlight Color';
+  panel.innerHTML = `
+    <div style="font-size:0.75rem;color:#aaa;margin-bottom:6px">${label}</div>
+    <div class="color-swatches">
+      ${colors.map(c => `<div class="color-swatch" style="background:${c};${c==='transparent'?'border:1px dashed #aaa':''}" onclick="applyColor('${c}')" title="${c}"></div>`).join('')}
+    </div>
+    <input type="color" id="free-color-picker" value="#ffffff" style="width:100%;height:28px;border:none;background:none;cursor:pointer;border-radius:4px" oninput="applyColor(this.value)"/>`;
+  panel.classList.remove('hidden');
+}
+
+function applyColor(color) {
+  restoreSelection();
+  if (colorPickerMode === 'text') {
+    document.execCommand('foreColor', false, color);
+  } else {
+    document.execCommand('hiliteColor', false, color === 'transparent' ? 'transparent' : color);
+  }
+}
+
+// Show/hide toolbar when entering/leaving editor
+function initEditor() {
+  const area = document.getElementById('editor-area');
+  if (!area) return;
+
+  area.addEventListener('focus', () => {
+    document.getElementById('editor-toolbar')?.classList.add('active');
+  });
+
+  area.addEventListener('paste', (e) => {
+    const strip = document.getElementById('strip-links-toggle').checked;
+    if (!strip) return;
+    e.preventDefault();
+    const html = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    div.querySelectorAll('a').forEach(a => {
+      const text = document.createTextNode(a.textContent);
+      a.replaceWith(text);
+    });
+    document.execCommand('insertHTML', false, div.innerHTML);
+  });
+
+  area.addEventListener('input', refreshHeadingBadges);
+  area.addEventListener('paste', () => setTimeout(refreshHeadingBadges, 100));
+
+  // Update heading dropdown on cursor move
+  area.addEventListener('keyup', updateToolbarState);
+  area.addEventListener('mouseup', updateToolbarState);
+}
+
+function updateToolbarState() {
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  let node = sel.getRangeAt(0).startContainer;
+  while (node && node.id !== 'editor-area') {
+    if (node.tagName && /^H[1-4]$/.test(node.tagName)) {
+      document.getElementById('toolbar-heading').value = node.tagName.toLowerCase();
+      return;
+    }
+    node = node.parentNode;
+  }
+  document.getElementById('toolbar-heading').value = 'p';
+}
+
+// ─── LARGE IMAGES VIEW ────────────────────────────────────────────────────────
+function showView_dmImages() {
+  document.getElementById('view-dm-images').classList.remove('hidden');
+  renderLargeImages();
+}
+
+function renderLargeImages() {
+  const list = document.getElementById('large-images-list');
+  const flags = JSON.parse(localStorage.getItem('flagged_images') || '[]');
+  if (!flags.length) { list.innerHTML = '<p style="color:#aaa">No flagged images.</p>'; return; }
+  list.innerHTML = '';
+  flags.forEach((img, i) => {
+    const kb = Math.round(img.size / 1024);
+    const row = document.createElement('div');
+    row.style.cssText = 'background:#16213e;border:1px solid #c44;border-radius:6px;padding:10px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap';
+    row.innerHTML = `
+      <div>
+        <div style="color:#e2b96f;font-size:0.85rem">${img.filename}</div>
+        <div style="color:#aaa;font-size:0.75rem">${kb}KB · Page: ${pages[img.pageId]?.title || img.pageId}</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button onclick="goToImageInEditor('${img.pageId}','${img.filename}')" style="padding:4px 10px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;font-size:0.8rem">✏️ Edit</button>
+        <button onclick="dismissFlaggedImage(${i})" style="padding:4px 10px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer;font-size:0.8rem">✕</button>
+      </div>`;
+    list.appendChild(row);
+  });
+}
+
+function goToImageInEditor(pageId, filename) {
+  showView('home');
+  setTimeout(() => {
+    editPageById(pageId);
+    setTimeout(() => {
+      const area = document.getElementById('editor-area');
+      const img = area?.querySelector(`img[data-filename="${filename}"]`);
+      if (img) img.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 300);
+  }, 100);
+}
+
+function editPageById(pageId) {
+  if (!pages[pageId]) return;
+  currentPageId = pageId;
+  const page = pages[pageId];
+  document.getElementById('view-home').classList.add('hidden');
+  document.getElementById('view-page').classList.add('hidden');
+  document.getElementById('view-dm-editor').classList.remove('hidden');
+  document.getElementById('editor-title-label').textContent = 'Edit Page';
+  document.getElementById('editor-page-id').value = pageId;
+  document.getElementById('editor-page-id').disabled = true;
+  document.getElementById('editor-page-title').value = page.title || '';
+  document.getElementById('editor-thumb').value = page.thumbnail || '';
+  document.getElementById('editor-description').value = page.description || '';
+  const cleanDiv = document.createElement('div');
+  cleanDiv.innerHTML = page.content || '';
+  cleanDiv.querySelectorAll('.h-badge').forEach(b => b.remove());
+  document.getElementById('editor-area').innerHTML = cleanDiv.innerHTML;
+  setTimeout(refreshHeadingBadges, 50);
+}
+
+function dismissFlaggedImage(index) {
+  const flags = JSON.parse(localStorage.getItem('flagged_images') || '[]');
+  flags.splice(index, 1);
+  localStorage.setItem('flagged_images', JSON.stringify(flags));
+  renderLargeImages();
 }
