@@ -1365,12 +1365,12 @@ function applyTable() {
   const rows = parseInt(document.getElementById('tbl-rows')?.value) || 3;
   const cols = parseInt(document.getElementById('tbl-cols')?.value) || 3;
   const hasHeader = document.getElementById('tbl-header')?.checked;
-  let html = '<table class="editor-table" style="border-collapse:collapse;width:100%;margin:10px 0"><tbody>';
+  let html = '<table class="editor-table"><tbody>';
   for (let r = 0; r < rows; r++) {
     html += '<tr>';
     for (let c = 0; c < cols; c++) {
       const tag = (r === 0 && hasHeader) ? 'th' : 'td';
-      html += `<${tag} style="border:1px solid #0f3460;padding:6px 10px;min-width:60px" contenteditable="true"><br/></${tag}>`;
+      html += `<${tag} contenteditable="true"><br/></${tag}>`;
     }
     html += '</tr>';
   }
@@ -1448,8 +1448,10 @@ function initEditor() {
   area.addEventListener('click', (e) => {
     if (e.target.tagName === 'IMG') initImageResize(e.target);
     const cell = e.target.closest('td, th');
-    if (cell) showTableControls(cell);
-    else removeTableControls();
+    if (cell) {
+      showTableControls(cell);
+      initTableColResize(cell.closest('table'));
+    } else removeTableControls();
   });
 }
 
@@ -1701,4 +1703,32 @@ function showTableControls(cell) {
       }
     });
   }, 50);
+}
+
+// ─── TABLE COLUMN RESIZE ──────────────────────────────────────────────────────
+function initTableColResize(table) {
+  table.querySelectorAll('th, td').forEach(cell => {
+    if (cell.querySelector('.col-resize-handle')) return;
+    const handle = document.createElement('span');
+    handle.className = 'col-resize-handle';
+    handle.style.cssText = 'position:absolute;top:0;right:0;width:5px;height:100%;cursor:col-resize;background:transparent;z-index:5;';
+    cell.style.position = 'relative';
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startW = cell.offsetWidth;
+      const onMove = (e) => {
+        const newW = Math.max(30, startW + (e.clientX - startX));
+        cell.style.width = newW + 'px';
+        cell.style.minWidth = newW + 'px';
+      };
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+    cell.appendChild(handle);
+  });
 }
