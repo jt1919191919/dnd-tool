@@ -1447,6 +1447,9 @@ function initEditor() {
   // Image resize on click
   area.addEventListener('click', (e) => {
     if (e.target.tagName === 'IMG') initImageResize(e.target);
+    const cell = e.target.closest('td, th');
+    if (cell) showTableControls(cell);
+    else removeTableControls();
   });
 }
 
@@ -1601,6 +1604,99 @@ function initImageResize(img) {
     document.addEventListener('click', function handler(e) {
       if (!wrap.contains(e.target)) {
         removeResizeHandle();
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 50);
+}
+
+// ─── EDITOR TABLE CONTROLS ────────────────────────────────────────────────────
+function removeTableControls() {
+  document.querySelectorAll('.table-ctrl-bar').forEach(b => b.remove());
+}
+
+function showTableControls(cell) {
+  removeTableControls();
+  const table = cell.closest('table');
+  if (!table) return;
+
+  const bar = document.createElement('div');
+  bar.className = 'table-ctrl-bar';
+  bar.style.cssText = 'position:fixed;background:#16213e;border:1px solid #e2b96f;border-radius:6px;padding:4px 8px;display:flex;gap:6px;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,0.5);font-size:0.8rem;';
+
+  const rect = cell.getBoundingClientRect();
+  bar.style.top = `${rect.top - 40}px`;
+  bar.style.left = `${rect.left}px`;
+
+  const btn = (label, title, fn) => {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.title = title;
+    b.style.cssText = 'background:transparent;border:1px solid #0f3460;color:#e0e0e0;border-radius:4px;padding:2px 7px;cursor:pointer;font-size:0.8rem;white-space:nowrap;';
+    b.onmouseenter = () => b.style.borderColor = '#e2b96f';
+    b.onmouseleave = () => b.style.borderColor = '#0f3460';
+    b.onclick = (e) => { e.stopPropagation(); fn(table, cell); };
+    return b;
+  };
+
+  bar.appendChild(btn('+Row↓', 'Add row below', (t, c) => {
+    const row = c.closest('tr');
+    const newRow = document.createElement('tr');
+    const cols = row.querySelectorAll('td,th').length;
+    for (let i = 0; i < cols; i++) {
+      const td = document.createElement('td');
+      td.style.cssText = 'border:1px solid #4a5568;padding:6px 10px;min-width:60px';
+      td.contentEditable = 'true';
+      td.innerHTML = '<br/>';
+      newRow.appendChild(td);
+    }
+    row.parentNode.insertBefore(newRow, row.nextSibling);
+    removeTableControls();
+  }));
+
+  bar.appendChild(btn('+Col→', 'Add column right', (t, c) => {
+    const row = c.closest('tr');
+    const colIdx = Array.from(row.querySelectorAll('td,th')).indexOf(c);
+    Array.from(t.querySelectorAll('tr')).forEach((r, ri) => {
+      const cells = r.querySelectorAll('td,th');
+      const tag = ri === 0 && cells[0]?.tagName === 'TH' ? 'th' : 'td';
+      const newCell = document.createElement(tag);
+      newCell.style.cssText = tag === 'th'
+        ? 'border:1px solid #4a5568;padding:6px 10px;min-width:60px;background:#0f3460;color:#e2b96f'
+        : 'border:1px solid #4a5568;padding:6px 10px;min-width:60px';
+      newCell.contentEditable = 'true';
+      newCell.innerHTML = '<br/>';
+      const ref = cells[colIdx + 1];
+      r.insertBefore(newCell, ref || null);
+    });
+    removeTableControls();
+  }));
+
+  bar.appendChild(btn('-Row', 'Delete this row', (t, c) => {
+    const row = c.closest('tr');
+    if (t.querySelectorAll('tr').length <= 1) { t.remove(); removeTableControls(); return; }
+    row.remove();
+    removeTableControls();
+  }));
+
+  bar.appendChild(btn('-Col', 'Delete this column', (t, c) => {
+    const row = c.closest('tr');
+    const colIdx = Array.from(row.querySelectorAll('td,th')).indexOf(c);
+    const allRows = t.querySelectorAll('tr');
+    if (allRows[0].querySelectorAll('td,th').length <= 1) { t.remove(); removeTableControls(); return; }
+    allRows.forEach(r => {
+      const cells = r.querySelectorAll('td,th');
+      if (cells[colIdx]) cells[colIdx].remove();
+    });
+    removeTableControls();
+  }));
+
+  document.body.appendChild(bar);
+
+  setTimeout(() => {
+    document.addEventListener('click', function handler(e) {
+      if (!bar.contains(e.target) && !e.target.closest('td,th')) {
+        removeTableControls();
         document.removeEventListener('click', handler);
       }
     });
