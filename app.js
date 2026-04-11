@@ -659,10 +659,16 @@ function openHeadingLevelPopup(badge, headingEl) {
 }
 
 function resetEditor() {
+  const existingIds = Object.keys(pages).filter(k => k.startsWith('page-'));
+  const nums = existingIds.map(k => parseInt(k.replace('page-',''))).filter(n => !isNaN(n));
+  const nextNum = nums.length ? Math.max(...nums) + 1 : 1;
+  const newId = `page-${nextNum}`;
+  const newTitle = `Page ${nextNum}`;
+
   document.getElementById('editor-title-label').textContent = 'New Page';
-  document.getElementById('editor-page-id').value = '';
-  document.getElementById('editor-page-title').value = '';
-  document.getElementById('editor-thumb').value = '';
+  document.getElementById('editor-page-id').value = newId;
+  document.getElementById('editor-page-title').value = newTitle;
+  document.getElementById('editor-thumb').value = 'https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg';
   document.getElementById('editor-description').value = '';
   document.getElementById('editor-area').innerHTML = '';
   document.getElementById('editor-page-id').disabled = false;
