@@ -540,16 +540,21 @@ mark {
   width: 100%;
   margin: 10px 0;
 }
+.editor-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+}
 .editor-table td, .editor-table th {
-  border: 1px solid #4a5568;
+  border: 1px solid #4a5568 !important;
   padding: 6px 10px;
   min-width: 60px;
   vertical-align: top;
+  position: relative;
 }
 .editor-table th {
-  background: #0f3460;
-  color: #e2b96f;
-  border: 1px solid #4a5568;
+  background: #0f3460 !important;
+  color: #e2b96f !important;
 }
 
 blockquote {
