@@ -541,7 +541,7 @@ mark {
   margin: 10px 0;
 }
 .editor-table td, .editor-table th {
-  border: 1px solid #0f3460;
+  border: 1px solid #4a5568;
   padding: 6px 10px;
   min-width: 60px;
   vertical-align: top;
@@ -549,6 +549,7 @@ mark {
 .editor-table th {
   background: #0f3460;
   color: #e2b96f;
+  border: 1px solid #4a5568;
 }
 
 blockquote {
