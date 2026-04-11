@@ -1389,8 +1389,8 @@ function toggleColorPicker(mode) {
   }
   colorPickerMode = mode;
   saveSelection();
-  const colors = mode === 'text' ? PALETTE_COLORS : HIGHLIGHT_COLORS;
-  const label = mode === 'text' ? 'Text Color' : 'Highlight Color';
+  const colors = PALETTE_COLORS;
+  const label = 'Text Color';
   panel.innerHTML = `
     <div style="font-size:0.75rem;color:#aaa;margin-bottom:6px">${label}</div>
     <div class="color-swatches">
