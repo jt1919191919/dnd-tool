@@ -1169,13 +1169,18 @@ function toolbarBlockquote() {
   area.focus();
   const sel = window.getSelection();
   if (!sel.rangeCount) return;
-  const range = sel.getRangeAt(0);
-  let block = range.startContainer;
-  while (block && block.parentNode !== area) block = block.parentNode;
-  if (block && block.tagName === 'BLOCKQUOTE') {
+  let node = sel.getRangeAt(0).startContainer;
+  // Walk up to find any blockquote ancestor
+  let bq = null;
+  let cur = node;
+  while (cur && cur !== area) {
+    if (cur.tagName === 'BLOCKQUOTE') { bq = cur; break; }
+    cur = cur.parentNode;
+  }
+  if (bq) {
     const p = document.createElement('p');
-    Array.from(block.childNodes).forEach(n => p.appendChild(n.cloneNode(true)));
-    block.replaceWith(p);
+    Array.from(bq.childNodes).forEach(n => p.appendChild(n.cloneNode(true)));
+    bq.replaceWith(p);
   } else {
     document.execCommand('formatBlock', false, 'blockquote');
   }
@@ -1420,6 +1425,12 @@ function initEditor() {
 
   area.addEventListener('focus', () => {
     document.getElementById('editor-toolbar')?.classList.add('active');
+  });
+  area.addEventListener('keydown', (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      document.execCommand(e.shiftKey ? 'outdent' : 'indent', false, null);
+    }
   });
 
   area.addEventListener('paste', (e) => {
