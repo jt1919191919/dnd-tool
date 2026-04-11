@@ -1340,14 +1340,22 @@ function promptImageName(originalName) {
       <div style="font-size:0.85rem;color:#aaa;margin-bottom:8px">Save image as:</div>
       <input id="img-name-input" type="text" value="${originalName}" style="width:100%;padding:7px;background:#0f3460;border:1px solid #0f3460;border-radius:4px;color:#e0e0e0;margin-bottom:8px;font-size:0.9rem"/>
       <div style="display:flex;gap:8px">
-        <button onclick="document.querySelectorAll('.toolbar-popup').forEach(p=>p.remove());window._imgNameResolve(document.getElementById('img-name-input')?.value.trim())" style="flex:1;padding:6px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer">Upload</button>
-        <button onclick="document.querySelectorAll('.toolbar-popup').forEach(p=>p.remove());window._imgNameResolve(null)" style="flex:1;padding:6px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer">Cancel</button>
+        <button id="img-name-confirm" style="flex:1;padding:6px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer">Upload</button>
+        <button id="img-name-cancel" style="flex:1;padding:6px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer">Cancel</button>
       </div>`;
-    window._imgNameResolve = resolve;
     document.body.appendChild(popup);
     setTimeout(() => {
       const inp = document.getElementById('img-name-input');
       if (inp) { inp.focus(); inp.select(); }
+      document.getElementById('img-name-confirm').onclick = () => {
+        const val = document.getElementById('img-name-input')?.value.trim();
+        document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+        resolve(val);
+      };
+      document.getElementById('img-name-cancel').onclick = () => {
+        document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+        resolve(null);
+      };
     }, 50);
   });
 }
