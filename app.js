@@ -1422,6 +1422,7 @@ function initEditor() {
       e.preventDefault();
       document.execCommand(e.shiftKey ? 'outdent' : 'indent', false, null);
     }
+    if (e.key === 'Escape') removeResizeHandle();
   });
 
   area.addEventListener('paste', (e) => {
@@ -1446,9 +1447,6 @@ function initEditor() {
   // Image resize on click
   area.addEventListener('click', (e) => {
     if (e.target.tagName === 'IMG') initImageResize(e.target);
-  });
-  area.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') removeResizeHandle();
   });
 }
 
