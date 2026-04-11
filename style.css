@@ -133,6 +133,16 @@ main { padding: 16px; }
 }
 #page-content h1, #page-content h2, #page-content h3 { color: #e2b96f; margin: 16px 0 8px; }
 #page-content p { margin-bottom: 10px; }
+#page-content ul, #page-content ol {
+  margin: 6px 0 10px 24px;
+  padding-left: 8px;
+}
+#page-content li { margin-bottom: 4px; }
+.content-editable ul, .content-editable ol {
+  margin: 6px 0 10px 24px;
+  padding-left: 8px;
+}
+.content-editable li { margin-bottom: 4px; }
 #page-content a { color: #7eb8f7; }
 #page-content img { max-width: 100%; border-radius: 6px; margin: 10px 0; }
 
