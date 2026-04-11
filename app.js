@@ -1348,19 +1348,24 @@ function toolbarClearFormat() {
   area.focus();
   const sel = window.getSelection();
   if (!sel.rangeCount) return;
-  // Remove inline formatting
   document.execCommand('removeFormat', false, null);
   document.execCommand('unlink', false, null);
-  // Convert block element to paragraph
+  // Only convert block if it's a heading — don't touch divs from pasted content
   const range = sel.getRangeAt(0);
   let block = range.startContainer;
-  while (block && block.parentNode !== area) block = block.parentNode;
-  if (block && block !== area && block.tagName !== 'P') {
-    const p = document.createElement('p');
-    Array.from(block.childNodes).forEach(n => {
-      if (!n.classList?.contains('h-badge')) p.appendChild(n.cloneNode(true));
-    });
-    block.replaceWith(p);
+  if (block.nodeType === 3) block = block.parentNode;
+  // Walk up only through heading tags, stop at div or area boundary
+  while (block && block !== area) {
+    if (/^H[1-4]$/.test(block.tagName)) {
+      const p = document.createElement('p');
+      Array.from(block.childNodes).forEach(n => {
+        if (!n.classList?.contains('h-badge')) p.appendChild(n.cloneNode(true));
+      });
+      block.replaceWith(p);
+      return;
+    }
+    if (block.tagName === 'DIV' || block.tagName === 'SECTION') break;
+    block = block.parentNode;
   }
 }
 
@@ -1463,10 +1468,22 @@ function initEditor() {
       a.replaceWith(text);
     });
     div.querySelectorAll('img').forEach(img => {
-      // Remove parent element if it becomes empty after image removal
-      const parent = img.parentElement;
+      let parent = img.parentElement;
       img.remove();
-      if (parent && !parent.textContent.trim() && parent !== div) parent.remove();
+      // Walk up removing empty ancestors
+      while (parent && parent !== div) {
+        const text = parent.textContent.replace(/\u00a0/g, '').trim();
+        if (!text && !parent.querySelector('img,video,iframe,table')) {
+          const next = parent.parentElement;
+          parent.remove();
+          parent = next;
+        } else break;
+      }
+    });
+    // Also remove any remaining empty block elements
+    div.querySelectorAll('p,div,span').forEach(el => {
+      const text = el.textContent.replace(/\u00a0/g, '').trim();
+      if (!text && !el.querySelector('img,video,iframe,table,input')) el.remove();
     });
     document.execCommand('insertHTML', false, div.innerHTML);
   });
