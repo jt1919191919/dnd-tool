@@ -623,29 +623,7 @@ function refreshHeadingBadges() {
   });
 }
 
-function initEditor() {
-  const area = document.getElementById('editor-area');
-  if (!area) return;
-
-  area.addEventListener('paste', (e) => {
-    const strip = document.getElementById('strip-links-toggle').checked;
-    if (!strip) return;
-    e.preventDefault();
-    const html = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
-    const div = document.createElement('div');
-    div.innerHTML = html;
-    div.querySelectorAll('a').forEach(a => {
-      const text = document.createTextNode(a.textContent);
-      a.replaceWith(text);
-    });
-    document.execCommand('insertHTML', false, div.innerHTML);
-  });
-
-  area.addEventListener('input', refreshHeadingBadges);
-  area.addEventListener('paste', () => setTimeout(refreshHeadingBadges, 100));
-}
-
-function openHeadingLevelPopup(badge, headingEl) {
+function openHeadingLevelPopup
   document.querySelectorAll('.heading-level-popup').forEach(p => p.remove());
   const popup = document.createElement('div');
   popup.className = 'heading-level-popup';
@@ -1462,10 +1440,16 @@ function initEditor() {
 
   area.addEventListener('input', refreshHeadingBadges);
   area.addEventListener('paste', () => setTimeout(refreshHeadingBadges, 100));
-
   // Update heading dropdown on cursor move
   area.addEventListener('keyup', updateToolbarState);
   area.addEventListener('mouseup', updateToolbarState);
+  // Image resize on click
+  area.addEventListener('click', (e) => {
+    if (e.target.tagName === 'IMG') initImageResize(e.target);
+  });
+  area.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') removeResizeHandle();
+  });
 }
 
 function updateToolbarState() {
@@ -1547,4 +1531,80 @@ function dismissFlaggedImage(index) {
   flags.splice(index, 1);
   localStorage.setItem('flagged_images', JSON.stringify(flags));
   renderLargeImages();
+}
+
+// ─── IMAGE RESIZE ─────────────────────────────────────────────────────────────
+function removeResizeHandle() {
+  document.querySelectorAll('.img-resize-wrap').forEach(wrap => {
+    const img = wrap.querySelector('img');
+    if (img) wrap.replaceWith(img);
+  });
+}
+
+function initImageResize(img) {
+  // Don't double-wrap
+  if (img.parentElement?.classList.contains('img-resize-wrap')) return;
+  removeResizeHandle();
+
+  const wrap = document.createElement('span');
+  wrap.className = 'img-resize-wrap';
+  wrap.style.cssText = 'display:inline-block;position:relative;line-height:0;';
+  img.parentNode.insertBefore(wrap, img);
+  wrap.appendChild(img);
+
+  img.style.width = img.offsetWidth + 'px';
+  img.style.height = 'auto';
+  img.draggable = false;
+
+  const handle = document.createElement('span');
+  handle.className = 'img-resize-handle';
+  handle.style.cssText = 'position:absolute;bottom:4px;right:4px;width:12px;height:12px;background:#e2b96f;border-radius:2px;cursor:se-resize;z-index:10;';
+  wrap.appendChild(handle);
+
+  let startX, startW;
+
+  handle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    startX = e.clientX;
+    startW = img.offsetWidth;
+
+    const onMove = (e) => {
+      const newW = Math.max(40, startW + (e.clientX - startX));
+      img.style.width = newW + 'px';
+    };
+    const onUp = () => {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  // Touch support
+  handle.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    startX = e.touches[0].clientX;
+    startW = img.offsetWidth;
+
+    const onMove = (e) => {
+      const newW = Math.max(40, startW + (e.touches[0].clientX - startX));
+      img.style.width = newW + 'px';
+    };
+    const onEnd = () => {
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+    };
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+  });
+
+  // Click outside removes handle
+  setTimeout(() => {
+    document.addEventListener('click', function handler(e) {
+      if (!wrap.contains(e.target)) {
+        removeResizeHandle();
+        document.removeEventListener('click', handler);
+      }
+    });
+  }, 50);
 }
