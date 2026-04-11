@@ -4,6 +4,7 @@ const GITHUB_USER = 'jt1919191919';
 const GITHUB_REPO = 'dnd-tool';
 const RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/data`;
 const GITHUB_API = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data`;
+const GITHUB_API_ROOT = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents`;
 
 function getPAT() { return localStorage.getItem('dnd_pat') || ''; }
 
@@ -1270,9 +1271,9 @@ async function applyImage() {
     const base64 = compressed.split(',')[1];
     const pat = getPAT();
     const headers = { Authorization: `token ${pat}`, 'Content-Type': 'application/json' };
-    const existing = await fetch(`${GITHUB_API}/${path}`, { headers });
+    const existing = await fetch(`${GITHUB_API_ROOT}/${path}`, { headers });
     const sha = existing.ok ? (await existing.json()).sha : undefined;
-    const res = await fetch(`${GITHUB_API}/${path}`, {
+    const res = await fetch(`${GITHUB_API_ROOT}/${path}`, {
       method: 'PUT', headers,
       body: JSON.stringify({ message: `Upload image: ${filename}`, content: base64, ...(sha && { sha }) })
     });
