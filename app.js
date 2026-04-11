@@ -517,7 +517,6 @@ function handleSearch(query) {
   if (!query.trim()) {
     resultsWrap.classList.add('hidden');
     cards.classList.remove('hidden');
-    // If we're on a page view, restore it
     if (currentPageId) {
       document.getElementById('view-home').classList.add('hidden');
       document.getElementById('view-page').classList.remove('hidden');
@@ -525,7 +524,6 @@ function handleSearch(query) {
     return;
   }
 
-  // Always show home view container for results
   document.getElementById('view-page').classList.add('hidden');
   document.getElementById('view-dm-editor').classList.add('hidden');
   document.getElementById('view-dm-config').classList.add('hidden');
@@ -535,86 +533,153 @@ function handleSearch(query) {
   resultsList.innerHTML = '';
 
   const q = query.toLowerCase();
-  let found = false;
+  // Group results by pageId
+  const groups = {}; // { pageId: { title, items: [] } }
 
+  const addResult = (pageId, pageTitle, itemHtml, onClickFn) => {
+    if (!groups[pageId]) groups[pageId] = { title: pageTitle, items: [] };
+    groups[pageId].items.push({ itemHtml, onClickFn });
+  };
+
+  // ── Page content search ──────────────────────────────────────────
   for (const [id, page] of Object.entries(pages)) {
     if (!canSee(id)) continue;
     const titleMatch = page.title?.toLowerCase().includes(q);
     const contentText = stripHTML(page.content || '');
-    const contentMatch = contentText.toLowerCase().includes(q);
     const descMatch = page.description?.toLowerCase().includes(q);
 
-    if (titleMatch || contentMatch || descMatch) {
-      found = true;
+    if (titleMatch || descMatch) {
+      addResult(id, page.title, `
+        <div class="search-result-title">${highlightMatch(page.title, query)}</div>
+        <div class="search-result-snippet">${highlightMatch(page.description || '', query)}</div>`,
+        () => { clearSearch(); navigateTo(id); });
+    }
 
-      // Find which heading the match is under
-      const headingInfo = findNearestHeading(page.content || '', q);
+    // Find ALL content matches, not just first
+    if (contentText.toLowerCase().includes(q)) {
+      const div = document.createElement('div');
+      div.innerHTML = page.content || '';
+      div.querySelectorAll('.h-badge').forEach(b => b.remove());
 
-      const item = document.createElement('div');
-      item.className = 'search-result-item';
-      item.onclick = () => {
-        const targetHeadingId = headingInfo.headingId;
-        const targetText = headingInfo.headingText;
-        document.getElementById('search-input').value = '';
-        handleSearch('');
-        navigateTo(id);
-        if (targetHeadingId && targetText) {
-          const tryScroll = (attempts) => {
-            // Find heading by its text content since IDs are reassigned on render
-            const allH = document.querySelectorAll('#page-content h1,#page-content h2,#page-content h3,#page-content h4');
-            const match = Array.from(allH).find(h => h.textContent.replace('🔗','').trim() === targetText);
-            if (match) {
-              match.scrollIntoView({ behavior: 'smooth' });
-            } else if (attempts > 0) {
-              setTimeout(() => tryScroll(attempts - 1), 100);
-            }
-          };
-          setTimeout(() => tryScroll(15), 150);
+      // Walk through all text nodes finding matches
+      const allHeadings = Array.from(div.querySelectorAll('h1,h2,h3,h4'));
+      let lastHeading = null;
+      const seenHeadings = new Set();
+
+      const walkNode = (node) => {
+        if (node.nodeType === 1 && /^H[1-4]$/.test(node.tagName)) {
+          lastHeading = node;
         }
+        if (node.nodeType === 3 && node.textContent.toLowerCase().includes(q)) {
+          const headingText = lastHeading ? lastHeading.textContent.replace('🔗','').trim() : null;
+          const headingKey = headingText || '__top__';
+          if (!seenHeadings.has(headingKey)) {
+            seenHeadings.add(headingKey);
+            const snippet = getSnippet(node.textContent, query);
+            const headingIdx = lastHeading ? allHeadings.indexOf(lastHeading) : -1;
+            const capturedHeading = lastHeading;
+            addResult(id, page.title, `
+              <div class="search-result-title">${highlightMatch(page.title, query)}</div>
+              ${headingText ? `<div class="search-result-heading">Under: ${headingText}</div>` : ''}
+              <div class="search-result-snippet">${highlightMatch(snippet, query)}</div>`,
+              () => {
+                clearSearch();
+                navigateTo(id);
+                if (capturedHeading) {
+                  const hText = capturedHeading.textContent.replace('🔗','').trim();
+                  const tryScroll = (attempts) => {
+                    const allH = document.querySelectorAll('#page-content h1,#page-content h2,#page-content h3,#page-content h4');
+                    const match = Array.from(allH).find(h => h.textContent.replace('🔗','').trim() === hText);
+                    if (match) match.scrollIntoView({ behavior: 'smooth' });
+                    else if (attempts > 0) setTimeout(() => tryScroll(attempts - 1), 100);
+                  };
+                  setTimeout(() => tryScroll(15), 150);
+                }
+              });
+          }
+        }
+        for (const child of node.childNodes) walkNode(child);
       };
-
-      const snippet = getSnippet(contentText, q);
-      const highlightedSnippet = highlightMatch(snippet, query);
-      const highlightedTitle = highlightMatch(page.title, query);
-
-      item.innerHTML = `
-        <div class="search-result-title">${highlightedTitle}</div>
-        ${headingInfo.headingText ? `<div class="search-result-heading">Under: ${headingInfo.headingText}</div>` : ''}
-        <div class="search-result-snippet">${highlightedSnippet}</div>`;
-      resultsList.appendChild(item);
+      walkNode(div);
     }
   }
 
-  // Also search spell index
+  // ── Spell/Monster table search ───────────────────────────────────
   const spellMatches = spellIndex.filter(s => s.allText && s.allText.includes(q));
   for (const spell of spellMatches) {
-    // Don't show if we already showed the page as a full result
-    found = true;
-    const item = document.createElement('div');
-    item.className = 'search-result-item';
-    item.onclick = () => {
-      document.getElementById('search-input').value = '';
-      handleSearch('');
-      navigateTo(spell.pageId);
-      // After page renders, scroll to and open the spell row
-      setTimeout(() => navigateToSpellRow(spell.tableId, spell.name), 400);
-    };
-    // Find which cell matched and build snippet
-    let snippet = '';
-    for (const [k, v] of Object.entries(spell.cells)) {
-      if (k === 'Name') continue;
-      if (v.toLowerCase().includes(q)) { snippet = `<em>${k}:</em> ${highlightMatch(getSnippet(v, query), query)}`; break; }
-    }
     const resultIcon = spell.tableType === 'monster' ? '🐉' : '🔮';
-    item.innerHTML = `
+    let snippet = '';
+    if (spell.cells) {
+      for (const [k, v] of Object.entries(spell.cells)) {
+        if (k === 'Name') continue;
+        if (v.toLowerCase().includes(q)) {
+          snippet = `<em>${k}:</em> ${highlightMatch(getSnippet(v, query), query)}`;
+          break;
+        }
+      }
+    }
+    addResult(spell.pageId, spell.pageTitle, `
       <div class="search-result-title">${resultIcon} ${highlightMatch(spell.name, query)}</div>
-      <div class="search-result-heading">${spell.pageTitle}${spell.nearestHeading ? ` › ${spell.nearestHeading}` : ''}</div>
-      ${snippet ? `<div class="search-result-snippet">${snippet}</div>` : ''}`;
-    resultsList.appendChild(item);
+      ${spell.nearestHeading ? `<div class="search-result-heading">${spell.nearestHeading}</div>` : ''}
+      ${snippet ? `<div class="search-result-snippet">${snippet}</div>` : ''}`,
+      () => {
+        clearSearch();
+        navigateTo(spell.pageId);
+        setTimeout(() => navigateToSpellRow(spell.tableId, spell.name), 400);
+      });
   }
-  if (!found) resultsList.innerHTML = '<p style="color:#aaa;padding:10px">No results found.</p>';
+
+  // ── Render grouped results ───────────────────────────────────────
+  if (!Object.keys(groups).length) {
+    resultsList.innerHTML = '<p style="color:#aaa;padding:10px">No results found.</p>';
+    return;
+  }
+
+  for (const [pageId, group] of Object.entries(groups)) {
+    const isMulti = group.items.length > 1;
+    const folder = document.createElement('div');
+    folder.style.cssText = 'margin-bottom:8px;';
+
+    if (isMulti) {
+      // Folder header
+      const header = document.createElement('div');
+      header.style.cssText = 'background:#0f3460;border:1px solid #0f3460;border-radius:6px;padding:8px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;';
+      header.innerHTML = `<span style="color:#e2b96f;font-weight:bold">📁 ${group.title}</span><span style="color:#aaa;font-size:0.8rem">${group.items.length} results ▶</span>`;
+      const children = document.createElement('div');
+      children.style.cssText = 'display:none;padding-left:12px;margin-top:4px;';
+      group.items.forEach(({ itemHtml, onClickFn }) => {
+        const item = document.createElement('div');
+        item.className = 'search-result-item';
+        item.innerHTML = itemHtml;
+        item.onclick = onClickFn;
+        children.appendChild(item);
+      });
+      let open = false;
+      header.onclick = () => {
+        open = !open;
+        children.style.display = open ? '' : 'none';
+        header.querySelector('span:last-child').textContent = `${group.items.length} results ${open ? '▼' : '▶'}`;
+      };
+      folder.appendChild(header);
+      folder.appendChild(children);
+    } else {
+      // Single result — show directly
+      const { itemHtml, onClickFn } = group.items[0];
+      const item = document.createElement('div');
+      item.className = 'search-result-item';
+      item.innerHTML = itemHtml;
+      item.onclick = onClickFn;
+      folder.appendChild(item);
+    }
+
+    resultsList.appendChild(folder);
+  }
 }
 
+function clearSearch() {
+  document.getElementById('search-input').value = '';
+  handleSearch('');
+}
 function stripHTML(html) {
   const div = document.createElement('div');
   div.innerHTML = html;
