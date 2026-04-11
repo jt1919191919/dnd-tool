@@ -514,11 +514,11 @@ mark {
 .color-picker-panel {
   background: #16213e;
   border: 1px solid #e2b96f;
-  border-radius: 0 0 6px 6px;
+  border-radius: 6px 6px 0 0;
   padding: 10px;
   z-index: 49;
   position: sticky;
-  top: 189px;
+  bottom: 52px;
 }
 
 .color-swatches {
