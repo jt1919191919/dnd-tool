@@ -447,3 +447,106 @@ mark {
 }
 
 .spell-popup-higher strong { color: #e2b96f; }
+
+/* EDITOR TOOLBAR */
+.editor-toolbar {
+  display: none;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 6px 8px;
+  background: #0f3460;
+  border: 1px solid #0f3460;
+  border-radius: 6px 6px 0 0;
+  margin-bottom: 0;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  align-items: center;
+}
+.editor-toolbar.active { display: flex; }
+
+.toolbar-group {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+  padding-right: 6px;
+  border-right: 1px solid #1a1a2e;
+  margin-right: 2px;
+}
+.toolbar-group:last-child { border-right: none; }
+
+.tb-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: #e0e0e0;
+  border-radius: 4px;
+  padding: 3px 7px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.tb-btn:hover { background: #16213e; border-color: #e2b96f; }
+.tb-btn.active { background: #16213e; border-color: #e2b96f; color: #e2b96f; }
+
+#toolbar-heading {
+  background: #0f3460;
+  color: #e0e0e0;
+  border: 1px solid #1a1a2e;
+  border-radius: 4px;
+  padding: 3px 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.color-picker-panel {
+  background: #16213e;
+  border: 1px solid #e2b96f;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 6px;
+  z-index: 60;
+}
+
+.color-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.color-swatch {
+  width: 22px;
+  height: 22px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 2px solid transparent;
+  flex-shrink: 0;
+}
+.color-swatch:hover { border-color: #fff; }
+
+/* Editable table styles */
+.editor-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 10px 0;
+}
+.editor-table td, .editor-table th {
+  border: 1px solid #0f3460;
+  padding: 6px 10px;
+  min-width: 60px;
+  vertical-align: top;
+}
+.editor-table th {
+  background: #0f3460;
+  color: #e2b96f;
+}
+
+blockquote {
+  border-left: 3px solid #e2b96f;
+  margin: 10px 0;
+  padding: 6px 14px;
+  color: #aaa;
+  font-style: italic;
+  background: rgba(15,52,96,0.3);
+  border-radius: 0 6px 6px 0;
+}
