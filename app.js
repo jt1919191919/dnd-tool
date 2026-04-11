@@ -1277,6 +1277,7 @@ async function applyImage() {
       method: 'PUT', headers,
       body: JSON.stringify({ message: `Upload image: ${filename}`, content: base64, ...(sha && { sha }) })
     });
+    console.log('Image upload status:', res.status, await res.text());
     if (!res.ok) { alert('Image upload failed.'); return; }
     const imgUrl = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/main/${path}`;
     const flagged = originalSize > 500 * 1024;
