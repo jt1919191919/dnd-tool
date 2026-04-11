@@ -254,6 +254,7 @@ function navigateTo(pageId) {
   tempDiv.innerHTML = page.content || '';
   tempDiv.querySelectorAll('.h-badge').forEach(b => b.remove());
   document.getElementById('page-content').innerHTML = tempDiv.innerHTML;
+  window.scrollTo(0, 0);
   renderAllTableBlocks(currentPlayer.isDM);
   buildOutline();
 
@@ -717,6 +718,10 @@ async function savePage() {
   }
   buildNav();
   alert('Saved to GitHub!');
+  if (currentPageId) {
+    document.getElementById('view-dm-editor').classList.add('hidden');
+    navigateTo(currentPageId);
+  }
 }
 
 async function deleteCurrentPage() {
