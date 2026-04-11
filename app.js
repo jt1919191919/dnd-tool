@@ -623,7 +623,7 @@ function refreshHeadingBadges() {
   });
 }
 
-function openHeadingLevelPopup
+function openHeadingLevelPopup(badge, headingEl) {
   document.querySelectorAll('.heading-level-popup').forEach(p => p.remove());
   const popup = document.createElement('div');
   popup.className = 'heading-level-popup';
