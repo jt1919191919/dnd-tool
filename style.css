@@ -574,3 +574,8 @@ blockquote {
   background: rgba(15,52,96,0.3);
   border-radius: 0 6px 6px 0;
 }
+
+.card.drag-over {
+  border-color: #e2b96f;
+  opacity: 0.7;
+}
