@@ -4,5 +4,7 @@
   "thumbnail": "https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg",
   "description": "sdfghjgfds",
   "content": "<span style=\"font-size: 15.2px;\">sdfghjgfds</span><div><span style=\"font-size: 15.2px;\">sdfghjgfds</span><span style=\"font-size: 15.2px;\"></span></div><div><span style=\"font-size: 15.2px;\">sdfghjgfds</span><span style=\"font-size: 15.2px;\"></span><span style=\"font-size: 15.2px;\">sdfghjgfds</span><span style=\"font-size: 15.2px;\">sdfghjgfds</span></div><div><span style=\"font-size: 15.2px;\"><br></span></div><div><span style=\"font-size: 15.2px;\"><br></span></div><div><span style=\"font-size: 15.2px;\"><br></span></div>",
-  "visibleTo": []
+  "visibleTo": [
+    "__ALL__"
+  ]
 }
