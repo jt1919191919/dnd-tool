@@ -186,6 +186,18 @@ function buildNav() {
   ul.innerHTML = '<li><a href="#" onclick="showView(\'home\')">🏠 Home</a></li>';
 }
 
+function enterReorderMode() {
+  document.getElementById('side-menu').classList.add('hidden');
+  showView('home');
+  document.getElementById('reorder-bar').classList.remove('hidden');
+  renderCards(true);
+}
+
+function exitReorderMode() {
+  document.getElementById('reorder-bar').classList.add('hidden');
+  renderCards(false);
+}
+
 function toggleMenu() {
   document.getElementById('side-menu').classList.toggle('hidden');
 }
@@ -410,28 +422,89 @@ function scrollToHeading(id) {
 }
 
 // ─── CARDS ────────────────────────────────────────────────────────────────────
-function renderCards() {
+function getPageOrder() {
+  // Use saved order from index, filtered to only pages that exist and are visible
+  const allIds = Object.keys(pages);
+  return allIds;
+}
+
+function renderCards(reorderMode) {
   const grid = document.getElementById('cards-grid');
   grid.innerHTML = '';
-  for (const [id, page] of Object.entries(pages)) {
-    if (!canSee(id)) continue;
+  const ids = getPageOrder().filter(id => canSee(id));
+  ids.forEach(id => {
+    const page = pages[id];
+    if (!page) return;
     const card = document.createElement('div');
     card.className = 'card';
+    card.dataset.pageId = id;
+    if (reorderMode) card.draggable = true;
     const imgHtml = page.thumbnail
       ? `<img src="${page.thumbnail}" alt="${page.title}" loading="lazy"/>`
       : `<div class="card-no-img">📜</div>`;
     card.innerHTML = `
+      ${reorderMode ? '<div class="drag-handle" style="text-align:center;padding:4px;color:#e2b96f;font-size:1.2rem;cursor:grab">⠿</div>' : ''}
       ${imgHtml}
       <div class="card-body">
         <div class="card-title-row">
           <span class="card-title">${page.title}</span>
-          ${currentPlayer.isDM ? `<button class="share-btn" onclick="event.stopPropagation();openSharePanel('${id}',null)" title="Share">🔗</button>
+          ${currentPlayer.isDM && !reorderMode ? `<button class="share-btn" onclick="event.stopPropagation();openSharePanel('${id}',null)" title="Share">🔗</button>
           <button class="share-btn" onclick="event.stopPropagation();openVisibilityPopup('${id}',this)" title="Visibility">👁️</button>` : ''}
         </div>
         <div class="card-desc">${page.description || ''}</div>
       </div>`;
-    card.onclick = () => navigateTo(id);
+    if (!reorderMode) card.onclick = () => navigateTo(id);
     grid.appendChild(card);
+  });
+
+  if (reorderMode) initCardDrag(grid);
+}
+
+function initCardDrag(grid) {
+  let dragSrc = null;
+
+  grid.querySelectorAll('.card').forEach(card => {
+    card.addEventListener('dragstart', (e) => {
+      dragSrc = card;
+      card.style.opacity = '0.4';
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    card.addEventListener('dragend', () => {
+      card.style.opacity = '';
+      grid.querySelectorAll('.card').forEach(c => c.classList.remove('drag-over'));
+    });
+    card.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      grid.querySelectorAll('.card').forEach(c => c.classList.remove('drag-over'));
+      card.classList.add('drag-over');
+    });
+    card.addEventListener('drop', (e) => {
+      e.preventDefault();
+      if (dragSrc === card) return;
+      const allCards = Array.from(grid.querySelectorAll('.card'));
+      const srcIdx = allCards.indexOf(dragSrc);
+      const tgtIdx = allCards.indexOf(card);
+      if (srcIdx < tgtIdx) grid.insertBefore(dragSrc, card.nextSibling);
+      else grid.insertBefore(dragSrc, card);
+      card.classList.remove('drag-over');
+    });
+  });
+}
+
+async function savePageOrder() {
+  const grid = document.getElementById('cards-grid');
+  const newOrder = Array.from(grid.querySelectorAll('.card')).map(c => c.dataset.pageId);
+  // Reorder the pages object and save index
+  const newPages = {};
+  newOrder.forEach(id => { if (pages[id]) newPages[id] = pages[id]; });
+  // Include any pages not in grid (shouldn't happen but safety net)
+  Object.keys(pages).forEach(id => { if (!newPages[id]) newPages[id] = pages[id]; });
+  pages = newPages;
+  const ok = await githubSave('pages/index.json', newOrder, 'Reorder pages');
+  if (ok) {
+    alert('Order saved!');
+    exitReorderMode();
   }
 }
 
