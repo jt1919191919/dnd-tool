@@ -45,6 +45,7 @@
         <li><a href="#" onclick="showView('dm-tables')">🗂️ Manage Tables</a></li>
         <li><a href="#" onclick="clearDeviceMemory()">🗑️ Clear Device Memory</a></li>
         <li><a href="#" onclick="downloadBackup()">💾 Backup</a></li>
+        <li><a href="#" onclick="showView('dm-images')">🖼️ Large Images</a></li>
       </ul>
     </div>
   </nav>
@@ -91,6 +92,43 @@
         <button type="button" onclick="insertTableFromCSV('spell')" style="padding:4px 10px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;font-size:0.85rem">📊 Insert Spell Table</button>
         <button type="button" onclick="insertTableFromCSV('monster')" style="padding:4px 10px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;font-size:0.85rem">🐉 Insert Monster Table</button>
       </div> 
+      <div id="editor-toolbar" class="editor-toolbar">
+        <div class="toolbar-group">
+          <select id="toolbar-heading" onchange="toolbarHeading(this.value)" title="Heading level">
+            <option value="p">Paragraph</option>
+            <option value="h1">H1</option>
+            <option value="h2">H2</option>
+            <option value="h3">H3</option>
+            <option value="h4">H4</option>
+          </select>
+        </div>
+        <div class="toolbar-group">
+          <button class="tb-btn" onclick="toolbarExec('bold')" title="Bold"><b>B</b></button>
+          <button class="tb-btn" onclick="toolbarExec('italic')" title="Italic"><i>I</i></button>
+          <button class="tb-btn" onclick="toolbarExec('underline')" title="Underline"><u>U</u></button>
+          <button class="tb-btn" onclick="toolbarExec('strikeThrough')" title="Strikethrough"><s>S</s></button>
+        </div>
+        <div class="toolbar-group">
+          <button class="tb-btn" id="tb-color-btn" title="Text Color" onclick="toggleColorPicker('text')">A</button>
+          <button class="tb-btn" id="tb-highlight-btn" title="Highlight" onclick="toggleColorPicker('highlight')">H</button>
+        </div>
+        <div class="toolbar-group">
+          <button class="tb-btn" onclick="toolbarExec('justifyLeft')" title="Align Left">⬅</button>
+          <button class="tb-btn" onclick="toolbarExec('justifyCenter')" title="Center">☰</button>
+          <button class="tb-btn" onclick="toolbarExec('justifyRight')" title="Align Right">➡</button>
+        </div>
+        <div class="toolbar-group">
+          <button class="tb-btn" onclick="toolbarExec('insertUnorderedList')" title="Bullet List">•≡</button>
+          <button class="tb-btn" onclick="toolbarExec('insertOrderedList')" title="Numbered List">1≡</button>
+        </div>
+        <div class="toolbar-group">
+          <button class="tb-btn" onclick="toolbarBlockquote()" title="Blockquote">❝</button>
+          <button class="tb-btn" onclick="toolbarLink()" title="Insert/Edit Link">🔗</button>
+          <button class="tb-btn" onclick="toolbarImage()" title="Insert Image">🖼</button>
+          <button class="tb-btn" onclick="toolbarTable()" title="Insert Table">⊞</button>
+        </div>
+      </div>
+      <div id="color-picker-panel" class="color-picker-panel hidden"></div>
       <div id="editor-area" contenteditable="true" class="content-editable"></div>
       <div id="editor-actions">
         <button onclick="savePage()">💾 Save Page</button>
@@ -104,6 +142,14 @@
       <p style="font-size:0.8rem;color:#aaa;margin-bottom:12px">Tables still referenced in a page are marked ✅. Orphaned tables can be safely deleted.</p>
       <div id="tables-list"></div>
       <button onclick="showView('dm-config')" style="margin-top:12px;padding:6px 14px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer">← Back</button>
+    </div>
+
+    <!-- DM IMAGES VIEW -->
+    <div id="view-dm-images" class="hidden">
+      <h2>🖼️ Large Images</h2>
+      <p style="font-size:0.8rem;color:#aaa;margin-bottom:12px">Images over 500KB uploaded to your repo. Click a page to open its editor.</p>
+      <div id="large-images-list"></div>
+      <button onclick="showView('home')" style="margin-top:12px;padding:6px 14px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer">← Back</button>
     </div>
     
     <!-- DM CONFIG VIEW -->
