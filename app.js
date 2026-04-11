@@ -1195,6 +1195,11 @@ function applyLink() {
   if (!url) return;
   restoreSelection();
   document.execCommand('createLink', false, url);
+  // Set target="_blank" on all links in editor
+  document.getElementById('editor-area')?.querySelectorAll('a').forEach(a => {
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+  });
   document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
 }
 
@@ -1435,6 +1440,12 @@ function initEditor() {
     div.querySelectorAll('a').forEach(a => {
       const text = document.createTextNode(a.textContent);
       a.replaceWith(text);
+    });
+    div.querySelectorAll('img').forEach(img => {
+      // Remove parent element if it becomes empty after image removal
+      const parent = img.parentElement;
+      img.remove();
+      if (parent && !parent.textContent.trim() && parent !== div) parent.remove();
     });
     document.execCommand('insertHTML', false, div.innerHTML);
   });
