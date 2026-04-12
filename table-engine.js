@@ -198,7 +198,7 @@ function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, is
 
   // Toolbar
   html += `<div class="spell-table-toolbar">
-    <input type="text" class="spell-search" placeholder="Filter ${config?.tableType === 'monster' ? 'monsters' : 'spells'}..." oninput="filterTable('${tableId}', this.value)" style="flex:1;padding:6px 10px;background:#0f3460;border:1px solid #0f3460;border-radius:6px;color:#e0e0e0;font-size:0.85rem"/>
+    <input type="text" class="spell-search" placeholder="Filter ${config?.tableType === 'monster' ? 'monsters' : 'spells'}..." oninput="filterTable('${tableId}', this.value)" style="flex:1;padding:6px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e0e0e0;font-size:0.85rem"/>
     <button class="tbl-btn" onclick="toggleColPanel('${tableId}')">Columns</button>
     ${isDM ? `<button class="tbl-btn" onclick="openTableConfig('${tableId}')">⚙️</button>` : ''}
   </div>`;
@@ -310,7 +310,7 @@ function openSpellPopup(e, tableId, idx) {
   const levelLabel = level.toLowerCase() === 'cantrip' ? 'Cantrip' : `${level} Level`;
   const ritual = row['_ritual'] ? ' • Ritual' : '';
   const durationDisplay = (row['_concentration']
-    ? `<span style="color:#e2b96f;font-weight:bold">Concentration</span>, up to ${row['_durationClean']}`
+    ? `<span style="color:#D39A39;font-weight:bold">Concentration</span>, up to ${row['_durationClean']}`
     : row['_durationClean'] || '');
 
   popup.innerHTML = `
@@ -321,7 +321,7 @@ function openSpellPopup(e, tableId, idx) {
       <div><strong>Casting Time</strong><span>${row['Casting Time'] || ''}</span></div>
       <div><strong>Range</strong><span>${row['Range'] || ''}</span></div>
       <div><strong>Duration</strong><span>${durationDisplay}</span></div>
-      <div><strong>Components</strong><span>${row['Components'] || ''}</span></div>
+      <div><strong>Components</strong><span>${(row['Components'] || '').replace(/([\d,]+\s*GP)/gi, '<span style="color:#D39A39;font-weight:bold">$1</span>')}</span></div>
       ${(showField('Classes') && row['Classes']) ? `<div class="spell-popup-full"><strong>Classes</strong><span>${row['Classes']}</span></div>` : ''}
       ${(showField('Optional/Variant Classes') && row['Optional/Variant Classes']) ? `<div class="spell-popup-full"><strong>Variant Classes</strong><span>${row['Optional/Variant Classes']}</span></div>` : ''}
       ${(showField('Subclasses') && row['Subclasses']) ? `<div class="spell-popup-full"><strong>Subclasses</strong><span>${row['Subclasses']}</span></div>` : ''}
@@ -349,7 +349,7 @@ async function openTableConfig(tableId) {
   popup.className = 'spell-popup table-config-overlay';
   popup.innerHTML = `
     <button class="spell-popup-close" onclick="this.closest('.spell-popup-overlay').remove()">✕</button>
-    <h2 style="color:#e2b96f;margin-bottom:12px">${config.tableType === 'monster' ? '🐉' : '📊'} Table Settings</h2>
+    <h2 style="color:#e0e0e0;margin-bottom:12px">${config.tableType === 'monster' ? '🐉' : '📊'} Table Settings</h2>
     <label style="display:block;margin-bottom:12px;font-size:0.85rem">Display name:
       <input id="cfg-name-${tableId}" type="text" value="${config.displayName || tableId}" style="margin-left:8px;background:#0f3460;color:#e0e0e0;border:1px solid #0f3460;border-radius:4px;padding:3px 8px;width:60%"/>
     </label>
@@ -364,11 +364,11 @@ async function openTableConfig(tableId) {
         <option value="desc" ${config.defaultSortDir === 'desc' ? 'selected' : ''}>Descending</option>
       </select>
     </label>
-    <h3 style="color:#e2b96f;margin:12px 0 8px;font-size:0.9rem">Default visible columns:</h3>
+    <h3 style="color:#e0e0e0;margin:12px 0 8px;font-size:0.9rem">Default visible columns:</h3>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
       ${getTableColumns(config.tableType || 'spell').map(c => '<label style="display:flex;align-items:center;gap:4px;font-size:0.8rem"><input type="checkbox" id="cfg-col-' + tableId + '-' + c.key.replace(/[^a-z0-9]/gi,'_') + '" ' + ((config.visibleCols || getDefaultVisible(config.tableType || 'spell')).includes(c.key) ? 'checked' : '') + '/> ' + c.label + '</label>').join('')}
     </div>
-    <h3 style="color:#e2b96f;margin:12px 0 8px;font-size:0.9rem">Popup visible fields:</h3>
+    <h3 style="color:#e0e0e0;margin:12px 0 8px;font-size:0.9rem">Popup visible fields:</h3>
     <p style="color:#aaa;font-size:0.75rem;margin-bottom:8px">Uncheck to hide fields in the spell detail popup.</p>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
       ${(() => {
@@ -382,7 +382,7 @@ async function openTableConfig(tableId) {
         }).join('');
       })()}
     </div>
-    <button onclick="saveTableConfig('${tableId}')" style="padding:8px 16px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:6px;cursor:pointer">💾 Save Defaults</button>
+    <button onclick="saveTableConfig('${tableId}')" style="padding:8px 16px;border:1px solid #e2b96f;background:transparent;color:#e0e0e0;border-radius:6px;cursor:pointer">💾 Save Defaults</button>
   `;
 
   overlay.appendChild(popup);
@@ -486,7 +486,7 @@ async function insertTableFromCSV(tableType) {
     const icon = tableType === 'monster' ? '🐉' : '📊';
     const label = tableType === 'monster' ? 'Monster Table' : 'Spell Table';
     const area = document.getElementById('editor-area');
-    const placeholder = `<div class="dnd-table-block" data-table-id="${tableId}" data-table-type="${tableType}" contenteditable="false" style="background:#0f3460;border:1px solid #e2b96f;border-radius:6px;padding:12px;margin:10px 0;color:#e2b96f;font-size:0.85rem">${icon} ${label}: ${tableData.name} (${rows.length} rows) — ID: ${tableId}</div>`;
+    const placeholder = `<div class="dnd-table-block" data-table-id="${tableId}" data-table-type="${tableType}" contenteditable="false" style="background:#0f3460;border:1px solid #e2b96f;border-radius:6px;padding:12px;margin:10px 0;color:#e0e0e0;font-size:0.85rem">${icon} ${label}: ${tableData.name} (${rows.length} rows) — ID: ${tableId}</div>`;
     document.execCommand('insertHTML', false, placeholder);
     alert(`${label} "${tableId}" saved!`);
   };
@@ -597,7 +597,7 @@ function openMonsterPopup(row, showField) {
   const sectionBlock = (key, label) => {
     if (!showField(key) || !row[key]) return '';
     return `<div style="margin-bottom:12px">
-      <div style="color:#e2b96f;font-weight:bold;font-size:0.85rem;margin-bottom:4px">${label}</div>
+      <div style="color:#e0e0e0;font-weight:bold;font-size:0.85rem;margin-bottom:4px">${label}</div>
       ${formatEntries(row[key])}
     </div>`;
   };
@@ -613,9 +613,9 @@ function openMonsterPopup(row, showField) {
     const mod = abilityMod(score);
     const isProfSave = a.saveAbbr in profSaveMap;
     const saveVal = isProfSave ? profSaveMap[a.saveAbbr] : mod;
-    const saveStyle = isProfSave ? 'color:#e2b96f;font-weight:bold' : 'color:#e0e0e0';
+    const saveStyle = isProfSave ? 'color:#e0e0e0;font-weight:bold' : 'color:#e0e0e0';
     return `<div style="background:#0f3460;border-radius:6px;padding:6px 4px;text-align:center">
-      <strong style="color:#e2b96f;font-size:0.65rem;display:block">${a.short}</strong>
+      <strong style="color:#e0e0e0;font-size:0.65rem;display:block">${a.short}</strong>
       <span style="font-size:0.95rem;display:block">${score}</span>
       <span style="font-size:0.72rem;display:block;color:#aaa">Mod ${fmtMod(mod)}</span>
       <span style="font-size:0.72rem;display:block;${saveStyle}">Save ${fmtMod(saveVal)}</span>
@@ -628,7 +628,7 @@ function openMonsterPopup(row, showField) {
     const key = sk.name.toLowerCase();
     const isProfSkill = key in profSkillMap;
     const val = isProfSkill ? profSkillMap[key] : mod;
-    const style = isProfSkill ? 'color:#e2b96f;font-weight:bold' : 'color:#aaa';
+    const style = isProfSkill ? 'color:#e0e0e0;font-weight:bold' : 'color:#aaa';
     return `<div style="display:flex;justify-content:space-between;padding:2px 6px;font-size:0.75rem;border-bottom:1px solid rgba(15,52,96,0.5)">
       <span style="${style}">${sk.name}</span>
       <span style="${style}">${fmtMod(val)}</span>
