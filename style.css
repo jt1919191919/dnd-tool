@@ -30,9 +30,9 @@ body {
   font-family: 'Roboto', sans-serif;
   font-size: 14px;
   background-color: var(--bg-body);
-  background-image: url('https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/background-texture6.jpg');
+  background-image: url('https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/background-texture10.jpg');
   background-repeat: repeat;
-  background-size: contain;
+  background-size: cover;
   background-attachment: fixed;
   color: var(--text);
   min-height: 100vh;
