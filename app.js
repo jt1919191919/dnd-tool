@@ -2124,3 +2124,24 @@ function populateGroupDropdown(currentGroup) {
     if (newInput) newInput.style.display = sel.value === '__new__' ? 'block' : 'none';
   };
 }
+
+// ─── GROUP HELPERS ────────────────────────────────────────────────────────────
+function getGroupPages(group) {
+  if (!group) return [];
+  return Object.keys(pages)
+    .filter(id => pages[id].group === group)
+    .sort((a, b) => {
+      const allIds = Object.keys(pages);
+      return allIds.indexOf(a) - allIds.indexOf(b);
+    });
+}
+
+function getGroupFirstPage(group) {
+  return getGroupPages(group)[0] || null;
+}
+
+function isFirstInGroup(pageId) {
+  const group = pages[pageId]?.group;
+  if (!group) return false;
+  return getGroupFirstPage(group) === pageId;
+}
