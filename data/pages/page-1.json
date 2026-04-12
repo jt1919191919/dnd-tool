@@ -5,6 +5,10 @@
   "description": "sdfghjgfds",
   "content": "<span style=\"font-size: 15.2px;\">sdfghjgfds</span><div><span style=\"font-size: 15.2px;\">sdfghjgfds</span><span style=\"font-size: 15.2px;\"></span></div><div><span style=\"font-size: 15.2px;\">sdfghjgfds</span><span style=\"font-size: 15.2px;\"></span><span style=\"font-size: 15.2px;\">sdfghjgfds</span><span style=\"font-size: 15.2px;\">sdfghjgfds</span></div><div><span style=\"font-size: 15.2px;\"><br></span></div><div><span style=\"font-size: 15.2px;\"><br></span></div><div><span style=\"font-size: 15.2px;\"><br></span></div>",
   "visibleTo": [
-    "__ALL__"
+    "__ALL__",
+    "swordpass",
+    "dragonfly22",
+    "moonbeam",
+    "bizzy1"
   ]
 }
