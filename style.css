@@ -44,6 +44,11 @@ h1, h2, h3, h4 {
 
 .hidden { display: none !important; }
 
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 /* ── HEADER ─────────────────────────────────────────────────────── */
 header {
   background: var(--bg-glass);
@@ -249,6 +254,8 @@ main { padding: 16px; }
   padding: 20px;
   line-height: 1.7;
   box-shadow: var(--shadow);
+  overflow-x: hidden;
+  max-width: 100%;
 }
 #page-content h1 { font-size: 35px; color: var(--gold); margin: 20px 0 10px; }
 #page-content h2 { font-size: 27px; color: var(--gold); margin: 18px 0 8px; }
@@ -263,6 +270,16 @@ main { padding: 16px; }
   padding-left: 8px;
 }
 #page-content li { margin-bottom: 4px; }
+
+#page-content * {
+  max-width: 100%;
+}
+#page-content div,
+#page-content p,
+#page-content span {
+  width: auto !important;
+  min-width: 0 !important;
+}
 
 /* ── EDITOR ──────────────────────────────────────────────────────────── */
 #view-dm-editor input[type=text] {
