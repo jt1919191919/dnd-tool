@@ -1188,11 +1188,11 @@ async function fetchJSON(path) {
   const headers = pat ? { Authorization: `token ${pat}` } : {};
   try {
     const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/${path}?_=${Date.now()}`, { headers });
-    if (!res.ok) return null;
+    if (!res.ok) { console.warn(`fetchJSON failed for ${path}:`, res.status); return null; }
     const json = await res.json();
     const decoded = decodeURIComponent(escape(atob(json.content)));
     return JSON.parse(decoded);
-  } catch { return null; }
+  } catch(e) { console.error(`fetchJSON error for ${path}:`, e); return null; }
 }
 
 // ─── Backups ────────────────────────────────────────────────────────────
