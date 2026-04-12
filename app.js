@@ -914,6 +914,17 @@ async function savePage() {
   const id = document.getElementById('editor-page-id').value.trim();
   const title = document.getElementById('editor-page-title').value.trim();
   if (!id || !title) { alert('Page ID and Title required.'); return; }
+  // Check content size before attempting save
+  const contentEl = document.getElementById('editor-area');
+  const contentSize = new Blob([contentEl.innerHTML]).size;
+  console.log(`Page content size: ${(contentSize/1024).toFixed(1)}KB`);
+  if (contentSize > 900000) {
+    alert(`Content is too large (${(contentSize/1024).toFixed(0)}KB). GitHub's API limit is ~1MB. Try splitting this page into multiple smaller pages.`);
+    return;
+  }
+  if (contentSize > 600000) {
+    if (!confirm(`Content is large (${(contentSize/1024).toFixed(0)}KB). This may fail to load reliably. Continue anyway?`)) return;
+  }
   const isNew = !pages[id];
   const pageData = {
     id, title,
