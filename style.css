@@ -118,14 +118,24 @@ header {
   padding-top: calc(var(--header-height) + 50px);
 }
 #side-menu ul { list-style: none; }
-#side-menu li { padding: 6px 0; }
+#side-menu li { padding: 4px 0; }
 #side-menu a {
   color: #e0e0e0;
   text-decoration: none;
   font-size: 0.9rem;
   transition: color 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 #side-menu a:hover { color: #fff; }
+#side-menu a > span.nav-icon {
+  display: inline-flex;
+  width: 20px;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 1rem;
+}
 
 /* ── MAIN ─────────────────────────────────────────────────────────── */
 main { padding: 16px; }
