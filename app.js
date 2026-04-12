@@ -189,7 +189,7 @@ async function buildSpellIndex() {
 // ─── NAV ──────────────────────────────────────────────────────────────────────
 function buildNav() {
   const ul = document.getElementById('nav-links');
-  ul.innerHTML = '<li><a href="#" onclick="showView(\'home\')">⌂ Home</a></li>';
+  ul.innerHTML = '<li><a href="#" onclick="showView(\'home\')"><span class="nav-icon">🏠</span> Home</a></li>';
 }
 
 function enterReorderMode() {
