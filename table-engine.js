@@ -382,7 +382,7 @@ async function openTableConfig(tableId) {
         }).join('');
       })()}
     </div>
-    <button onclick="saveTableConfig('${tableId}')" style="padding:8px 16px;border:1px solid #e2b96f;background:transparent;color:#e0e0e0;border-radius:6px;cursor:pointer">💾 Save Defaults</button>
+    <button onclick="saveTableConfig('${tableId}')" style="padding:8px 16px;border:1px solid #e2b96f;background:transparent;color:#e0e0e0;border-radius:6px;cursor:pointer">✓ Save Defaults</button>
   `;
 
   overlay.appendChild(popup);
