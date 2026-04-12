@@ -350,17 +350,17 @@ async function openTableConfig(tableId) {
   popup.className = 'spell-popup table-config-overlay';
   popup.innerHTML = `
     <button class="spell-popup-close" onclick="this.closest('.spell-popup-overlay').remove()">✕</button>
-    <h2 style="color:#e0e0e0;margin-bottom:12px">${config.tableType === 'monster' ? '🐉' : '📊'} Table Settings</h2>
+    <h2 style="color:#e0e0e0;margin-bottom:12px">
     <label style="display:block;margin-bottom:12px;font-size:0.85rem">Display name:
-      <input id="cfg-name-${tableId}" type="text" value="${config.displayName || tableId}" style="margin-left:8px;background:#0f3460;color:#e0e0e0;border:1px solid #0f3460;border-radius:4px;padding:3px 8px;width:60%"/>
+      <input id="cfg-name-${tableId}" type="text" value="${config.displayName || tableId}" style="margin-left:8px;background:rgba(255,255,255,0.06);color:#e0e0e0;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:3px 8px;width:60%"/>
     </label>
     <label style="display:block;margin-bottom:8px;font-size:0.85rem">Default sort column:
-      <select id="cfg-sort-${tableId}" style="margin-left:8px;background:#0f3460;color:#e0e0e0;border:1px solid #0f3460;border-radius:4px;padding:3px 8px">
+      <select id="cfg-sort-${tableId}" style="margin-left:8px;background:rgba(255,255,255,0.06);color:#e0e0e0;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:3px 8px">
         ${SPELL_COLUMNS.map(c => `<option value="${c.key}" ${config.defaultSort === c.key ? 'selected' : ''}>${c.label}</option>`).join('')}
       </select>
     </label>
     <label style="display:block;margin-bottom:8px;font-size:0.85rem">Default sort direction:
-      <select id="cfg-dir-${tableId}" style="margin-left:8px;background:#0f3460;color:#e0e0e0;border:1px solid #0f3460;border-radius:4px;padding:3px 8px">
+      <select id="cfg-dir-${tableId}" style="margin-left:8px;background:rgba(255,255,255,0.06);color:#e0e0e0;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:3px 8px">
         <option value="asc" ${config.defaultSortDir !== 'desc' ? 'selected' : ''}>Ascending</option>
         <option value="desc" ${config.defaultSortDir === 'desc' ? 'selected' : ''}>Descending</option>
       </select>
@@ -457,6 +457,12 @@ async function getNextTableId() {
 // Insert table block into editor
 async function insertTableFromCSV(tableType) {
   tableType = tableType || 'spell';
+  // Save cursor position before file dialog steals focus
+  const area = document.getElementById('editor-area');
+  let savedRange = null;
+  if (window.getSelection && window.getSelection().rangeCount) {
+    savedRange = window.getSelection().getRangeAt(0).cloneRange();
+  }
   const input = document.createElement('input');
   input.type = 'file';
   input.accept = '.csv';
@@ -486,9 +492,15 @@ async function insertTableFromCSV(tableType) {
 
     const icon = tableType === 'monster' ? '🐉' : '📊';
     const label = tableType === 'monster' ? 'Monster Table' : 'Spell Table';
-    const area = document.getElementById('editor-area');
-    const placeholder = `<div class="dnd-table-block" data-table-id="${tableId}" data-table-type="${tableType}" contenteditable="false" style="background:#0f3460;padding:12px;margin:10px 0;color:#e0e0e0;font-size:0.85rem">${icon} ${label}: ${tableData.name} (${rows.length} rows) — ID: ${tableId}</div>`;
-    document.execCommand('insertHTML', false, placeholder);
+    // Restore cursor and insert at that position
+    area.focus();
+    if (savedRange) {
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(savedRange);
+    }
+    const wrapper = `<p><br/></p><div class="dnd-table-block" data-table-id="${tableId}" data-table-type="${tableType}" contenteditable="false" draggable="true" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:12px;margin:10px 0;color:#e0e0e0;font-size:0.85rem;cursor:grab">${icon} ${label}: ${tableData.name} (${rows.length} rows) — ID: ${tableId}</div><p><br/></p>`;
+    document.execCommand('insertHTML', false, wrapper);
     alert(`${label} "${tableId}" saved!`);
   };
   input.click();
