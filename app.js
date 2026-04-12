@@ -1034,7 +1034,7 @@ function openVisibilityPopup(pageId, btn) {
   }
 
   const saveBtn = document.createElement('button');
-  saveBtn.textContent = '💾 Save';
+  saveBtn.textContent = '✓ Save';
   saveBtn.style.cssText = 'margin-top:10px;width:100%;padding:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#e0e0e0;border-radius:4px;cursor:pointer;';
   saveBtn.onclick = async (e) => {
     e.stopPropagation();
