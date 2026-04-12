@@ -300,7 +300,7 @@ function buildOutline() {
   const levels = [...new Set(headings.map(h => parseInt(h.tagName[1])))].sort();
   const filterWrap = document.createElement('div');
   filterWrap.style.marginBottom = '8px';
-  filterWrap.innerHTML = `<select id="toc-level-filter" style="background:#0f3460;color:#e0e0e0;border:1px solid #0f3460;border-radius:4px;padding:3px 8px;font-size:0.8rem">
+  filterWrap.innerHTML = `<select id="toc-level-filter" style="background:rgba(255,255,255,0.06);color:#e0e0e0;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:3px 8px;font-size:0.8rem">
     <option value="0">Show top level only</option>
     ${levels.map(l => `<option value="${l}">Expand through H${l}</option>`).join('')}
   </select>`;
