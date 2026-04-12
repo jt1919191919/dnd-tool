@@ -1,7 +1,7 @@
 {
   "id": "page-2",
-  "title": "Page 2",
-  "thumbnail": "https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg",
+  "title": "Player's Handbook 2024",
+  "thumbnail": "https://assetsio.gnwcdn.com/dnd-2024-players-handbook-alternate-cover.png?width=2048&height=2048&fit=bounds&quality=85&format=jpg&auto=webp",
   "description": "PHB24",
   "content": "<div><br></div><div><br></div><div><br></div><div><br></div>",
   "visibleTo": [
