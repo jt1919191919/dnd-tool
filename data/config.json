@@ -1,10 +1,6 @@
 {
   "dmToken": "dm-secret-token",
   "players": {
-    "dragonfly22": {
-      "name": "Sara",
-      "color": "#e05c5c"
-    },
     "moonbeam": {
       "name": "Tyler",
       "color": "#5cb85c"
