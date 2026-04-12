@@ -1161,11 +1161,7 @@ function clearDeviceMemory() {
 // ─── FETCH HELPERS ────────────────────────────────────────────────────────────
 async function fetchJSON(path) {
   const pat = getPAT();
-  const headers = {
-    ...(pat ? { Authorization: `token ${pat}` } : {}),
-    'Cache-Control': 'no-cache',
-    'Pragma': 'no-cache'
-  };
+  const headers = pat ? { Authorization: `token ${pat}` } : {};
   try {
     const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/${path}?_=${Date.now()}`, { headers });
     if (!res.ok) return null;
