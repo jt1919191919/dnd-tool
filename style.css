@@ -117,7 +117,7 @@ header {
   border-bottom: 1px solid var(--border);
   padding: 10px 16px;
   position: sticky;
-  top: 92px;
+  top: 95px;
   z-index: 98;
   box-shadow: var(--shadow-sm);
 }
@@ -345,7 +345,7 @@ main { padding: 16px; }
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   margin-bottom: 0;
   position: sticky;
-  top: 56px;
+  top: 94px;
   z-index: 50;
   align-items: center;
   box-shadow: var(--shadow-sm);
