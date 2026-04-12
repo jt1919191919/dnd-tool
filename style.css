@@ -512,8 +512,9 @@ mark {
 .share-btn:hover { opacity: 1; }
 .share-panel-popup {
   position: fixed;
-  bottom: 80px;
-  right: 16px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   background: var(--bg-glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
