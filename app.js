@@ -189,7 +189,7 @@ async function buildSpellIndex() {
 // ─── NAV ──────────────────────────────────────────────────────────────────────
 function buildNav() {
   const ul = document.getElementById('nav-links');
-  ul.innerHTML = '<li><a href="#" onclick="showView(\'home\')">🏠 Home</a></li>';
+  ul.innerHTML = '<li><a href="#" onclick="showView(\'home\')">⌂ Home</a></li>';
 }
 
 function enterReorderMode() {
@@ -1280,7 +1280,7 @@ async function renderManageTables() {
     row.style.cssText = 'display:flex;align-items:center;justify-content:space-between;background:#16213e;border:1px solid #0f3460;border-radius:6px;padding:10px;margin-bottom:8px;';
     row.innerHTML = `
       <span>${isReferenced ? '✅' : '⚠️'} <strong style="color:#e2b96f">${tableId}</strong> <span style="color:#aaa;font-size:0.75rem">${isReferenced ? 'In use' : 'Orphaned'}</span></span>
-      ${!isReferenced ? `<button onclick="deleteOrphanTable('${tableId}', '${file.sha}', this)" style="padding:4px 10px;border:1px solid #c44;background:transparent;color:#c44;border-radius:4px;cursor:pointer;font-size:0.8rem">🗑️ Delete</button>` : ''}
+      ${!isReferenced ? `<button onclick="deleteOrphanTable('${tableId}', '${file.sha}', this)" style="padding:4px 10px;border:1px solid #c44;background:transparent;color:#c44;border-radius:4px;cursor:pointer;font-size:0.8rem">⤫ Delete</button>` : ''}
     `;
     list.appendChild(row);
   }
