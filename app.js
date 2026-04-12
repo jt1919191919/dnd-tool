@@ -802,8 +802,9 @@ function openHeadingLevelPopup(badge, headingEl) {
   popup.className = 'heading-level-popup';
   popup.style.cssText = 'position:fixed;background:#16213e;border:1px solid #e2b96f;border-radius:8px;padding:10px;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,0.5);font-size:0.85rem;';
   const rect = badge.getBoundingClientRect();
-  popup.style.top = `${rect.bottom + 6}px`;
-  popup.style.left = `${rect.left}px`;
+  popup.style.top = '50%';
+  popup.style.left = '50%';
+  popup.style.transform = 'translate(-50%, -50%)';
 
   ['H1','H2','H3','H4','P'].forEach(tag => {
     const opt = document.createElement('div');
@@ -975,14 +976,14 @@ function openVisibilityPopup(pageId, btn) {
   const page = pages[pageId];
   const popup = document.createElement('div');
   popup.className = 'visibility-popup';
-  popup.style.cssText = 'position:fixed;background:#16213e;border:1px solid #e2b96f;border-radius:8px;padding:12px;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,0.5);font-size:0.85rem;min-width:160px;';
+  popup.style.cssText = 'position:fixed;background:rgba(20,21,21,0.97);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:12px;z-index:500;box-shadow:0 4px 24px rgba(0,0,0,0.7);font-size:0.85rem;min-width:160px;';
 
-  const rect = btn.getBoundingClientRect();
-  popup.style.top = `${rect.bottom + 6}px`;
-  popup.style.left = `${rect.left}px`;
+  popup.style.top = '50%';
+  popup.style.left = '50%';
+  popup.style.transform = 'translate(-50%, -50%)';
 
   const title = document.createElement('div');
-  title.style.cssText = 'color:#aaa;font-size:0.75rem;margin-bottom:8px;';
+  title.style.cssText = 'color:#888;font-size:0.75rem;margin-bottom:8px;letter-spacing:0.05em;text-transform:uppercase;';
   title.textContent = 'Visible to:';
   popup.appendChild(title);
 
@@ -1034,7 +1035,7 @@ function openVisibilityPopup(pageId, btn) {
 
   const saveBtn = document.createElement('button');
   saveBtn.textContent = '💾 Save';
-  saveBtn.style.cssText = 'margin-top:10px;width:100%;padding:6px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;';
+  saveBtn.style.cssText = 'margin-top:10px;width:100%;padding:6px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.05);color:#e0e0e0;border-radius:4px;cursor:pointer;';
   saveBtn.onclick = async (e) => {
     e.stopPropagation();
     const selected = checkboxes.filter(cb => cb.checked && cb.value !== '__NONE__').map(cb => cb.value);
