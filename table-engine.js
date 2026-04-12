@@ -146,11 +146,7 @@ function processMonsterRow(row) {
 
 async function loadTableData(tableId) {
   const pat = typeof getPAT === 'function' ? getPAT() : '';
-  const headers = {
-    ...(pat ? { Authorization: `token ${pat}` } : {}),
-    'Cache-Control': 'no-cache',
-    'Pragma': 'no-cache'
-  };
+  const headers = pat ? { Authorization: `token ${pat}` } : {};
   try {
     const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/tables/${tableId}.json?_=${Date.now()}`, { headers });
     if (!res.ok) return null;
