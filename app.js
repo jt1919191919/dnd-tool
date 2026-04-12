@@ -279,7 +279,7 @@ function showView(view) {
   }
 }
 
-function navigateTo(pageId) {
+function navigateTo(pageId, targetHeadingText, targetPageId) {
   if (!canSee(pageId)) return;
   currentPageId = pageId;
   const page = pages[pageId];
@@ -289,59 +289,142 @@ function navigateTo(pageId) {
   document.getElementById('side-menu').classList.add('hidden');
   document.getElementById('view-page').classList.remove('hidden');
 
-  // Update URL to reflect current page without losing token
   const newURL = buildURL(currentPlayer.token, pageId);
   window.history.pushState({}, '', newURL);
 
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = page.content || '';
   tempDiv.querySelectorAll('.h-badge').forEach(b => b.remove());
+
   const pageHeader = page.description
     ? `<div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08)"><h1 style="font-family:'Times New Roman',serif;color:#ffffff;font-size:28px;margin-bottom:6px">${page.title}</h1><p style="color:#888;font-size:0.85rem;margin:0">${page.description}</p></div>`
     : `<div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08)"><h1 style="font-family:'Times New Roman',serif;color:#ffffff;font-size:28px;margin:0">${page.title}</h1></div>`;
-  document.getElementById('page-content').innerHTML = pageHeader + tempDiv.innerHTML;
+
+  // Prev/next for group pages
+  const group = page.group;
+  let prevNextHtml = '';
+  if (group) {
+    const groupIds = getGroupPages(group).filter(id => canSee(id) || currentPlayer.isDM);
+    const idx = groupIds.indexOf(pageId);
+    const prev = idx > 0 ? groupIds[idx - 1] : null;
+    const next = idx < groupIds.length - 1 ? groupIds[idx + 1] : null;
+    const partNum = idx + 1;
+    const totalParts = groupIds.length;
+    prevNextHtml = `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;margin:8px 0;border-top:1px solid rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08);font-size:0.85rem">
+      <div>${prev ? `<button onclick="navigateTo('${prev}')" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#e0e0e0;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:Roboto,sans-serif">← ${pages[prev]?.title || 'Previous'}</button>` : '<span></span>'}</div>
+      <div style="color:#888">Part ${partNum} of ${totalParts}</div>
+      <div>${next ? `<button onclick="navigateTo('${next}')" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#e0e0e0;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:Roboto,sans-serif">${pages[next]?.title || 'Next'} →</button>` : '<span></span>'}</div>
+    </div>`;
+  }
+
+  document.getElementById('page-content').innerHTML = pageHeader + prevNextHtml + tempDiv.innerHTML + prevNextHtml;
   window.scrollTo(0, 0);
   renderAllTableBlocks(currentPlayer.isDM);
-  buildOutline();
+  buildOutline(group);
 
   if (currentPlayer.isDM) {
     document.getElementById('dm-page-controls').classList.remove('hidden');
     buildVisibilityCheckboxes(page);
   }
+
+  // If we need to scroll to a heading after render
+  if (targetHeadingText) {
+    const tryScroll = (attempts) => {
+      const allH = document.querySelectorAll('#page-content h1,#page-content h2,#page-content h3,#page-content h4');
+      const match = Array.from(allH).find(h => h.textContent.replace('🔗','').trim() === targetHeadingText);
+      if (match) match.scrollIntoView({ behavior: 'smooth' });
+      else if (attempts > 0) setTimeout(() => tryScroll(attempts - 1), 100);
+    };
+    setTimeout(() => tryScroll(15), 150);
+  }
 }
 
-function buildOutline() {
+function buildOutline(group) {
   const content = document.getElementById('page-content');
-  const headings = Array.from(content.querySelectorAll('h1,h2,h3,h4'));
   const outline = document.getElementById('page-outline');
   outline.innerHTML = '';
 
-  if (!headings.length) {
+  // Collect headings: current page from DOM, other group pages from raw content
+  let allHeadingGroups = []; // [{ pageId, pageTitle, isCurrent, headings: [{text, id}] }]
+
+  // Current page headings from DOM
+  const domHeadings = Array.from(content.querySelectorAll('h1,h2,h3,h4'));
+  domHeadings.forEach((h, i) => { h.id = `heading-${i}`; });
+  if (domHeadings.length) {
+    allHeadingGroups.push({
+      pageId: currentPageId,
+      pageTitle: pages[currentPageId]?.title,
+      isCurrent: true,
+      headings: domHeadings.map((h, i) => ({
+        text: h.textContent.replace('🔗','').trim(),
+        id: `heading-${i}`,
+        level: parseInt(h.tagName[1])
+      }))
+    });
+  }
+
+  // Other group pages
+  if (group) {
+    const groupIds = getGroupPages(group).filter(id => id !== currentPageId && (canSee(id) || currentPlayer.isDM));
+    groupIds.forEach(id => {
+      const p = pages[id];
+      if (!p) return;
+      const div = document.createElement('div');
+      div.innerHTML = p.content || '';
+      div.querySelectorAll('.h-badge').forEach(b => b.remove());
+      const hs = Array.from(div.querySelectorAll('h1,h2,h3,h4'));
+      if (hs.length) {
+        allHeadingGroups.push({
+          pageId: id,
+          pageTitle: p.title,
+          isCurrent: false,
+          headings: hs.map((h, i) => ({
+            text: h.textContent.replace('🔗','').trim(),
+            id: `heading-${i}`,
+            level: parseInt(h.tagName[1])
+          }))
+        });
+      }
+    });
+  }
+
+  if (!allHeadingGroups.length) {
     document.getElementById('page-outline-wrap').style.display = 'none';
     return;
   }
 
-  // Assign IDs
-  headings.forEach((h, i) => { h.id = `heading-${i}`; });
-
-  // Level filter dropdown
-  const levels = [...new Set(headings.map(h => parseInt(h.tagName[1])))].sort();
+  // Level filter
+  const allLevels = [...new Set(allHeadingGroups.flatMap(g => g.headings.map(h => h.level)))].sort();
   const filterWrap = document.createElement('div');
   filterWrap.style.marginBottom = '8px';
   filterWrap.innerHTML = `<select id="toc-level-filter" style="background:rgba(255,255,255,0.06);color:#e0e0e0;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:3px 8px;font-size:0.8rem">
     <option value="0">Show top level only</option>
-    ${levels.map(l => `<option value="${l}">Expand through H${l}</option>`).join('')}
+    ${allLevels.map(l => `<option value="${l}">Expand through H${l}</option>`).join('')}
   </select>`;
   outline.appendChild(filterWrap);
 
-  // Build nested structure
-  const tree = buildTocTree(headings);
-  const listEl = document.createElement('div');
-  listEl.id = 'toc-tree';
-  renderTocTree(listEl, tree, true);
-  outline.appendChild(listEl);
+  const treeContainer = document.createElement('div');
+  treeContainer.id = 'toc-tree';
 
-  // Filter change handler
+  allHeadingGroups.forEach(group => {
+    // Group label if multiple parts
+    if (allHeadingGroups.length > 1) {
+      const label = document.createElement('div');
+      label.style.cssText = 'font-size:0.75rem;color:#888;margin:8px 0 4px;text-transform:uppercase;letter-spacing:0.05em;';
+      label.textContent = group.pageTitle;
+      treeContainer.appendChild(label);
+    }
+
+    const tree = buildTocTree(group.headings.map((h, i) => ({
+      ...h,
+      isCurrent: group.isCurrent,
+      pageId: group.pageId
+    })));
+    renderTocTree(treeContainer, tree, true, group.isCurrent, group.pageId);
+  });
+
+  outline.appendChild(treeContainer);
+
   document.getElementById('toc-level-filter').addEventListener('change', function() {
     applyTocFilter(parseInt(this.value));
   });
@@ -354,7 +437,7 @@ function buildTocTree(headings) {
   const stack = [];
   headings.forEach((h, i) => {
     const level = parseInt(h.tagName[1]);
-    const node = { id: `heading-${i}`, text: h.textContent.replace('🔗','').trim(), level, children: [] };
+    const node = { id: h.id || `heading-${i}`, text: h.text || h.textContent?.replace('🔗','').trim(), level, children: [], isCurrent: h.isCurrent, pageId: h.pageId };
     while (stack.length && stack[stack.length-1].level >= level) stack.pop();
     if (!stack.length) root.push(node);
     else stack[stack.length-1].children.push(node);
@@ -398,8 +481,15 @@ function renderTocTree(container, nodes, isRoot) {
     const a = document.createElement('a');
     a.href = `#${node.id}`;
     a.textContent = node.text;
-    a.style.cssText = 'color:#e2b96f;text-decoration:none;font-size:0.85rem;';
-    a.onclick = (e) => { e.preventDefault(); scrollToHeading(node.id); };
+    a.style.cssText = `color:${node.isCurrent === false ? '#aaa' : '#e0e0e0'};text-decoration:none;font-size:0.85rem;`;
+    a.onclick = (e) => {
+      e.preventDefault();
+      if (node.isCurrent === false && node.pageId) {
+        navigateTo(node.pageId, node.text);
+      } else {
+        scrollToHeading(node.id);
+      }
+    };
     row.appendChild(a);
 
     wrap.appendChild(row);
@@ -465,7 +555,12 @@ function getPageOrder() {
 function renderCards(reorderMode) {
   const grid = document.getElementById('cards-grid');
   grid.innerHTML = '';
-  const ids = getPageOrder().filter(id => canSee(id));
+  const ids = getPageOrder().filter(id => {
+    if (!canSee(id)) return false;
+    // Players only see first page of a group
+    if (!currentPlayer.isDM && pages[id]?.group && !isFirstInGroup(id)) return false;
+    return true;
+  });
   ids.forEach(id => {
     const page = pages[id];
     if (!page) return;
