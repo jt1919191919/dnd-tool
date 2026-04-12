@@ -106,13 +106,16 @@ header {
   background: var(--bg-glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  background-color: rgba(20, 21, 21, 0.95);
+  background-color: rgba(20, 21, 21, 0.98);
   border-bottom: 1px solid var(--border);
   padding: 10px 16px;
-  position: sticky;
-  top: var(--header-height);
-  z-index: 99;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 98;
   box-shadow: var(--shadow-sm);
+  padding-top: calc(var(--header-height) + 10px);
 }
 #side-menu ul { list-style: none; }
 #side-menu li { padding: 6px 0; }
