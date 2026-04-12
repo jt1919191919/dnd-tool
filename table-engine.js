@@ -322,7 +322,7 @@ function openSpellPopup(e, tableId, idx) {
       <div><strong>Casting Time</strong><span>${row['Casting Time'] || ''}</span></div>
       <div><strong>Range</strong><span>${row['Range'] || ''}</span></div>
       <div><strong>Duration</strong><span>${durationDisplay}</span></div>
-      <div><strong>Components</strong><span>${(row['Components'] || '').replace(/([\d,]+\s*GP)/gi, '<span style="color:#D39A39;font-weight:bold">$1</span>')}</span></div>
+      <div><strong>Components</strong><span>${(row['Components'] || '').replace(/(\b\d[\d,]*\+?\s*GP\b|\bGP\b)/gi, '<span style="color:#D39A39;font-weight:bold">$1</span>')}</span></div>
       ${(showField('Classes') && row['Classes']) ? `<div class="spell-popup-full"><strong>Classes</strong><span>${row['Classes']}</span></div>` : ''}
       ${(showField('Optional/Variant Classes') && row['Optional/Variant Classes']) ? `<div class="spell-popup-full"><strong>Variant Classes</strong><span>${row['Optional/Variant Classes']}</span></div>` : ''}
       ${(showField('Subclasses') && row['Subclasses']) ? `<div class="spell-popup-full"><strong>Subclasses</strong><span>${row['Subclasses']}</span></div>` : ''}
