@@ -221,7 +221,7 @@ function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, is
   html += `</tr></thead><tbody>`;
 
   sortedRows.forEach((row, i) => {
-    html += `<tr class="spell-row" onclick="openSpellPopup(event,'${tableId}',${i})" data-idx="${i}">`;
+    html += `<tr class="spell-row" onclick="event.stopPropagation();openSpellPopup(event,'${tableId}',${i})" data-idx="${i}">`;
     cols.forEach(c => {
       const val = row[c.key] || '';
       html += `<td title="${val.toString().replace(/"/g,"'")}">${val}</td>`;
