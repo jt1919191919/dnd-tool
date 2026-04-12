@@ -311,9 +311,9 @@ function navigateTo(pageId, targetHeadingText, targetPageId) {
     const partNum = idx + 1;
     const totalParts = groupIds.length;
     prevNextHtml = `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;margin:8px 0;border-top:1px solid rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.08);font-size:0.85rem">
-      <div>${prev ? `<button onclick="navigateTo('${prev}')" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#e0e0e0;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:Roboto,sans-serif">← ${pages[prev]?.title || 'Previous'}</button>` : '<span></span>'}</div>
-      <div style="color:#888">Part ${partNum} of ${totalParts}</div>
-      <div>${next ? `<button onclick="navigateTo('${next}')" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#e0e0e0;border-radius:6px;padding:6px 12px;cursor:pointer;font-family:Roboto,sans-serif">${pages[next]?.title || 'Next'} →</button>` : '<span></span>'}</div>
+      <div style="flex-shrink:0">${prev ? `<button onclick="navigateTo('${prev}')" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#e0e0e0;border-radius:6px;padding:6px 14px;cursor:pointer;font-family:Roboto,sans-serif;font-size:1rem">←</button>` : '<span style="display:inline-block;width:40px"></span>'}</div>
+      <div style="color:#888;text-align:center;flex:1;padding:0 8px;white-space:nowrap">Part ${partNum} of ${totalParts}</div>
+      <div style="flex-shrink:0">${next ? `<button onclick="navigateTo('${next}')" style="background:transparent;border:1px solid rgba(255,255,255,0.15);color:#e0e0e0;border-radius:6px;padding:6px 14px;cursor:pointer;font-family:Roboto,sans-serif;font-size:1rem">→</button>` : '<span style="display:inline-block;width:40px"></span>'}</div>
     </div>`;
   }
 
