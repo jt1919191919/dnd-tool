@@ -779,8 +779,13 @@ mark {
   padding-bottom: 70px;
 }
 
-/* ── toc-level-filter option ───────────────────────────────────────────────────────── */
+/* ── dropdown options ───────────────────────────────────────────────────────── */
 #toc-level-filter option {
+  background: #222323;
+  color: #e0e0e0;
+}
+
+select option {
   background: #222323;
   color: #e0e0e0;
 }
