@@ -66,6 +66,30 @@ window.addEventListener('load', async () => {
   document.getElementById('loading-screen').style.display = 'none';
 });
 
+window.addEventListener('load', () => {
+  // Debug helper - type debugPages() in console to check what loaded
+  window.debugPages = async () => {
+    const pat = getPAT();
+    const headers = pat ? { Authorization: `token ${pat}` } : {};
+    console.log('=== PAGE DEBUG ===');
+    console.log('Pages in memory:', Object.keys(pages));
+    const idxRes = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/pages/index.json?_=${Date.now()}`, { headers });
+    if (!idxRes.ok) { console.error('index.json fetch failed:', idxRes.status); return; }
+    const idxJson = await idxRes.json();
+    const idx = JSON.parse(decodeURIComponent(escape(atob(idxJson.content))));
+    console.log('index.json on GitHub:', idx);
+    const missing = idx.filter(id => !pages[id]);
+    const extra = Object.keys(pages).filter(id => !idx.includes(id));
+    if (missing.length) console.warn('In index but NOT loaded:', missing);
+    if (extra.length) console.warn('Loaded but NOT in index:', extra);
+    if (!missing.length && !extra.length) console.log('All pages match index ✓');
+    for (const id of missing) {
+      const r = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/pages/${id}.json?_=${Date.now()}`, { headers });
+      console.log(`File exists for "${id}":`, r.ok, r.status);
+    }
+  };
+});
+
 function getTokenFromURL() {
   const params = new URLSearchParams(window.location.search);
   const token = params.get('token');
