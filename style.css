@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Montserrat:wght@700&display=swap');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -28,8 +28,9 @@ body {
   font-family: 'Roboto', sans-serif;
   font-size: 14px;
   background-color: var(--bg-body);
-  background-image: url('https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/background-texture7.jpg');
+  background-image: url('https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/background-texture5.jpg');
   background-repeat: repeat;
+  background-size: contain;
   background-attachment: fixed;
   color: var(--text);
   min-height: 100vh;
