@@ -3,7 +3,7 @@
   "title": "Spells (all)",
   "thumbnail": "https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg",
   "description": "",
-  "content": "<div><br></div><div><p><br></p><div class=\"dnd-table-block\" data-table-id=\"table-1\" data-table-type=\"spell\" contenteditable=\"false\" draggable=\"true\" style=\"background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; padding: 12px; margin-top: 10px; margin-bottom: 10px; font-size: 0.85rem; cursor: grab;\">📊 Spell Table: Spells (476 rows) — ID: table-1</div><p><br></p></div><div><br></div><div><br></div><div><br></div><div><br></div><div><br></div><div><br></div>",
+  "content": "<div><br></div><div><p><br></p></div><div><br></div><div><br></div><div><br></div><div><br></div><div><br></div><div><br></div>",
   "visibleTo": [
     "__ALL__"
   ],
