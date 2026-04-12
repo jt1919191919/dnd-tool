@@ -271,7 +271,10 @@ function navigateTo(pageId) {
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = page.content || '';
   tempDiv.querySelectorAll('.h-badge').forEach(b => b.remove());
-  document.getElementById('page-content').innerHTML = tempDiv.innerHTML;
+  const pageHeader = page.description
+    ? `<div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08)"><h1 style="font-family:'Times New Roman',serif;color:#ffffff;font-size:28px;margin-bottom:6px">${page.title}</h1><p style="color:#888;font-size:0.85rem;margin:0">${page.description}</p></div>`
+    : `<div style="margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08)"><h1 style="font-family:'Times New Roman',serif;color:#ffffff;font-size:28px;margin:0">${page.title}</h1></div>`;
+  document.getElementById('page-content').innerHTML = pageHeader + tempDiv.innerHTML;
   window.scrollTo(0, 0);
   renderAllTableBlocks(currentPlayer.isDM);
   buildOutline();
