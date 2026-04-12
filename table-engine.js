@@ -194,7 +194,7 @@ function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, is
   const cols = COLS.filter(c => visibleCols.includes(c.key));
 
   const displayName = config?.displayName || tableId;
-  let html = `<div class="spell-table-wrap" id="tbl-${tableId}" style="border:none">`;
+  let html = `<div class="spell-table-wrap" id="tbl-${tableId}" style="border:none;background:transparent;border-radius:0">`;
 
   // Toolbar
   html += `<div class="spell-table-toolbar">
