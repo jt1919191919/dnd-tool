@@ -1267,7 +1267,7 @@ function dmLog(label, ...args) {
 // ─── Manage Tables DM Config ────────────────────────────────────────────────────────────
 async function renderManageTables() {
   const list = document.getElementById('tables-list');
-  list.innerHTML = '<p style="color:#aaa">Loading... (first time takes a minute)</p>';
+  list.innerHTML = '<p style="color:#aaa">Loading...</p>';
 
   // Get all table files from GitHub
   const pat = getPAT();
