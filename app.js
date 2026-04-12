@@ -436,7 +436,7 @@ function buildTocTree(headings) {
   const root = [];
   const stack = [];
   headings.forEach((h, i) => {
-    const level = parseInt(h.tagName[1]);
+    const level = h.level || parseInt(h.tagName?.[1]) || 1;
     const node = { id: h.id || `heading-${i}`, text: h.text || h.textContent?.replace('🔗','').trim(), level, children: [], isCurrent: h.isCurrent, pageId: h.pageId };
     while (stack.length && stack[stack.length-1].level >= level) stack.pop();
     if (!stack.length) root.push(node);
