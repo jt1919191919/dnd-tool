@@ -1,10 +1,6 @@
 {
   "dmToken": "dm-secret-token",
   "players": {
-    "moonbeam": {
-      "name": "Tyler",
-      "color": "#5cb85c"
-    },
     "bizzy1": {
       "name": "bizzy1",
       "color": "#00855d"
