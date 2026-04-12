@@ -881,4 +881,9 @@ input[type="checkbox"]:hover {
   }
 }
 
+/* ── Link to Higher than the Heading  ───────────────────────────────────────────────────────── */
+h1, h2, h3, h4 {
+  scroll-margin-top: 80px;
+}
+
 </style>
