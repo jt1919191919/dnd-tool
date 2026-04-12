@@ -54,7 +54,6 @@ header {
   background: var(--bg-glass);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  /* Fallback for browsers without backdrop-filter */
   background-color: rgba(20, 21, 21, 0.92);
   padding: 10px 16px;
   position: sticky;
@@ -62,6 +61,7 @@ header {
   z-index: 100;
   border-bottom: 1px solid var(--border);
   box-shadow: var(--shadow);
+  isolation: isolate;
 }
 .header-inner {
   display: flex;
@@ -113,13 +113,10 @@ header {
   background-color: rgba(20, 21, 21, 0.98);
   border-bottom: 1px solid var(--border);
   padding: 10px 16px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  position: sticky;
+  top: 92px;
   z-index: 98;
   box-shadow: var(--shadow-sm);
-  padding-top: calc(var(--header-height) + 50px);
 }
 #side-menu ul { list-style: none; }
 #side-menu li { padding: 4px 0; }
@@ -340,10 +337,7 @@ main { padding: 16px; }
   flex-wrap: wrap;
   gap: 4px;
   padding: 6px 8px;
-  background: var(--bg-glass);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  background-color: rgba(20,21,21,0.95);
+  background: rgba(20,21,21,0.98);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
   margin-bottom: 0;
@@ -453,10 +447,7 @@ blockquote {
 #editor-actions {
   position: sticky;
   bottom: 0;
-  background: var(--bg-glass);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  background-color: rgba(20,21,21,0.97);
+  background: rgba(20,21,21,0.99);
   padding: 10px 0;
   display: flex;
   gap: 8px;
