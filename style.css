@@ -655,6 +655,7 @@ mark {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 160px;
 }
 .spell-row { cursor: pointer; }
 .spell-row:hover td { background: rgba(255,255,255,0.04); }
