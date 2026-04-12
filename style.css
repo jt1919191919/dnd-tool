@@ -728,4 +728,26 @@ mark {
   font-family: 'Roboto', sans-serif;
   font-size: 0.85rem;
 }
+
+/* ── bottom margin ───────────────────────────────────────────────────────── */
+#view-home, #view-page {
+  padding-bottom: 70px;
+}
+
+/* ── Popups centered on mobile ───────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .visibility-popup,
+  .share-panel-popup,
+  .heading-level-popup,
+  .spell-popup-overlay {
+    left: 50% !important;
+    right: auto !important;
+    transform: translateX(-50%) !important;
+    top: auto !important;
+    bottom: 16px !important;
+    width: 90vw !important;
+    max-width: 360px !important;
+  }
+}
+
 </style>
