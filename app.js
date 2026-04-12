@@ -1722,34 +1722,88 @@ function initEditor() {
 
   area.addEventListener('paste', (e) => {
     const strip = document.getElementById('strip-links-toggle').checked;
-    if (!strip) return;
     e.preventDefault();
     const html = e.clipboardData.getData('text/html') || e.clipboardData.getData('text/plain');
     const div = document.createElement('div');
     div.innerHTML = html;
-    div.querySelectorAll('a').forEach(a => {
-      const text = document.createTextNode(a.textContent);
-      a.replaceWith(text);
-    });
-    div.querySelectorAll('img').forEach(img => {
-      let parent = img.parentElement;
-      img.remove();
-      // Walk up removing empty ancestors
-      while (parent && parent !== div) {
-        const text = parent.textContent.replace(/\u00a0/g, '').trim();
-        if (!text && !parent.querySelector('img,video,iframe,table')) {
-          const next = parent.parentElement;
-          parent.remove();
-          parent = next;
-        } else break;
+
+    // Always strip images if strip-links is on
+    if (strip) {
+      div.querySelectorAll('a').forEach(a => {
+        const text = document.createTextNode(a.textContent);
+        a.replaceWith(text);
+      });
+      div.querySelectorAll('img').forEach(img => {
+        let parent = img.parentElement;
+        img.remove();
+        while (parent && parent !== div) {
+          const text = parent.textContent.replace(/\u00a0/g, '').trim();
+          if (!text && !parent.querySelector('img,video,iframe,table')) {
+            const next = parent.parentElement;
+            parent.remove();
+            parent = next;
+          } else break;
+        }
+      });
+    }
+
+    // Always strip bloated inline styles but preserve essential ones
+    div.querySelectorAll('*').forEach(el => {
+      const tag = el.tagName.toLowerCase();
+      const style = el.getAttribute('style') || '';
+
+      // Extract only the styles we care about
+      const keepStyles = [];
+
+      // Keep color if it's not just black/default
+      const colorMatch = style.match(/(?:^|;)\s*color\s*:\s*([^;]+)/i);
+      if (colorMatch) {
+        const c = colorMatch[1].trim();
+        if (!c.match(/^(rgb\(0,\s*0,\s*0\)|#000|#000000|black|inherit|initial)$/i)) {
+          keepStyles.push(`color:${c}`);
+        }
       }
+
+      // Keep background-color only if explicitly set to non-white/non-transparent
+      const bgMatch = style.match(/(?:^|;)\s*background-color\s*:\s*([^;]+)/i);
+      if (bgMatch) {
+        const bg = bgMatch[1].trim();
+        if (!bg.match(/^(transparent|rgba\(0,0,0,0\)|rgb\(255,\s*255,\s*255\)|#fff|#ffffff|white|inherit|initial)$/i)) {
+          keepStyles.push(`background-color:${bg}`);
+        }
+      }
+
+      // Keep font-weight bold
+      if (style.match(/font-weight\s*:\s*(bold|700|800|900)/i)) {
+        keepStyles.push('font-weight:bold');
+      }
+
+      // Keep font-style italic
+      if (style.match(/font-style\s*:\s*italic/i)) {
+        keepStyles.push('font-style:italic');
+      }
+
+      if (keepStyles.length) {
+        el.setAttribute('style', keepStyles.join(';'));
+      } else {
+        el.removeAttribute('style');
+      }
+
+      // Remove all non-essential attributes except these
+      const keepAttrs = ['style', 'href', 'src', 'alt', 'class', 'id', 'data-roll-name-ancestor', 'colspan', 'rowspan'];
+      Array.from(el.attributes).forEach(attr => {
+        if (!keepAttrs.includes(attr.name)) el.removeAttribute(attr.name);
+      });
     });
-    // Also remove any remaining empty block elements
+
+    // Remove empty elements
     div.querySelectorAll('p,div,span').forEach(el => {
       const text = el.textContent.replace(/\u00a0/g, '').trim();
       if (!text && !el.querySelector('img,video,iframe,table,input')) el.remove();
     });
+
     document.execCommand('insertHTML', false, div.innerHTML);
+    setTimeout(refreshHeadingBadges, 100);
   });
 
   area.addEventListener('input', refreshHeadingBadges);
