@@ -458,6 +458,11 @@ blockquote {
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.15) transparent;
 }
+.content-editable .scroll-box {
+  border: 1px dashed rgba(255,255,255,0.2);
+  border-radius: 4px;
+  padding: 4px;
+}
 .scroll-box::-webkit-scrollbar { height: 6px; }
 .scroll-box::-webkit-scrollbar-track { background: transparent; }
 .scroll-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
