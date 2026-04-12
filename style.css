@@ -449,6 +449,20 @@ blockquote {
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
+/* ── EDITOR Scrollboxes ────────────────────────────────────────────────────── */
+.scroll-box {
+  overflow-x: auto;
+  overflow-y: visible;
+  max-width: 100%;
+  margin: 10px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+}
+.scroll-box::-webkit-scrollbar { height: 6px; }
+.scroll-box::-webkit-scrollbar-track { background: transparent; }
+.scroll-box::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+.scroll-box::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.28); }
+
 /* ── EDITOR ACTIONS ──────────────────────────────────────────────────── */
 #editor-actions {
   position: sticky;
