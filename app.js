@@ -347,45 +347,63 @@ function buildOutline(group) {
   // Collect headings: current page from DOM, other group pages from raw content
   let allHeadingGroups = []; // [{ pageId, pageTitle, isCurrent, headings: [{text, id}] }]
 
-  // Current page headings from DOM
+// Assign IDs to current page DOM headings
   const domHeadings = Array.from(content.querySelectorAll('h1,h2,h3,h4'));
   domHeadings.forEach((h, i) => { h.id = `heading-${i}`; });
-  if (domHeadings.length) {
-    allHeadingGroups.push({
-      pageId: currentPageId,
-      pageTitle: pages[currentPageId]?.title,
-      isCurrent: true,
-      headings: domHeadings.map((h, i) => ({
-        text: h.textContent.replace('🔗','').trim(),
-        id: `heading-${i}`,
-        level: parseInt(h.tagName[1])
-      }))
-    });
-  }
 
-  // Other group pages
+  // Build heading groups in group page order (not current-page-first)
   if (group) {
-    const groupIds = getGroupPages(group).filter(id => id !== currentPageId && (canSee(id) || currentPlayer.isDM));
+    const groupIds = getGroupPages(group).filter(id => canSee(id) || currentPlayer.isDM);
     groupIds.forEach(id => {
-      const p = pages[id];
-      if (!p) return;
-      const div = document.createElement('div');
-      div.innerHTML = p.content || '';
-      div.querySelectorAll('.h-badge').forEach(b => b.remove());
-      const hs = Array.from(div.querySelectorAll('h1,h2,h3,h4'));
-      if (hs.length) {
-        allHeadingGroups.push({
-          pageId: id,
-          pageTitle: p.title,
-          isCurrent: false,
-          headings: hs.map((h, i) => ({
-            text: h.textContent.replace('🔗','').trim(),
-            id: `heading-${i}`,
-            level: parseInt(h.tagName[1])
-          }))
-        });
+      const isCurrent = id === currentPageId;
+      if (isCurrent) {
+        if (domHeadings.length) {
+          allHeadingGroups.push({
+            pageId: id,
+            pageTitle: pages[id]?.title,
+            isCurrent: true,
+            headings: domHeadings.map((h, i) => ({
+              text: h.textContent.replace('🔗','').trim(),
+              id: `heading-${i}`,
+              level: parseInt(h.tagName[1])
+            }))
+          });
+        }
+      } else {
+        const p = pages[id];
+        if (!p) return;
+        const div = document.createElement('div');
+        div.innerHTML = p.content || '';
+        div.querySelectorAll('.h-badge').forEach(b => b.remove());
+        const hs = Array.from(div.querySelectorAll('h1,h2,h3,h4'));
+        if (hs.length) {
+          allHeadingGroups.push({
+            pageId: id,
+            pageTitle: p.title,
+            isCurrent: false,
+            headings: hs.map((h, i) => ({
+              text: h.textContent.replace('🔗','').trim(),
+              id: `heading-${i}`,
+              level: parseInt(h.tagName[1])
+            }))
+          });
+        }
       }
     });
+  } else {
+    // Non-group page — just use DOM headings
+    if (domHeadings.length) {
+      allHeadingGroups.push({
+        pageId: currentPageId,
+        pageTitle: pages[currentPageId]?.title,
+        isCurrent: true,
+        headings: domHeadings.map((h, i) => ({
+          text: h.textContent.replace('🔗','').trim(),
+          id: `heading-${i}`,
+          level: parseInt(h.tagName[1])
+        }))
+      });
+    }
   }
 
   if (!allHeadingGroups.length) {
