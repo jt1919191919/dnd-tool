@@ -445,6 +445,31 @@ function renderCards(reorderMode) {
     card.className = 'card';
     card.dataset.pageId = id;
     if (reorderMode) card.draggable = true;
+    // DM visibility shadow
+    if (currentPlayer.isDM) {
+      const vis = page.visibleTo || [];
+      if (vis.length === 0) {
+        card.style.boxShadow = '0 0 0 2px #c44, 0 4px 16px rgba(204,68,68,0.3)';
+      } else if (vis.includes('__ALL__')) {
+        card.style.boxShadow = '0 0 0 2px #5cb85c, 0 4px 16px rgba(92,184,92,0.3)';
+      } else {
+        // Get colors for each player that can see this
+        const colors = vis.map(t => config.players[t] ? getPlayerColor(t) : null).filter(Boolean);
+        if (colors.length === 1) {
+          card.style.boxShadow = `0 0 0 2px ${colors[0]}, 0 4px 16px ${colors[0]}44`;
+        } else if (colors.length > 1) {
+          // Gradient border via outline workaround using a pseudo-approach with outline + gradient background
+          const stops = colors.map((c, i) => `${c} ${Math.round(i * 100 / (colors.length - 1))}%`).join(', ');
+          card.style.setProperty('--card-gradient', `linear-gradient(90deg, ${stops})`);
+          card.style.boxShadow = colors.map(c => `0 0 8px ${c}55`).join(', ');
+          card.style.outline = '2px solid transparent';
+          card.style.backgroundImage = `linear-gradient(var(--bg-solid, #222323), var(--bg-solid, #222323)), linear-gradient(90deg, ${stops})`;
+          card.style.backgroundOrigin = 'border-box';
+          card.style.backgroundClip = 'padding-box, border-box';
+          card.style.border = '2px solid transparent';
+        }
+      }
+    }
     const imgHtml = page.thumbnail
       ? `<img src="${page.thumbnail}" alt="${page.title}" loading="lazy"/>`
       : `<div class="card-no-img">📜</div>`;
@@ -987,6 +1012,7 @@ function openVisibilityPopup(pageId, btn) {
   checkboxes.push(allCb);
 
   for (const [token, player] of Object.entries(config.players)) {
+    const color = getPlayerColor(token);
     const label = document.createElement('label');
     label.style.cssText = 'display:flex;align-items:center;gap:6px;padding:3px 0;';
     const cb = document.createElement('input');
@@ -994,7 +1020,10 @@ function openVisibilityPopup(pageId, btn) {
     cb.value = token;
     cb.checked = page.visibleTo?.includes(token) || page.visibleTo?.includes('__ALL__');
     cb.onchange = () => { if (cb.checked) noneCb.checked = false; };
+    const dot = document.createElement('span');
+    dot.style.cssText = `width:10px;height:10px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0`;
     label.appendChild(cb);
+    label.appendChild(dot);
     label.append(` ${player.name}`);
     popup.appendChild(label);
     checkboxes.push(cb);
@@ -1028,18 +1057,49 @@ async function saveVisibility() {
 }
 
 // ─── CONFIG VIEW ──────────────────────────────────────────────────────────────
+const PLAYER_COLOR_PALETTE = [
+  '#4e9af1','#e05c5c','#5cb85c','#f0a500','#9b59b6',
+  '#1abc9c','#e67e22','#e91e8c','#00bcd4','#8bc34a'
+];
+
+function getPlayerColor(token) {
+  if (config.players[token]?.color) return config.players[token].color;
+  // Auto-assign from palette based on index
+  const idx = Object.keys(config.players).indexOf(token) % PLAYER_COLOR_PALETTE.length;
+  return PLAYER_COLOR_PALETTE[idx];
+}
+
 function renderConfig() {
   document.getElementById('pat-input').value = getPAT();
   const list = document.getElementById('config-player-list');
   list.innerHTML = '';
   for (const [token, player] of Object.entries(config.players)) {
+    const color = getPlayerColor(token);
+    // Ensure color is stored
+    if (!config.players[token].color) config.players[token].color = color;
     const div = document.createElement('div');
     div.className = 'config-player-row';
-    div.innerHTML = `<strong>${player.name}</strong> — token: <code>${token}</code>
-      <button onclick="previewAsPlayer('${token}','${player.name}')" style="margin-left:8px;padding:2px 8px;border:1px solid #7eb8f7;background:transparent;color:#7eb8f7;border-radius:4px;cursor:pointer">Preview</button>
-      <button onclick="removePlayer('${token}')" style="margin-left:4px;padding:2px 8px;border:1px solid #c44;background:transparent;color:#c44;border-radius:4px;cursor:pointer">Remove</button>`;
+    div.style.borderLeft = `4px solid ${color}`;
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span style="width:14px;height:14px;border-radius:50%;background:${color};display:inline-block;flex-shrink:0"></span>
+        <strong>${player.name}</strong>
+        <span style="color:#aaa;font-size:0.8rem">token: <code>${token}</code></span>
+        <label style="font-size:0.8rem;display:flex;align-items:center;gap:4px;margin-left:auto">
+          Color: <input type="color" value="${color}" onchange="setPlayerColor('${token}',this.value)" style="width:32px;height:24px;border:none;background:none;cursor:pointer;padding:0"/>
+        </label>
+        <button onclick="previewAsPlayer('${token}','${player.name}')" style="padding:2px 8px;border:1px solid #7eb8f7;background:transparent;color:#7eb8f7;border-radius:4px;cursor:pointer;font-size:0.8rem">Preview</button>
+        <button onclick="removePlayer('${token}')" style="padding:2px 8px;border:1px solid #c44;background:transparent;color:#c44;border-radius:4px;cursor:pointer;font-size:0.8rem">Remove</button>
+      </div>`;
     list.appendChild(div);
   }
+}
+
+async function setPlayerColor(token, color) {
+  config.players[token].color = color;
+  await githubSave('config.json', config, `Set color for player: ${token}`);
+  renderConfig();
+  renderCards();
 }
 
 async function removePlayer(token) {
