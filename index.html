@@ -103,6 +103,13 @@
       <input type="text" id="editor-page-title" placeholder="Page Title" title="Display name shown on the card and page header."/>
       <input type="text" id="editor-thumb" placeholder="Thumbnail image URL (optional)" title="URL of the image shown on the home card. Leave blank for default icon."/>
       <input type="text" id="editor-description" placeholder="Short description (shown on card)" title="Brief description shown under the title on the home card."/>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <label style="font-size:0.85rem;color:#aaa;white-space:nowrap">Page Group:</label>
+        <select id="editor-group" style="background:rgba(255,255,255,0.06);color:#e0e0e0;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:5px 8px;font-size:0.85rem;flex:1"></select>
+        <div id="editor-group-new-wrap" style="display:none;flex:1">
+          <input type="text" id="editor-group-new" placeholder="New group name..." style="width:100%;margin-bottom:0"/>
+        </div>
+      </div>
       <div id="editor-toolbar" class="editor-toolbar">
         <div class="toolbar-group">
           <select id="toolbar-heading" onchange="toolbarHeading(this.value)" title="Heading level">
