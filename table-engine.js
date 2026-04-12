@@ -211,7 +211,7 @@ function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, is
   </div>`;
 
   // Table
-  html += `<div class="spell-table-scroll" style="overflow:auto;max-height:600px"><table class="spell-table" id="spell-table-${tableId}">
+  html += `<div class="spell-table-scroll" style="overflow:auto;max-height:600px;background:transparent"><table class="spell-table" id="spell-table-${tableId}">
     <thead><tr>`;
   cols.forEach(c => {
     const sortKey = c.sortKey || c.key;
