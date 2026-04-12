@@ -740,6 +740,12 @@ mark {
   padding-bottom: 70px;
 }
 
+/* ── toc-level-filter option ───────────────────────────────────────────────────────── */
+#toc-level-filter option {
+  background: #222323;
+  color: #e0e0e0;
+}
+
 /* ── Popups centered on mobile ───────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .visibility-popup,
