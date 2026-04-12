@@ -228,7 +228,7 @@ function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, is
     cols.forEach(c => {
       const val = row[c.key] || '';
       const display = typeof val === 'string' ? val.replace(/[✓✗★☆]/g, (m) => `<span style="color:#e0e0e0">${m}</span>`) : val;
-      html += `<td title="${val.toString().replace(/"/g,"'")}">${display}</td>`;
+      html += `<td title="${val.toString().replace(/"/g,"'")}" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${display}</td>`;
     });
     html += `</tr>`;
   });
