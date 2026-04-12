@@ -1161,12 +1161,15 @@ function clearDeviceMemory() {
 // ─── FETCH HELPERS ────────────────────────────────────────────────────────────
 async function fetchJSON(path) {
   const pat = getPAT();
-  const headers = pat ? { Authorization: `token ${pat}` } : {};
+  const headers = {
+    ...(pat ? { Authorization: `token ${pat}` } : {}),
+    'Cache-Control': 'no-cache',
+    'Pragma': 'no-cache'
+  };
   try {
     const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/${path}?_=${Date.now()}`, { headers });
     if (!res.ok) return null;
     const json = await res.json();
-    // GitHub API returns content as base64
     const decoded = decodeURIComponent(escape(atob(json.content)));
     return JSON.parse(decoded);
   } catch { return null; }
