@@ -37,17 +37,17 @@
   <nav id="side-menu" class="hidden">
     <ul id="nav-links"></ul>
     <ul id="player-nav" class="hidden">
-      <li><a href="#" onclick="clearDeviceMemory()">🗑️ Clear Device Memory</a></li>
+      <li><a href="#" onclick="clearDeviceMemory()">⤫ Clear Device Memory</a></li>
     </ul> 
     <div id="dm-nav" class="hidden">
       <ul>
         <li><a href="#" onclick="showView('dm-editor')">➕ New Page</a></li>
-        <li><a href="#" onclick="showView('dm-config')">⚙️ Player Config</a></li>
-        <li><a href="#" onclick="showView('dm-tables')">🗂️ Manage Tables</a></li>
-        <li><a href="#" onclick="enterReorderMode()">🔀 Rearrange Pages</a></li>
-        <li><a href="#" onclick="clearDeviceMemory()">🗑️ Clear Device Memory</a></li>
-        <li><a href="#" onclick="downloadBackup()">💾 Backup</a></li>
-        <li><a href="#" onclick="showView('dm-images')">🖼️ Large Images</a></li>
+        <li><a href="#" onclick="showView('dm-config')">⛭ Player Config</a></li>
+        <li><a href="#" onclick="showView('dm-tables')">⬒ Manage Tables</a></li>
+        <li><a href="#" onclick="enterReorderMode()">⇅ Rearrange Pages</a></li>
+        <li><a href="#" onclick="clearDeviceMemory()">⤫ Clear Device Memory</a></li>
+        <li><a href="#" onclick="downloadBackup()">⭳ Backup</a></li>
+        <li><a href="#" onclick="showView('dm-images')">⛶ Large Images</a></li>
       </ul>
     </div>
   </nav>
@@ -59,7 +59,7 @@
       <div id="reorder-bar" class="hidden" style="background:#16213e;border:1px solid #e2b96f;border-radius:6px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:8px;">
         <span style="color:#e2b96f;font-size:0.85rem">🔀 Drag cards to rearrange</span>
         <div style="display:flex;gap:8px">
-          <button onclick="savePageOrder()" style="padding:5px 12px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;font-size:0.85rem">💾 Save Order</button>
+          <button onclick="savePageOrder()" style="padding:5px 12px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;font-size:0.85rem">✓ Save Order</button>
           <button onclick="exitReorderMode()" style="padding:5px 12px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer;font-size:0.85rem">Cancel</button>
         </div>
       </div>
@@ -78,11 +78,11 @@
       </div>
       <div id="dm-page-controls" class="hidden">
         <button onclick="editCurrentPage()">✏️ Edit</button>
-        <button onclick="deleteCurrentPage()">🗑️ Delete</button>
+        <button onclick="deleteCurrentPage()">⤫ Delete</button>
         <label>Visible to:
           <div id="visibility-checkboxes"></div>
         </label>
-        <button onclick="saveVisibility()">💾 Save Visibility</button>
+        <button onclick="saveVisibility()">✓ Save Visibility</button>
       </div>
       <div id="page-content"></div>
     </div>
@@ -142,7 +142,7 @@
       <div id="color-picker-panel" class="color-picker-panel hidden"></div>
       <div id="editor-area" contenteditable="true" class="content-editable"></div>
       <div id="editor-actions">
-        <button onclick="savePage()">💾 Save Page</button>
+        <button onclick="savePage()">✓ Save Page</button>
         <button onclick="cancelEdit()">Cancel</button>
       </div>
     </div>
@@ -157,7 +157,7 @@
 
     <!-- DM IMAGES VIEW -->
     <div id="view-dm-images" class="hidden">
-      <h2>🖼️ Large Images</h2>
+      <h2>⛶ Large Images</h2>
       <p style="font-size:0.8rem;color:#aaa;margin-bottom:12px">Images over 500KB uploaded to your repo. Click a page to open its editor.</p>
       <div id="large-images-list"></div>
       <button onclick="showView('home')" style="margin-top:12px;padding:6px 14px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer">← Back</button>
