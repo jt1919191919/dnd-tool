@@ -1,10 +1,6 @@
 {
   "dmToken": "dm-secret-token",
   "players": {
-    "swordpass": {
-      "name": "Marcus",
-      "color": "#4e9af1"
-    },
     "dragonfly22": {
       "name": "Sara",
       "color": "#e05c5c"
