@@ -4,7 +4,5 @@
   "thumbnail": "https://assetsio.gnwcdn.com/dnd-2024-players-handbook-alternate-cover.png?width=2048&height=2048&fit=bounds&quality=85&format=jpg&auto=webp",
   "description": "PHB24",
   "content": "<div><br></div><div><br></div><div><br></div><div><br></div>",
-  "visibleTo": [
-    "__ALL__"
-  ]
+  "visibleTo": []
 }
