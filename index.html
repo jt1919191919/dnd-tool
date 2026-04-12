@@ -37,8 +37,9 @@
       <button onclick="applyToken()" style="padding:5px 10px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;font-size:0.85rem">Enter</button>
       <button id="clear-token-btn" onclick="clearToken()" style="padding:5px 10px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer;font-size:0.85rem;display:none">✕</button>
     </div>
-    <div id="search-bar-wrap">
-      <input type="text" id="search-input" placeholder="Search..." oninput="handleSearch(this.value)"/>
+    <div id="search-bar-wrap" style="position:relative">
+      <input type="text" id="search-input" placeholder="Search..." oninput="handleSearch(this.value)" style="padding-right:32px"/>
+      <button onclick="document.getElementById('search-input').value='';handleSearch('')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:#888;cursor:pointer;font-size:1rem;padding:0;line-height:1">✕</button>
     </div>
   </header>
 
