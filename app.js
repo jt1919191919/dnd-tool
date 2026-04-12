@@ -1715,6 +1715,7 @@ function initEditor() {
   // Image resize on click
   area.addEventListener('click', (e) => {
     if (e.target.tagName === 'IMG') initImageResize(e.target);
+    if (e.target.classList.contains('dnd-table-block')) initTableBlockDrag(e.target);
     const cell = e.target.closest('td, th');
     if (cell) {
       showTableControls(cell);
@@ -2000,3 +2001,44 @@ function initTableColResize(table) {
     cell.appendChild(handle);
   });
 }
+
+// ─── TABLE BLOCK DRAG IN EDITOR ───────────────────────────────────────────────
+function initTableBlockDrag(block) {
+  block.draggable = true;
+  block.style.cursor = 'grab';
+
+  block.addEventListener('dragstart', (e) => {
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', 'table-block');
+    block.style.opacity = '0.4';
+    window._draggingTableBlock = block;
+  }, { once: false });
+
+  block.addEventListener('dragend', () => {
+    block.style.opacity = '';
+    block.style.cursor = 'grab';
+    window._draggingTableBlock = null;
+  });
+}
+
+document.addEventListener('dragover', (e) => {
+  if (!window._draggingTableBlock) return;
+  e.preventDefault();
+});
+
+document.addEventListener('drop', (e) => {
+  const block = window._draggingTableBlock;
+  if (!block) return;
+  e.preventDefault();
+  const area = document.getElementById('editor-area');
+  if (!area) return;
+  // Find nearest block-level element at drop point
+  const range = document.caretRangeFromPoint?.(e.clientX, e.clientY);
+  if (!range) return;
+  let target = range.startContainer;
+  if (target.nodeType === 3) target = target.parentNode;
+  while (target && target.parentNode !== area) target = target.parentNode;
+  if (!target || target === block) return;
+  area.insertBefore(block, target.nextSibling);
+  window._draggingTableBlock = null;
+});
