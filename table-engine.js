@@ -194,7 +194,7 @@ function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, is
   const cols = COLS.filter(c => visibleCols.includes(c.key));
 
   const displayName = config?.displayName || tableId;
-  let html = `<div class="spell-table-wrap" id="tbl-${tableId}">`;
+  let html = `<div class="spell-table-wrap" id="tbl-${tableId}" style="border:none">`;
 
   // Toolbar
   html += `<div class="spell-table-toolbar">
@@ -224,7 +224,8 @@ function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, is
     html += `<tr class="spell-row" onclick="event.stopPropagation();openSpellPopup(event,'${tableId}',${i})" data-idx="${i}">`;
     cols.forEach(c => {
       const val = row[c.key] || '';
-      html += `<td title="${val.toString().replace(/"/g,"'")}">${val}</td>`;
+      const display = typeof val === 'string' ? val.replace(/[✓✗★☆]/g, (m) => `<span style="color:#e0e0e0">${m}</span>`) : val;
+      html += `<td title="${val.toString().replace(/"/g,"'")}">${display}</td>`;
     });
     html += `</tr>`;
   });
@@ -486,7 +487,7 @@ async function insertTableFromCSV(tableType) {
     const icon = tableType === 'monster' ? '🐉' : '📊';
     const label = tableType === 'monster' ? 'Monster Table' : 'Spell Table';
     const area = document.getElementById('editor-area');
-    const placeholder = `<div class="dnd-table-block" data-table-id="${tableId}" data-table-type="${tableType}" contenteditable="false" style="background:#0f3460;border:1px solid #e2b96f;border-radius:6px;padding:12px;margin:10px 0;color:#e0e0e0;font-size:0.85rem">${icon} ${label}: ${tableData.name} (${rows.length} rows) — ID: ${tableId}</div>`;
+    const placeholder = `<div class="dnd-table-block" data-table-id="${tableId}" data-table-type="${tableType}" contenteditable="false" style="background:#0f3460;padding:12px;margin:10px 0;color:#e0e0e0;font-size:0.85rem">${icon} ${label}: ${tableData.name} (${rows.length} rows) — ID: ${tableId}</div>`;
     document.execCommand('insertHTML', false, placeholder);
     alert(`${label} "${tableId}" saved!`);
   };
