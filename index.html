@@ -94,13 +94,6 @@
       <input type="text" id="editor-page-title" placeholder="Page Title" title="Display name shown on the card and page header."/>
       <input type="text" id="editor-thumb" placeholder="Thumbnail image URL (optional)" title="URL of the image shown on the home card. Leave blank for default icon."/>
       <input type="text" id="editor-description" placeholder="Short description (shown on card)" title="Brief description shown under the title on the home card."/>
-      <div style="margin-bottom:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <label style="font-size:0.85rem;display:flex;align-items:center;gap:6px">
-          <input type="checkbox" id="strip-links-toggle"/> Strip hyperlinks on paste
-        </label>
-        <button type="button" onclick="insertTableFromCSV('spell')" style="padding:4px 10px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;font-size:0.85rem">🔮 Insert Spell Table</button>
-        <button type="button" onclick="insertTableFromCSV('monster')" style="padding:4px 10px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;font-size:0.85rem">🐉 Insert Monster Table</button>
-      </div> 
       <div id="editor-toolbar" class="editor-toolbar">
         <div class="toolbar-group">
           <select id="toolbar-heading" onchange="toolbarHeading(this.value)" title="Heading level">
@@ -136,7 +129,14 @@
           <button class="tb-btn" onclick="toolbarBlockquote()" title="Blockquote">❝</button>
           <button class="tb-btn" onclick="toolbarLink()" title="Insert/Edit Link">🔗</button>
           <button class="tb-btn" onclick="toolbarImage()" title="Insert Image">🖼</button>
-          <button class="tb-btn" onclick="toolbarTable()" title="Insert Table">⊞</button>
+          <button class="tb-btn" onclick="toolbarTable()" title="Insert HTML Table">⊞</button>
+        </div>
+        <div class="toolbar-group">
+          <button class="tb-btn" onclick="insertTableFromCSV('spell')" title="Insert Spell Table">📊 Spells</button>
+          <button class="tb-btn" onclick="insertTableFromCSV('monster')" title="Insert Monster Table">🐉 Monsters</button>
+          <label class="tb-btn" style="cursor:pointer;display:flex;align-items:center;gap:5px;margin:0" title="Strip hyperlinks on paste">
+            <input type="checkbox" id="strip-links-toggle" style="margin:0"/>✂ Links
+          </label>
         </div>
       </div>
       <div id="color-picker-panel" class="color-picker-panel hidden"></div>
