@@ -198,7 +198,10 @@ function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, is
 
   // Toolbar
   html += `<div class="spell-table-toolbar">
-    <input type="text" class="spell-search" placeholder="Filter ${config?.tableType === 'monster' ? 'monsters' : 'spells'}..." oninput="filterTable('${tableId}', this.value)" style="flex:1;padding:6px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e0e0e0;font-size:0.85rem"/>
+    <div style="position:relative;flex:1">
+      <input type="text" class="spell-search" placeholder="Filter ${config?.tableType === 'monster' ? 'monsters' : 'spells'}..." oninput="filterTable('${tableId}', this.value)" style="width:100%;padding:6px 30px 6px 10px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:#e0e0e0;font-size:0.85rem"/>
+      <button onclick="this.previousElementSibling.value='';filterTable('${tableId}','')" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);background:none;border:none;color:#888;cursor:pointer;font-size:1rem;padding:0;line-height:1">✕</button>
+    </div>
     <button class="tbl-btn" onclick="toggleColPanel('${tableId}')">Columns</button>
     ${isDM ? `<button class="tbl-btn" onclick="openTableConfig('${tableId}')">⚙️</button>` : ''}
   </div>`;
