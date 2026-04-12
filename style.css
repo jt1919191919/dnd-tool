@@ -591,6 +591,10 @@ mark {
   margin-bottom: 8px;
   flex-wrap: wrap;
 }
+#page-content .spell-table-wrap {
+  margin-left: -20px;
+  margin-right: -20px;
+}
 .tbl-btn {
   padding: 5px 10px;
   border: 1px solid rgba(255,255,255,0.1);
