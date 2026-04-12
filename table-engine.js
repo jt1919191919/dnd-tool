@@ -502,7 +502,7 @@ async function insertTableFromCSV(tableType) {
       sel.removeAllRanges();
       sel.addRange(savedRange);
     }
-    const wrapper = `<p><br/></p><div class="dnd-table-block" data-table-id="${tableId}" data-table-type="${tableType}" contenteditable="false" draggable="true" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:12px;margin:10px 0;color:#e0e0e0;font-size:0.85rem;cursor:grab">${icon} ${label}: ${tableData.name} (${rows.length} rows) — ID: ${tableId}</div><p><br/></p>`;
+    const wrapper = `<p><br/></p><div class="dnd-table-block" data-table-id="${tableId}" data-table-type="${tableType}" contenteditable="false" draggable="true" style="background:transparent;border:none;padding:4px 0;margin:10px 0;color:#e0e0e0;font-size:0.85rem;cursor:grab">${icon} ${label}: ${tableData.name} (${rows.length} rows) — ID: ${tableId}</div><p><br/></p>`;
     document.execCommand('insertHTML', false, wrapper);
     alert(`${label} "${tableId}" saved!`);
   };
