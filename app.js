@@ -880,6 +880,7 @@ function resetEditor() {
   document.getElementById('editor-description').value = '';
   document.getElementById('editor-area').innerHTML = '';
   document.getElementById('editor-page-id').disabled = false;
+  populateGroupDropdown(null);
   setTimeout(refreshHeadingBadges, 50);
 }
 
@@ -898,6 +899,7 @@ function editCurrentPage() {
   cleanDiv.innerHTML = page.content || '';
   cleanDiv.querySelectorAll('.h-badge').forEach(b => b.remove());
   document.getElementById('editor-area').innerHTML = cleanDiv.innerHTML;
+  populateGroupDropdown(page.group || '');
   setTimeout(refreshHeadingBadges, 50);
 }
 
@@ -926,12 +928,16 @@ async function savePage() {
     if (!confirm(`Content is large (${(contentSize/1024).toFixed(0)}KB). This may fail to load reliably. Continue anyway?`)) return;
   }
   const isNew = !pages[id];
+  const groupVal = document.getElementById('editor-group')?.value.trim();
+  const newGroupVal = document.getElementById('editor-group-new')?.value.trim();
+  const finalGroup = groupVal === '__new__' ? newGroupVal : groupVal;
   const pageData = {
     id, title,
     thumbnail: document.getElementById('editor-thumb').value.trim(),
     description: document.getElementById('editor-description').value.trim(),
     content: (() => { const d = document.createElement('div'); d.innerHTML = document.getElementById('editor-area').innerHTML; d.querySelectorAll('.h-badge').forEach(b => b.remove()); return d.innerHTML; })(),
-    visibleTo: pages[id]?.visibleTo || []
+    visibleTo: pages[id]?.visibleTo || [],
+    group: finalGroup || ''
   };
   pages[id] = pageData;
   const ok = await githubSave(`pages/${id}.json`, pageData, `Update page: ${id}`);
@@ -2141,3 +2147,35 @@ document.addEventListener('drop', (e) => {
   area.insertBefore(block, target.nextSibling);
   window._draggingTableBlock = null;
 });
+
+// ─── populateGroupDropdown ───────────────────────────────────────────────
+function populateGroupDropdown(currentGroup) {
+  const sel = document.getElementById('editor-group');
+  if (!sel) return;
+  // Collect all existing group names
+  const groups = [...new Set(Object.values(pages).map(p => p.group).filter(Boolean))];
+  sel.innerHTML = '<option value="">— No group —</option>';
+  groups.forEach(g => {
+    const opt = document.createElement('option');
+    opt.value = g;
+    opt.textContent = g;
+    if (g === currentGroup) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  const newOpt = document.createElement('option');
+  newOpt.value = '__new__';
+  newOpt.textContent = '+ New group...';
+  sel.appendChild(newOpt);
+  if (currentGroup && !groups.includes(currentGroup)) {
+    const opt = document.createElement('option');
+    opt.value = currentGroup;
+    opt.textContent = currentGroup;
+    opt.selected = true;
+    sel.insertBefore(opt, newOpt);
+  }
+  // Show/hide new group input
+  sel.onchange = () => {
+    const newInput = document.getElementById('editor-group-new-wrap');
+    if (newInput) newInput.style.display = sel.value === '__new__' ? 'block' : 'none';
+  };
+}
