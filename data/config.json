@@ -1,10 +1,6 @@
 {
   "dmToken": "dm-secret-token",
   "players": {
-    "bizzy1": {
-      "name": "bizzy1",
-      "color": "#00855d"
-    },
     "gobbo": {
       "name": "Bizzy",
       "color": "#004d21"
