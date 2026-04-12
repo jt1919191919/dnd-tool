@@ -3845,6 +3845,7 @@
     "defaultSortDir": "asc",
     "visibleCols": [
       "Name",
+      "CR",
       "Type",
       "Size",
       "AC",
