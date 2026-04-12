@@ -317,6 +317,11 @@ function navigateTo(pageId, targetHeadingText, targetPageId) {
     </div>`;
   }
 
+  // Make all links open in new tab
+  tempDiv.querySelectorAll('a').forEach(a => {
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+  });
   document.getElementById('page-content').innerHTML = pageHeader + prevNextHtml + tempDiv.innerHTML + prevNextHtml;
   window.scrollTo(0, 0);
   renderAllTableBlocks(currentPlayer.isDM);
