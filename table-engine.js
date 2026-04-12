@@ -590,21 +590,21 @@ function openMonsterPopup(row, showField) {
     if (!text) return '';
     return text.split('\n').filter(l => l.trim()).map(line => {
       const formatted = line.replace(/^([^.:\n]+[.:])\s*/, '<strong>$1</strong> ');
-      return `<div style="padding:6px 0;border-bottom:1px solid #0f3460;font-size:0.82rem;line-height:1.6">${formatted}</div>`;
+      return `<div style="padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.07);font-size:0.82rem;line-height:1.6">${formatted}</div>`;
     }).join('');
   };
 
   const sectionBlock = (key, label) => {
     if (!showField(key) || !row[key]) return '';
     return `<div style="margin-bottom:12px">
-      <div style="color:#e0e0e0;font-weight:bold;font-size:0.85rem;margin-bottom:4px">${label}</div>
+      <div style="color:#e0e0e0;font-weight:bold;font-size:0.85rem;margin-bottom:4px;letter-spacing:0.04em;text-transform:uppercase">${label}</div>
       ${formatEntries(row[key])}
     </div>`;
   };
 
   const inlineBlock = (key, label) => {
     if (!showField(key) || !row[key]) return '';
-    return `<div class="spell-popup-full"><strong>${label}</strong><span>${row[key]}</span></div>`;
+    return `<div class="spell-popup-full" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:6px 10px;margin-bottom:4px"><strong style="color:#aaa;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;display:block;margin-bottom:2px">${label}</strong><span>${row[key]}</span></div>`;
   };
 
   // Ability score + mod/save row
@@ -614,7 +614,7 @@ function openMonsterPopup(row, showField) {
     const isProfSave = a.saveAbbr in profSaveMap;
     const saveVal = isProfSave ? profSaveMap[a.saveAbbr] : mod;
     const saveStyle = isProfSave ? 'color:#e0e0e0;font-weight:bold' : 'color:#e0e0e0';
-    return `<div style="background:#0f3460;border-radius:6px;padding:6px 4px;text-align:center">
+    return `<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:6px 4px;text-align:center">
       <strong style="color:#e0e0e0;font-size:0.65rem;display:block">${a.short}</strong>
       <span style="font-size:0.95rem;display:block">${score}</span>
       <span style="font-size:0.72rem;display:block;color:#aaa">Mod ${fmtMod(mod)}</span>
@@ -629,7 +629,7 @@ function openMonsterPopup(row, showField) {
     const isProfSkill = key in profSkillMap;
     const val = isProfSkill ? profSkillMap[key] : mod;
     const style = isProfSkill ? 'color:#e0e0e0;font-weight:bold' : 'color:#aaa';
-    return `<div style="display:flex;justify-content:space-between;padding:2px 6px;font-size:0.75rem;border-bottom:1px solid rgba(15,52,96,0.5)">
+    return `<div style="display:flex;justify-content:space-between;padding:2px 6px;font-size:0.75rem;border-bottom:1px solid rgba(255,255,255,0.06)">
       <span style="${style}">${sk.name}</span>
       <span style="${style}">${fmtMod(val)}</span>
     </div>`;
@@ -637,28 +637,30 @@ function openMonsterPopup(row, showField) {
 
   const overlay = document.createElement('div');
   overlay.className = 'spell-popup-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);';
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
 
   const popup = document.createElement('div');
   popup.className = 'spell-popup';
+  popup.style.cssText = 'background:#222323;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:20px;width:100%;max-width:600px;position:relative;box-shadow:0 8px 40px rgba(0,0,0,0.7);margin:auto;';
 
   popup.innerHTML = `
     <button class="spell-popup-close" onclick="this.closest('.spell-popup-overlay').remove()">✕</button>
     <h2 class="spell-popup-title">🐉 ${row['Name'] || ''}</h2>
     <div class="spell-popup-meta">${[row['Size'], row['Type'], showField('Alignment') ? row['Alignment'] : '', `CR ${crDisplay}`].filter(Boolean).join(' • ')}</div>
 
-    <div class="spell-popup-grid" style="grid-template-columns:1fr 1fr;margin-bottom:10px">
-      <div><strong>Armor Class</strong><span>${row['AC'] || '—'}</span></div>
-      <div><strong>Hit Points</strong><span>${row['HP'] || '—'}</span></div>
-      <div><strong>Speed</strong><span>${row['Speed'] || '—'}</span></div>
-      <div><strong>Initiative</strong><span>${initiative}</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;font-size:0.85rem">
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:6px 10px;display:flex;flex-direction:column;gap:2px"><strong style="color:#aaa;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Armor Class</strong><span>${row['AC'] || '—'}</span></div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:6px 10px;display:flex;flex-direction:column;gap:2px"><strong style="color:#aaa;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Hit Points</strong><span>${row['HP'] || '—'}</span></div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:6px 10px;display:flex;flex-direction:column;gap:2px"><strong style="color:#aaa;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Speed</strong><span>${row['Speed'] || '—'}</span></div>
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:6px 10px;display:flex;flex-direction:column;gap:2px"><strong style="color:#aaa;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em">Initiative</strong><span>${initiative}</span></div>
     </div>
 
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-bottom:10px">
       ${abilityBoxes}
     </div>
 
-    <div style="background:#0f3460;border-radius:6px;padding:6px;margin-bottom:12px;columns:2;column-gap:8px">
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:6px;margin-bottom:12px;columns:2;column-gap:8px">
       ${skillBoxes}
     </div>
 
