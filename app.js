@@ -674,8 +674,8 @@ function handleSearch(query) {
     if (isMulti) {
       // Folder header
       const header = document.createElement('div');
-      header.style.cssText = 'background:#0f3460;border:1px solid #0f3460;border-radius:6px;padding:8px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;';
-      header.innerHTML = `<span style="color:#e2b96f;font-weight:bold">📁 ${group.title}</span><span style="color:#aaa;font-size:0.8rem">${group.items.length} results ▶</span>`;
+      header.style.cssText = 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;';
+      header.innerHTML = `<span style="color:#e0e0e0;font-weight:bold">🗁 ${group.title}</span><span style="color:#888;font-size:0.8rem">${group.items.length} results ▶</span>`;
       const children = document.createElement('div');
       children.style.cssText = 'display:none;padding-left:12px;margin-top:4px;';
       group.items.forEach(({ itemHtml, onClickFn }) => {
@@ -689,7 +689,7 @@ function handleSearch(query) {
       header.onclick = () => {
         open = !open;
         children.style.display = open ? '' : 'none';
-        header.querySelector('span:last-child').textContent = `${group.items.length} results ${open ? '▼' : '▶'}`;
+        header.querySelector('span:last-child').textContent = `${group.items.length} results ${open ? '▾' : '▸'}`;
       };
       folder.appendChild(header);
       folder.appendChild(children);
