@@ -150,6 +150,9 @@ main { padding: 16px; }
   grid-template-columns: 1fr 1fr;
   gap: 14px;
 }
+@media (min-width: 1366px) {
+  #cards-grid { grid-template-columns: 1fr 1fr 1fr; }
+}
 .card {
   background: var(--bg-glass);
   backdrop-filter: blur(8px);
