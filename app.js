@@ -1058,6 +1058,15 @@ async function savePage() {
     group: finalGroup || ''
   };
   pages[id] = pageData;
+  // If this page is in a group, force all other group pages to re-read from memory on next ToC build
+  if (finalGroup) {
+    getGroupPages(finalGroup).forEach(gid => {
+      if (gid !== id && pages[gid]) {
+        // Touch the object so buildOutline re-parses headings fresh
+        pages[gid] = { ...pages[gid] };
+      }
+    });
+  }
   const ok = await githubSave(`pages/${id}.json`, pageData, `Update page: ${id}`);
   if (!ok) return;
   if (isNew) {
@@ -1069,7 +1078,9 @@ async function savePage() {
   alert('Saved to GitHub!');
   if (currentPageId) {
     document.getElementById('view-dm-editor').classList.add('hidden');
-    navigateTo(currentPageId);
+    // Navigate to the page we were viewing (may differ from edited page in a group)
+    const returnTo = currentPageId;
+    navigateTo(returnTo);
   }
 }
 
