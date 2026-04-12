@@ -428,15 +428,28 @@ main { padding: 16px; }
   margin: 10px 0;
 }
 .editor-table td, .editor-table th {
-  border: 1px solid #4a5568 !important;
+  border: none;
   padding: 6px 10px;
   min-width: 60px;
   vertical-align: top;
   position: relative;
 }
 .editor-table th {
-  background: rgba(40,40,40,0.9) !important;
-  color: var(--gold) !important;
+  background: rgba(40,40,40,0.9);
+  color: var(--gold);
+}
+.editor-table tbody tr:nth-child(odd) td {
+  background: rgba(255,255,255,0.03);
+}
+.editor-table tbody tr:nth-child(even) td {
+  background: rgba(255,255,255,0.06);
+}
+.editor-table tbody tr:hover td {
+  background: rgba(255,255,255,0.09);
+}
+.content-editable .editor-table td,
+.content-editable .editor-table th {
+  border: 1px dashed rgba(255,255,255,0.15) !important;
 }
 
 blockquote {
