@@ -696,7 +696,9 @@ function handleSearch(query) {
         item.onclick = onClickFn;
         children.appendChild(item);
       });
-      let open = false;
+      let open = group.items.length <= 3;
+      children.style.display = open ? '' : 'none';
+      header.querySelector('.folder-caret').textContent = open ? '▾' : '▸';
       header.onclick = () => {
         open = !open;
         children.style.display = open ? '' : 'none';
