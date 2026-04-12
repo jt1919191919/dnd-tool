@@ -63,6 +63,7 @@ window.addEventListener('load', async () => {
   }
 
   initApp();
+  document.getElementById('loading-screen').style.display = 'none';
 });
 
 function getTokenFromURL() {
