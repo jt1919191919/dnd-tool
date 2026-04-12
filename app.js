@@ -1608,6 +1608,39 @@ function removeLink() {
   document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
 }
 
+function toolbarScrollBox() {
+  const area = document.getElementById('editor-area');
+  area.focus();
+  const sel = window.getSelection();
+  if (!sel.rangeCount) return;
+  const range = sel.getRangeAt(0);
+  const selected = range.extractContents();
+  const isEmpty = !selected.textContent.trim() && !selected.querySelector('table,img');
+  const box = document.createElement('div');
+  box.className = 'scroll-box';
+  box.style.cssText = 'overflow-x:auto;overflow-y:visible;max-width:100%;margin:10px 0;padding:2px 0;';
+  if (isEmpty) {
+    // Insert empty scroll box with placeholder table
+    const table = document.createElement('table');
+    table.className = 'editor-table';
+    const tr = document.createElement('tr');
+    const td = document.createElement('td');
+    td.contentEditable = 'true';
+    td.innerHTML = 'Paste or type wide content here';
+    tr.appendChild(td);
+    table.appendChild(tr);
+    box.appendChild(table);
+  } else {
+    box.appendChild(selected);
+  }
+  range.insertNode(box);
+  // Move cursor after box
+  range.setStartAfter(box);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
 function toolbarImage() {
   document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
   saveSelection();
