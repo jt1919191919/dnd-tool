@@ -659,7 +659,15 @@ function handleSearch(query) {
       () => {
         clearSearch();
         navigateTo(spell.pageId);
-        setTimeout(() => navigateToSpellRow(spell.tableId, spell.name), 400);
+      const waitForTable = (attempts) => {
+        const wrap = document.getElementById(`tbl-${spell.tableId}`);
+        if (wrap && wrap.__rows) {
+          navigateToSpellRow(spell.tableId, spell.name);
+        } else if (attempts > 0) {
+          setTimeout(() => waitForTable(attempts - 1), 200);
+        }
+      };
+      setTimeout(() => waitForTable(20), 300);
       });
   }
 
@@ -678,7 +686,7 @@ function handleSearch(query) {
       // Folder header
       const header = document.createElement('div');
       header.style.cssText = 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;';
-      header.innerHTML = `<span style="color:#e0e0e0;font-weight:bold">🗁 ${group.title}</span><span style="color:#888;font-size:0.8rem">${group.items.length} results ▶</span>`;
+      header.innerHTML = `<span style="display:flex;align-items:center;gap:8px;color:#e0e0e0;font-weight:bold"><span class="folder-caret" style="color:#888;font-size:0.85rem;min-width:12px">▸</span>${group.title}</span><span style="color:#888;font-size:0.8rem">${group.items.length} results</span>`;
       const children = document.createElement('div');
       children.style.cssText = 'display:none;padding-left:12px;margin-top:4px;';
       group.items.forEach(({ itemHtml, onClickFn }) => {
@@ -692,7 +700,7 @@ function handleSearch(query) {
       header.onclick = () => {
         open = !open;
         children.style.display = open ? '' : 'none';
-        header.querySelector('span:last-child').textContent = `${group.items.length} results ${open ? '▾' : '▸'}`;
+        header.querySelector('.folder-caret').textContent = open ? '▾' : '▸';
       };
       folder.appendChild(header);
       folder.appendChild(children);
