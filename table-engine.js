@@ -224,7 +224,8 @@ function renderTable(container, tableId, rows, visibleCols, sortCol, sortDir, is
   html += `</tr></thead><tbody>`;
 
   sortedRows.forEach((row, i) => {
-    html += `<tr class="spell-row" onclick="event.stopPropagation();openSpellPopup(event,'${tableId}',${i})" data-idx="${i}">`;
+    const origIdx = rows.indexOf(row);
+    html += `<tr class="spell-row" onclick="event.stopPropagation();openSpellPopup(event,'${tableId}',${origIdx})" data-idx="${i}">`;
     cols.forEach(c => {
       const val = row[c.key] || '';
       const display = typeof val === 'string' ? val.replace(/[✓✗★☆]/g, (m) => `<span style="color:#e0e0e0">${m}</span>`) : val;
