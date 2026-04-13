@@ -353,10 +353,7 @@ async function openTableConfig(tableId) {
   popup.className = 'spell-popup table-config-overlay';
   popup.innerHTML = `
     <button class="spell-popup-close" onclick="this.closest('.spell-popup-overlay').remove()">✕</button>
-    <h2 style="color:#e0e0e0;margin-bottom:12px">
-    <label style="display:block;margin-bottom:12px;font-size:0.85rem">Display name:
-      <input id="cfg-name-${tableId}" type="text" value="${config.displayName || tableId}" style="margin-left:8px;background:rgba(255,255,255,0.06);color:#e0e0e0;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:3px 8px;width:60%"/>
-    </label>
+    <h2 style="color:#e0e0e0;margin-bottom:12px">${config.tableType === 'monster' ? '🐉' : '📊'} Table Settings: ${tableId}</h2>
     <label style="display:block;margin-bottom:8px;font-size:0.85rem">Default sort column:
       <select id="cfg-sort-${tableId}" style="margin-left:8px;background:rgba(255,255,255,0.06);color:#e0e0e0;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:3px 8px">
         ${SPELL_COLUMNS.map(c => `<option value="${c.key}" ${config.defaultSort === c.key ? 'selected' : ''}>${c.label}</option>`).join('')}
@@ -414,8 +411,7 @@ async function saveTableConfig(tableId) {
   console.log('popupHiddenCols:', popupHiddenCols);
   console.log('Classes checkbox:', document.getElementById(`cfg-popup-${tableId}-Classes`)?.checked);
   
-  const displayName = document.getElementById(`cfg-name-${tableId}`)?.value.trim() || tableId;
-  tableData.config = { defaultSort: sortCol, defaultSortDir: sortDir, visibleCols, popupHiddenCols, tableType: tType, displayName };
+  tableData.config = { defaultSort: sortCol, defaultSortDir: sortDir, visibleCols, popupHiddenCols, tableType: tType };
   tableData.tableType = tType;
   const ok = await saveTableData(tableId, tableData);
   if (ok) wrap.__config = tableData.config;
