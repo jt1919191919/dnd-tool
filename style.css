@@ -19,7 +19,7 @@
   --radius-sm: 6px;
   --header-height: 56px;
   --accent: #e0e0e0;
-  --hover-shadow: 0 6px 24px rgba(180,180,180,0.1);
+  --hover-shadow: 0 6px 24px rgba(199,95,180,0.1);
 }
 
 @media (max-width: 480px) {
