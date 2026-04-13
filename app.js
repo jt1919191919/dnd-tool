@@ -839,7 +839,7 @@ function handleSearch(query) {
         item.onclick = onClickFn;
         children.appendChild(item);
       });
-      let open = group.items.length <= 3;
+      let open = group.items.length <= 5;
       children.style.display = open ? '' : 'none';
       header.querySelector('.folder-caret').textContent = open ? '▾' : '▸';
       header.onclick = () => {
