@@ -2035,7 +2035,7 @@
     }
   ],
   "config": {
-    "defaultSort": "Level",
+    "defaultSort": "Name",
     "defaultSortDir": "asc",
     "visibleCols": [
       "Name",
@@ -2057,5 +2057,6 @@
     ],
     "tableType": "spell",
     "displayName": "spells-cleric-grave"
-  }
+  },
+  "tableType": "spell"
 }
