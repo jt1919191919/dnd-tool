@@ -416,6 +416,7 @@ async function saveTableConfig(tableId) {
   
   const displayName = document.getElementById(`cfg-name-${tableId}`)?.value.trim() || tableId;
   tableData.config = { defaultSort: sortCol, defaultSortDir: sortDir, visibleCols, popupHiddenCols, tableType: tType, displayName };
+  tableData.tableType = tType;
   const ok = await saveTableData(tableId, tableData);
   if (ok) wrap.__config = tableData.config;
   if (ok) {
