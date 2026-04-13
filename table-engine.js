@@ -490,6 +490,7 @@ async function insertTableFromCSV(tableType) {
       }
     };
 
+    console.log('Saving tableData:', JSON.stringify(tableData).slice(0, 200));
     const ok = await saveTableData(tableId, tableData);
     if (!ok) { alert('Failed to save table data.'); return; }
 
