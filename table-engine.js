@@ -290,6 +290,17 @@ function toggleCol(tableId, colKey, show) {
   document.getElementById(`col-panel-${tableId}`)?.classList.remove('hidden');
 }
 
+function getVisibleRows(tableId) {
+  const wrap = document.getElementById(`tbl-${tableId}`);
+  if (!wrap) return [];
+  const tbody = wrap.querySelector('tbody');
+  if (!tbody) return [];
+  return Array.from(tbody.querySelectorAll('tr')).filter(tr => tr.style.display !== 'none').map(tr => {
+    const origIdx = parseInt(tr.dataset.idx);
+    return wrap.__rows[origIdx];
+  }).filter(Boolean);
+}
+
 function openSpellPopup(e, tableId, idx) {
   const wrap = document.getElementById(`tbl-${tableId}`);
   if (!wrap) return;
@@ -299,7 +310,9 @@ function openSpellPopup(e, tableId, idx) {
   const popupHidden = tableCfg.popupHiddenCols || DEFAULT_POPUP_HIDDEN;
   const showField = (key) => !popupHidden.includes(key);
   const tableType = tableCfg.tableType || 'spell';
-  if (tableType === 'monster') { openMonsterPopup(row, showField); return; }
+  const visibleRows = getVisibleRows(tableId);
+  const visibleIdx = visibleRows.indexOf(row);
+  if (tableType === 'monster') { openMonsterPopup(row, showField, visibleRows, visibleIdx, tableId); return; }
 
   document.querySelectorAll('.spell-popup-overlay').forEach(p => p.remove());
 
@@ -318,8 +331,15 @@ function openSpellPopup(e, tableId, idx) {
     ? `<span style="color:#D39A39;font-weight:bold">Concentration</span>, up to ${row['_durationClean']}`
     : row['_durationClean'] || '');
 
+  const navHtml = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <button onclick="spellPopupNav('${tableId}',-1)" ${visibleIdx <= 0 ? 'disabled' : ''} style="background:none;border:1px solid rgba(255,255,255,0.2);color:${visibleIdx <= 0 ? '#444' : '#e0e0e0'};border-radius:6px;padding:4px 14px;cursor:${visibleIdx <= 0 ? 'default' : 'pointer'};font-size:1.1rem">←</button>
+    <span style="color:#888;font-size:0.8rem">${visibleIdx + 1} / ${visibleRows.length}</span>
+    <button onclick="spellPopupNav('${tableId}',1)" ${visibleIdx >= visibleRows.length - 1 ? 'disabled' : ''} style="background:none;border:1px solid rgba(255,255,255,0.2);color:${visibleIdx >= visibleRows.length - 1 ? '#444' : '#e0e0e0'};border-radius:6px;padding:4px 14px;cursor:${visibleIdx >= visibleRows.length - 1 ? 'default' : 'pointer'};font-size:1.1rem">→</button>
+  </div>`;
+
   popup.innerHTML = `
     <button class="spell-popup-close" onclick="this.closest('.spell-popup-overlay').remove()">✕</button>
+    ${navHtml}
     <h2 class="spell-popup-title">${row['Name'] || ''}</h2>
     <div class="spell-popup-meta">${levelLabel} ${school}${ritual}</div>
     <div class="spell-popup-grid">
@@ -333,10 +353,32 @@ function openSpellPopup(e, tableId, idx) {
     </div>
     ${showField('Text') ? `<div class="spell-popup-text">${(row['Text'] || '').replace(/\n/g, '<br/>')}</div>` : ''}
     ${(showField('At Higher Levels') && row['At Higher Levels']) ? `<div class="spell-popup-higher"><strong>At Higher Levels:</strong> ${row['At Higher Levels']}</div>` : ''}
+    ${navHtml}
   `;
 
+  overlay.__tableId = tableId;
+  overlay.__visibleRows = visibleRows;
+  overlay.__visibleIdx = visibleIdx;
   overlay.appendChild(popup);
   document.body.appendChild(overlay);
+}
+
+function spellPopupNav(tableId, dir) {
+  const overlay = document.querySelector('.spell-popup-overlay');
+  if (!overlay) return;
+  const visibleRows = overlay.__visibleRows;
+  const newIdx = overlay.__visibleIdx + dir;
+  if (newIdx < 0 || newIdx >= visibleRows.length) return;
+  const wrap = document.getElementById(`tbl-${tableId}`);
+  if (!wrap) return;
+  const tableCfg = wrap.__config || {};
+  const popupHidden = tableCfg.popupHiddenCols || DEFAULT_POPUP_HIDDEN;
+  const showField = (key) => !popupHidden.includes(key);
+  const tableType = tableCfg.tableType || 'spell';
+  const row = visibleRows[newIdx];
+  const origIdx = wrap.__rows.indexOf(row);
+  if (tableType === 'monster') { openMonsterPopup(row, showField, visibleRows, newIdx, tableId); return; }
+  openSpellPopup(null, tableId, origIdx);
 }
 
 // DM config panel for table defaults
@@ -535,7 +577,10 @@ function navigateToSpellRow(tableId, spellName) {
   }
 }
 
-function openMonsterPopup(row, showField) {
+function openMonsterPopup(row, showField, visibleRows, visibleIdx, tableId) {
+  visibleRows = visibleRows || [];
+  visibleIdx = visibleIdx ?? 0;
+  tableId = tableId || '';
   document.querySelectorAll('.spell-popup-overlay').forEach(p => p.remove());
 
   // ── Helpers ──────────────────────────────────────────────────────
@@ -659,8 +704,15 @@ function openMonsterPopup(row, showField) {
   popup.className = 'spell-popup';
   popup.style.cssText = 'background:#222323;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:20px;width:100%;max-width:600px;position:relative;box-shadow:0 8px 40px rgba(0,0,0,0.7);margin:auto;';
 
+  const navHtml = visibleRows.length > 1 ? `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+    <button onclick="spellPopupNav('${tableId}',-1)" ${visibleIdx <= 0 ? 'disabled' : ''} style="background:none;border:1px solid rgba(255,255,255,0.2);color:${visibleIdx <= 0 ? '#444' : '#e0e0e0'};border-radius:6px;padding:4px 14px;cursor:${visibleIdx <= 0 ? 'default' : 'pointer'};font-size:1.1rem">←</button>
+    <span style="color:#888;font-size:0.8rem">${visibleIdx + 1} / ${visibleRows.length}</span>
+    <button onclick="spellPopupNav('${tableId}',1)" ${visibleIdx >= visibleRows.length - 1 ? 'disabled' : ''} style="background:none;border:1px solid rgba(255,255,255,0.2);color:${visibleIdx >= visibleRows.length - 1 ? '#444' : '#e0e0e0'};border-radius:6px;padding:4px 14px;cursor:${visibleIdx >= visibleRows.length - 1 ? 'default' : 'pointer'};font-size:1.1rem">→</button>
+  </div>` : '';
+
   popup.innerHTML = `
     <button class="spell-popup-close" onclick="this.closest('.spell-popup-overlay').remove()">✕</button>
+    ${navHtml}
     <h2 class="spell-popup-title">🐉 ${row['Name'] || ''}</h2>
     <div class="spell-popup-meta">${[row['Size'], row['Type'], showField('Alignment') ? row['Alignment'] : '', `CR ${crDisplay}`].filter(Boolean).join(' • ')}</div>
 
@@ -699,8 +751,12 @@ function openMonsterPopup(row, showField) {
     ${showField('Environment') && row['Environment'] ? `<div style="color:#aaa;font-size:0.8rem;margin-top:6px">Environment: ${row['Environment']}</div>` : ''}
     ${showField('Treasure') && row['Treasure'] ? `<div style="color:#aaa;font-size:0.8rem">Treasure: ${row['Treasure']}</div>` : ''}
     ${showField('Source') ? `<div style="color:#555;font-size:0.75rem;margin-top:8px">${row['Source'] || ''}${row['Page'] ? ' p'+row['Page'] : ''}</div>` : ''}
+    ${navHtml}
   `;
 
+  overlay.__tableId = tableId;
+  overlay.__visibleRows = visibleRows;
+  overlay.__visibleIdx = visibleIdx;
   overlay.appendChild(popup);
   document.body.appendChild(overlay);
 }
