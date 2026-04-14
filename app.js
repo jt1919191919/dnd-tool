@@ -337,6 +337,26 @@ function navigateTo(pageId, targetHeadingText, targetPageId) {
   window.scrollTo(0, 0);
   renderAllTableBlocks(currentPlayer.isDM);
   buildOutline(group);
+  // Inject anchor link buttons into all headings
+  document.querySelectorAll('#page-content h1, #page-content h2, #page-content h3, #page-content h4').forEach((h, i) => {
+    if (h.querySelector('.heading-anchor-btn')) return; // already added
+    const btn = document.createElement('button');
+    btn.className = 'heading-anchor-btn';
+    btn.title = 'Copy link to this section';
+    btn.innerHTML = '🔗';
+    btn.style.cssText = 'background:none;border:none;cursor:pointer;opacity:0.35;font-size:0.75em;padding:0 4px;vertical-align:middle;transition:opacity 0.15s';
+    btn.onmouseenter = () => btn.style.opacity = '1';
+    btn.onmouseleave = () => btn.style.opacity = '0.35';
+    btn.onclick = (e) => {
+      e.stopPropagation();
+      const headingId = `heading-${i}`;
+      let url = `${getBaseURL()}?page=${currentPageId}#${headingId}`;
+      navigator.clipboard.writeText(url);
+      btn.innerHTML = '✓';
+      setTimeout(() => btn.innerHTML = '🔗', 1500);
+    };
+    h.insertBefore(btn, h.firstChild);
+  });
 
   if (currentPlayer.isDM) {
     document.getElementById('dm-page-controls').classList.remove('hidden');
