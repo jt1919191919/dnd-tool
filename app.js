@@ -1608,6 +1608,96 @@ function removeLink() {
   document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
 }
 
+function toolbarTag() {
+  saveSelection();
+  document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+
+  // Check if cursor is inside an existing tag span
+  const sel = window.getSelection();
+  let existingSpan = null;
+  let existingTags = '';
+  if (sel && sel.rangeCount) {
+    let node = sel.getRangeAt(0).commonAncestorContainer;
+    if (node.nodeType === 3) node = node.parentNode;
+    while (node && node !== document.getElementById('editor-area')) {
+      if (node.classList && node.classList.contains('search-tag')) { existingSpan = node; break; }
+      node = node.parentNode;
+    }
+    if (existingSpan) existingTags = existingSpan.dataset.tags || '';
+  }
+
+  const popup = document.createElement('div');
+  popup.className = 'toolbar-popup';
+  popup.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:#16213e;border:1px solid #e2b96f;border-radius:8px;padding:16px;z-index:200;min-width:320px;box-shadow:0 4px 16px rgba(0,0,0,0.5)';
+  popup.innerHTML = `
+    <div style="font-size:0.85rem;color:#aaa;margin-bottom:4px">Search Tags</div>
+    <div style="font-size:0.75rem;color:#777;margin-bottom:8px">Separate multiple tags with commas. Multi-word tags are fine.</div>
+    <input id="tag-input" type="text" value="${existingTags}" placeholder="e.g. fireball, magic missile" style="width:100%;padding:7px;background:#0f3460;border:1px solid #0f3460;border-radius:4px;color:#e0e0e0;margin-bottom:8px;font-size:0.9rem;box-sizing:border-box"/>
+    <div style="display:flex;gap:8px">
+      <button onclick="applyTag()" style="flex:1;padding:6px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer">Apply</button>
+      ${existingSpan ? `<button onclick="removeTag()" style="flex:1;padding:6px;border:1px solid #c44;background:transparent;color:#c44;border-radius:4px;cursor:pointer">Remove</button>` : ''}
+      <button onclick="this.closest('.toolbar-popup').remove()" style="flex:1;padding:6px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer">Cancel</button>
+    </div>`;
+  document.body.appendChild(popup);
+  setTimeout(() => document.getElementById('tag-input')?.focus(), 50);
+}
+
+function applyTag() {
+  const rawTags = document.getElementById('tag-input')?.value.trim();
+  if (!rawTags) return;
+  const tags = rawTags.split(',').map(t => t.trim()).filter(Boolean).join(',');
+  restoreSelection();
+
+  // If selection is collapsed (cursor only) check if we're inside existing span
+  const sel = window.getSelection();
+  let existingSpan = null;
+  if (sel && sel.rangeCount) {
+    let node = sel.getRangeAt(0).commonAncestorContainer;
+    if (node.nodeType === 3) node = node.parentNode;
+    while (node && node !== document.getElementById('editor-area')) {
+      if (node.classList && node.classList.contains('search-tag')) { existingSpan = node; break; }
+      node = node.parentNode;
+    }
+  }
+  if (existingSpan) {
+    existingSpan.dataset.tags = tags;
+    document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+    return;
+  }
+
+  // Wrap selection in a search-tag span
+  const range = sel.getRangeAt(0);
+  const span = document.createElement('span');
+  span.className = 'search-tag';
+  span.dataset.tags = tags;
+  try { range.surroundContents(span); }
+  catch(e) {
+    // Selection crosses element boundaries — extract and wrap
+    const frag = range.extractContents();
+    span.appendChild(frag);
+    range.insertNode(span);
+  }
+  document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+}
+
+function removeTag() {
+  restoreSelection();
+  const sel = window.getSelection();
+  if (!sel || !sel.rangeCount) { document.querySelectorAll('.toolbar-popup').forEach(p => p.remove()); return; }
+  let node = sel.getRangeAt(0).commonAncestorContainer;
+  if (node.nodeType === 3) node = node.parentNode;
+  while (node && node !== document.getElementById('editor-area')) {
+    if (node.classList && node.classList.contains('search-tag')) {
+      const parent = node.parentNode;
+      while (node.firstChild) parent.insertBefore(node.firstChild, node);
+      parent.removeChild(node);
+      break;
+    }
+    node = node.parentNode;
+  }
+  document.querySelectorAll('.toolbar-popup').forEach(p => p.remove());
+}
+
 function toolbarScrollBox() {
   const area = document.getElementById('editor-area');
   area.focus();
