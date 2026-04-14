@@ -1414,15 +1414,36 @@ async function fetchJSON(path) {
 async function downloadBackup() {
   const { default: JSZip } = await import('https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm');
   const zip = new JSZip();
+  const pat = getPAT();
+  const headers = pat ? { Authorization: `token ${pat}` } : {};
 
+  // Recursively fetch all files from a GitHub directory path
+  async function fetchDirRecursive(apiPath, zipPath) {
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${apiPath}?_=${Date.now()}`, { headers });
+    if (!res.ok) return;
+    const items = await res.json();
+    for (const item of items) {
+      if (item.type === 'file') {
+        try {
+          const fileRes = await fetch(item.download_url);
+          if (!fileRes.ok) continue;
+          const buf = await fileRes.arrayBuffer();
+          zip.file(`${zipPath}/${item.name}`, buf);
+        } catch {}
+      } else if (item.type === 'dir') {
+        await fetchDirRecursive(`${apiPath}/${item.name}`, `${zipPath}/${item.name}`);
+      }
+    }
+  }
+
+  // Root files
   zip.file('index.html', await fetchRaw('index.html'));
   zip.file('app.js', await fetchRaw('app.js'));
   zip.file('style.css', await fetchRaw('style.css'));
-  zip.file('data/config.json', JSON.stringify(config, null, 2));
-  zip.file('data/pages/index.json', JSON.stringify(Object.keys(pages), null, 2));
-  for (const [id, page] of Object.entries(pages)) {
-    zip.file(`data/pages/${id}.json`, JSON.stringify(page, null, 2));
-  }
+  zip.file('table-engine.js', await fetchRaw('table-engine.js'));
+
+  // data/ directory recursively (pages, tables, images, config, etc.)
+  await fetchDirRecursive('data', 'data');
 
   const blob = await zip.generateAsync({ type: 'blob' });
   const a = document.createElement('a');
