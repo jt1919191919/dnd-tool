@@ -882,12 +882,17 @@ input[type="checkbox"]:hover {
   }
 }
 
-/* ── Search Tag  ───────────────────────────────────────────────────────── */
+/* ── Search Tags and Priority  ───────────────────────────────────────────────────────── */
 .search-tag {
   background: rgba(226, 185, 111, 0.15);
   border-bottom: 1px dashed #e2b96f;
   border-radius: 2px;
   color: inherit;
+}
+
+.search-result-priority {
+  border-left: 2px solid #e2b96f;
+  background: rgba(226, 185, 111, 0.05);
 }
 
 /* ── Link to Higher than the Heading  ───────────────────────────────────────────────────────── */
