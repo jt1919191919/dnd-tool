@@ -157,12 +157,11 @@ async function initApp() {
   if (pageId && pages[pageId]) {
     const page = pages[pageId];
     const isPublic = page.visibleTo?.includes('__ALL__');
+    const headingHash = window.location.hash?.replace('#', '') || null;
     if (isPublic) {
-      // Public page — anyone can open this link, even without a token
-      navigateTo(pageId);
+      navigateTo(pageId, null, null, headingHash);
     } else if (canSee(pageId)) {
-      // Authenticated player who has access
-      navigateTo(pageId);
+      navigateTo(pageId, null, null, headingHash);
     } else {
       // Wrong player or not signed in — block
       showAccessDenied();
@@ -290,7 +289,7 @@ function showView(view) {
   }
 }
 
-function navigateTo(pageId, targetHeadingText, targetPageId) {
+function navigateTo(pageId, targetHeadingText, targetPageId, targetHeadingId) {
   if (!canSee(pageId)) return;
   currentPageId = pageId;
   const page = pages[pageId];
@@ -366,7 +365,14 @@ function navigateTo(pageId, targetHeadingText, targetPageId) {
   }
 
   // If we need to scroll to a heading after render
-  if (targetHeadingText) {
+  if (targetHeadingId) {
+    const tryScrollById = (attempts) => {
+      const el = document.getElementById(targetHeadingId);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+      else if (attempts > 0) setTimeout(() => tryScrollById(attempts - 1), 100);
+    };
+    setTimeout(() => tryScrollById(15), 150);
+  } else if (targetHeadingText) {
     const tryScroll = (attempts) => {
       const allH = document.querySelectorAll('#page-content h1,#page-content h2,#page-content h3,#page-content h4');
       const match = Array.from(allH).find(h => h.textContent.replace('🔗','').trim() === targetHeadingText);
