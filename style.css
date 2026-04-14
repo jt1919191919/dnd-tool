@@ -882,6 +882,14 @@ input[type="checkbox"]:hover {
   }
 }
 
+/* ── Search Tag  ───────────────────────────────────────────────────────── */
+.search-tag {
+  background: rgba(226, 185, 111, 0.15);
+  border-bottom: 1px dashed #e2b96f;
+  border-radius: 2px;
+  color: inherit;
+}
+
 /* ── Link to Higher than the Heading  ───────────────────────────────────────────────────────── */
 h1, h2, h3, h4 {
   scroll-margin-top: 100px;
