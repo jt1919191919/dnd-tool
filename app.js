@@ -708,6 +708,7 @@ function handleSearch(query) {
   cards.classList.add('hidden');
   resultsWrap.classList.remove('hidden');
   resultsList.innerHTML = '';
+  window.scrollTo(0, 0);
 
   const q = query.toLowerCase().trim();
 
@@ -745,13 +746,27 @@ function handleSearch(query) {
         const tags = span.dataset.tags.split(',').map(t => t.trim().toLowerCase());
         if (tags.some(t => t === q || t.includes(q) || q.includes(t))) {
           const snippet = getSnippet(span.textContent, query);
+          const tagText = span.textContent.trim();
+          const capturedTags = span.dataset.tags;
           priorityResults.push({
             badge: '🏷',
             itemHtml: `
               <div class="search-result-title">🏷 ${highlightMatch(page.title, query)}</div>
-              <div class="search-result-heading">Tagged: ${span.dataset.tags}</div>
+              <div class="search-result-heading">Tagged: ${capturedTags}</div>
               <div class="search-result-snippet">${highlightMatch(snippet, query)}</div>`,
-            onClickFn: () => { clearSearch(); navigateTo(id); }
+            onClickFn: () => {
+              clearSearch();
+              navigateTo(id);
+              const tryScrollToTag = (attempts) => {
+                const allTags = document.querySelectorAll('#page-content .search-tag');
+                const match = Array.from(allTags).find(el =>
+                  el.dataset.tags === capturedTags && el.textContent.trim() === tagText
+                );
+                if (match) match.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                else if (attempts > 0) setTimeout(() => tryScrollToTag(attempts - 1), 100);
+              };
+              setTimeout(() => tryScrollToTag(15), 150);
+            }
           });
         }
       });
@@ -763,7 +778,7 @@ function handleSearch(query) {
           priorityResults.push({
             badge: '§',
             itemHtml: `
-              <div class="search-result-title">§ ${highlightMatch(hText, query)}</div>
+              <div class="search-result-title">${highlightMatch(hText, query)}</div>
               <div class="search-result-heading">In: ${page.title}</div>`,
             onClickFn: () => {
               clearSearch();
