@@ -154,8 +154,19 @@ async function initApp() {
   // Check if URL specifies a page to load directly
   const params = new URLSearchParams(window.location.search);
   const pageId = params.get('page');
-  if (pageId && pages[pageId] && canSee(pageId)) {
-    navigateTo(pageId);
+  if (pageId && pages[pageId]) {
+    const page = pages[pageId];
+    const isPublic = page.visibleTo?.includes('__ALL__');
+    if (isPublic) {
+      // Public page — anyone can open this link, even without a token
+      navigateTo(pageId);
+    } else if (canSee(pageId)) {
+      // Authenticated player who has access
+      navigateTo(pageId);
+    } else {
+      // Wrong player or not signed in — block
+      showAccessDenied();
+    }
   } else {
     showView('home');
   }
@@ -1472,10 +1483,10 @@ function openSharePanel(pageId, headingId) {
   panel.className = 'share-panel-popup';
   panel.innerHTML = `<div style="font-size:0.8rem;color:#aaa;margin-bottom:6px">Share link for:</div>`;
 
-  // Public/all option
+  // Universal link option (same URL regardless of who it's for)
   const allDiv = document.createElement('div');
   allDiv.className = 'share-player-row';
-  allDiv.textContent = '🌐 All Players (no token)';
+  allDiv.textContent = '🔗 Copy Link (recipient must be signed in)';
   allDiv.onclick = () => { copyShareLink(null, null, pageId, headingId); panel.remove(); };
   panel.appendChild(allDiv);
 
@@ -1486,7 +1497,7 @@ function openSharePanel(pageId, headingId) {
     div.innerHTML = `${canView ? '✅' : '⛔'} ${player.name}`;
     div.onclick = () => {
       if (!canView) { alert(`${player.name} can't see this page. Update visibility first.`); return; }
-      copyShareLink(token, player.name, pageId, headingId);
+      copyShareLink(null, player.name, pageId, headingId);
       panel.remove();
     };
     panel.appendChild(div);
@@ -1500,8 +1511,10 @@ function openSharePanel(pageId, headingId) {
 }
 
 function copyShareLink(token, name, pageId, headingId) {
-  const base = token ? buildURL(token, pageId) : `${getBaseURL()}?page=${pageId}`;
-  const url = base + (headingId ? `#${headingId}` : '');
+  // Never put the player token in the share URL.
+  // Just encode the page (and optional heading). Auth is the receiver's problem.
+  let url = `${getBaseURL()}?page=${pageId}`;
+  if (headingId) url += `#${headingId}`;
   navigator.clipboard.writeText(url);
   alert(`Copied${name ? ' for ' + name : ' public link'}!\n\n${url}`);
 }
