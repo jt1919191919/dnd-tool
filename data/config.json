@@ -1,10 +1,6 @@
 {
   "dmToken": "dm-secret-token",
   "players": {
-    "gobbo": {
-      "name": "Bizzy",
-      "color": "#004d21"
-    },
     "hagvibe": {
       "name": "Sarah",
       "color": "#7b2881"
