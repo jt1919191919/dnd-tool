@@ -1,10 +1,6 @@
 {
   "dmToken": "dm-secret-token",
   "players": {
-    "eggzz": {
-      "name": "Mandy",
-      "color": "#7d7d7d"
-    },
     "gobbo": {
       "name": "jibjib",
       "color": "#004d21"
