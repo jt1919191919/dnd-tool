@@ -1,10 +1,6 @@
 {
   "dmToken": "dm-secret-token",
   "players": {
-    "steveslayer": {
-      "name": "Cody",
-      "color": "#d0bb35"
-    },
     "stunner": {
       "name": "Jeffrey",
       "color": "#450198"
