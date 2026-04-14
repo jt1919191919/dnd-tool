@@ -349,9 +349,11 @@ function navigateTo(pageId, targetHeadingText, targetPageId) {
     btn.onmouseleave = () => btn.style.opacity = '0.35';
     btn.onclick = (e) => {
       e.stopPropagation();
-      const headingId = `heading-${i}`;
+      const headingId = h.id || `heading-${i}`;
       let url = `${getBaseURL()}?page=${currentPageId}#${headingId}`;
       navigator.clipboard.writeText(url);
+      window.history.pushState({}, '', url);
+      h.scrollIntoView({ behavior: 'smooth' });
       btn.innerHTML = '✓';
       setTimeout(() => btn.innerHTML = '🔗', 1500);
     };
