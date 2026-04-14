@@ -709,10 +709,13 @@ function handleSearch(query) {
   resultsWrap.classList.remove('hidden');
   resultsList.innerHTML = '';
 
-  const q = query.toLowerCase();
-  // Group results by pageId
-  const groups = {}; // { pageId: { title, items: [] } }
+  const q = query.toLowerCase().trim();
 
+  // ── Priority results (shown individually at top) ─────────────────
+  const priorityResults = []; // { itemHtml, onClickFn, badge }
+
+  // ── Regular grouped results ───────────────────────────────────────
+  const groups = {};
   const addResult = (pageId, pageTitle, itemHtml, onClickFn) => {
     if (!groups[pageId]) groups[pageId] = { title: pageTitle, items: [] };
     groups[pageId].items.push({ itemHtml, onClickFn });
@@ -732,28 +735,64 @@ function handleSearch(query) {
         () => { clearSearch(); navigateTo(id); });
     }
 
-    // Find ALL content matches, not just first
-    if (contentText.toLowerCase().includes(q)) {
+    if (contentText.toLowerCase().includes(q) || (page.content || '').toLowerCase().includes(q)) {
       const div = document.createElement('div');
       div.innerHTML = page.content || '';
       div.querySelectorAll('.h-badge').forEach(b => b.remove());
 
-      // Walk through all text nodes finding matches
+      // ── Rule 2: tagged content ────────────────────────────────────
+      div.querySelectorAll('.search-tag[data-tags]').forEach(span => {
+        const tags = span.dataset.tags.split(',').map(t => t.trim().toLowerCase());
+        if (tags.some(t => t === q || t.includes(q) || q.includes(t))) {
+          const snippet = getSnippet(span.textContent, query);
+          priorityResults.push({
+            badge: '🏷',
+            itemHtml: `
+              <div class="search-result-title">🏷 ${highlightMatch(page.title, query)}</div>
+              <div class="search-result-heading">Tagged: ${span.dataset.tags}</div>
+              <div class="search-result-snippet">${highlightMatch(snippet, query)}</div>`,
+            onClickFn: () => { clearSearch(); navigateTo(id); }
+          });
+        }
+      });
+
+      // ── Rule 1: heading matches ───────────────────────────────────
+      div.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(h => {
+        const hText = h.textContent.replace('🔗','').trim();
+        if (hText.toLowerCase().includes(q)) {
+          priorityResults.push({
+            badge: '§',
+            itemHtml: `
+              <div class="search-result-title">§ ${highlightMatch(hText, query)}</div>
+              <div class="search-result-heading">In: ${page.title}</div>`,
+            onClickFn: () => {
+              clearSearch();
+              navigateTo(id);
+              const tryScroll = (attempts) => {
+                const allH = document.querySelectorAll('#page-content h1,#page-content h2,#page-content h3,#page-content h4,#page-content h5,#page-content h6');
+                const match = Array.from(allH).find(el => el.textContent.replace('🔗','').trim() === hText);
+                if (match) match.scrollIntoView({ behavior: 'smooth' });
+                else if (attempts > 0) setTimeout(() => tryScroll(attempts - 1), 100);
+              };
+              setTimeout(() => tryScroll(15), 150);
+            }
+          });
+        }
+      });
+
+      // ── Regular content matches ───────────────────────────────────
       const allHeadings = Array.from(div.querySelectorAll('h1,h2,h3,h4'));
       let lastHeading = null;
       const seenHeadings = new Set();
 
       const walkNode = (node) => {
-        if (node.nodeType === 1 && /^H[1-4]$/.test(node.tagName)) {
-          lastHeading = node;
-        }
+        if (node.nodeType === 1 && /^H[1-4]$/.test(node.tagName)) lastHeading = node;
         if (node.nodeType === 3 && node.textContent.toLowerCase().includes(q)) {
           const headingText = lastHeading ? lastHeading.textContent.replace('🔗','').trim() : null;
           const headingKey = headingText || '__top__';
           if (!seenHeadings.has(headingKey)) {
             seenHeadings.add(headingKey);
             const snippet = getSnippet(node.textContent, query);
-            const headingIdx = lastHeading ? allHeadings.indexOf(lastHeading) : -1;
             const capturedHeading = lastHeading;
             addResult(id, page.title, `
               <div class="search-result-title">${highlightMatch(page.title, query)}</div>
@@ -781,10 +820,11 @@ function handleSearch(query) {
     }
   }
 
-  // ── Spell/Monster table search ───────────────────────────────────
+  // ── Rule 1: Spell/Monster name matches ───────────────────────────
   const spellMatches = spellIndex.filter(s => s.allText && s.allText.includes(q));
   for (const spell of spellMatches) {
     const resultIcon = spell.tableType === 'monster' ? '🐉' : '🔮';
+    const isNameMatch = spell.name.toLowerCase().includes(q);
     let snippet = '';
     if (spell.cells) {
       for (const [k, v] of Object.entries(spell.cells)) {
@@ -795,38 +835,54 @@ function handleSearch(query) {
         }
       }
     }
-    addResult(spell.pageId, spell.pageTitle, `
+    const itemHtml = `
       <div class="search-result-title">${resultIcon} ${highlightMatch(spell.name, query)}</div>
       ${spell.nearestHeading ? `<div class="search-result-heading">${spell.nearestHeading}</div>` : ''}
-      ${snippet ? `<div class="search-result-snippet">${snippet}</div>` : ''}`,
-      () => {
-        clearSearch();
-        navigateTo(spell.pageId);
+      ${snippet ? `<div class="search-result-snippet">${snippet}</div>` : ''}`;
+    const onClickFn = () => {
+      clearSearch();
+      navigateTo(spell.pageId);
       const waitForTable = (attempts) => {
         const wrap = document.getElementById(`tbl-${spell.tableId}`);
-        if (wrap && wrap.__rows) {
-          navigateToSpellRow(spell.tableId, spell.name);
-        } else if (attempts > 0) {
-          setTimeout(() => waitForTable(attempts - 1), 200);
-        }
+        if (wrap && wrap.__rows) navigateToSpellRow(spell.tableId, spell.name);
+        else if (attempts > 0) setTimeout(() => waitForTable(attempts - 1), 200);
       };
       setTimeout(() => waitForTable(20), 300);
-      });
+    };
+    if (isNameMatch) {
+      priorityResults.push({ badge: resultIcon, itemHtml, onClickFn });
+    } else {
+      addResult(spell.pageId, spell.pageTitle, itemHtml, onClickFn);
+    }
   }
 
-  // ── Render grouped results ───────────────────────────────────────
-  if (!Object.keys(groups).length) {
+  // ── Render ────────────────────────────────────────────────────────
+  if (!priorityResults.length && !Object.keys(groups).length) {
     resultsList.innerHTML = '<p style="color:#aaa;padding:10px">No results found.</p>';
     return;
   }
 
+  // Priority section
+  if (priorityResults.length) {
+    const section = document.createElement('div');
+    section.style.cssText = 'margin-bottom:12px;border-bottom:1px solid rgba(226,185,111,0.2);padding-bottom:10px;';
+    priorityResults.forEach(({ itemHtml, onClickFn }) => {
+      const item = document.createElement('div');
+      item.className = 'search-result-item search-result-priority';
+      item.innerHTML = itemHtml;
+      item.onclick = onClickFn;
+      section.appendChild(item);
+    });
+    resultsList.appendChild(section);
+  }
+
+  // Regular grouped section
   for (const [pageId, group] of Object.entries(groups)) {
     const isMulti = group.items.length > 1;
     const folder = document.createElement('div');
     folder.style.cssText = 'margin-bottom:8px;';
 
     if (isMulti) {
-      // Folder header
       const header = document.createElement('div');
       header.style.cssText = 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;';
       header.innerHTML = `<span style="display:flex;align-items:center;gap:8px;color:#e0e0e0;font-weight:bold"><span class="folder-caret" style="color:#888;font-size:0.85rem;min-width:12px">▸</span>${group.title}</span><span style="color:#888;font-size:0.8rem">${group.items.length} results</span>`;
@@ -850,7 +906,6 @@ function handleSearch(query) {
       folder.appendChild(header);
       folder.appendChild(children);
     } else {
-      // Single result — show directly
       const { itemHtml, onClickFn } = group.items[0];
       const item = document.createElement('div');
       item.className = 'search-result-item';
@@ -858,7 +913,6 @@ function handleSearch(query) {
       item.onclick = onClickFn;
       folder.appendChild(item);
     }
-
     resultsList.appendChild(folder);
   }
 }
