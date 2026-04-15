@@ -331,10 +331,10 @@ function openSpellPopup(e, tableId, idx) {
     ? `<span style="color:#D39A39;font-weight:bold">Concentration</span>, up to ${row['_durationClean']}`
     : row['_durationClean'] || '');
 
-  const navHtml = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-    <button onclick="spellPopupNav('${tableId}',-1)" ${visibleIdx <= 0 ? 'disabled' : ''} style="background:none;border:1px solid rgba(255,255,255,0.2);color:${visibleIdx <= 0 ? '#444' : '#e0e0e0'};border-radius:6px;padding:4px 14px;cursor:${visibleIdx <= 0 ? 'default' : 'pointer'};font-size:1.1rem">←</button>
+  const navHtml = `<div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:10px">
+    <button onclick="spellPopupNav('${tableId}',-1)" ${visibleIdx <= 0 ? 'disabled' : ''} style="background:none;border:1px solid rgba(255,255,255,0.2);color:${visibleIdx <= 0 ? '#444' : '#e0e0e0'};border-radius:6px;padding:4px 12px;cursor:${visibleIdx <= 0 ? 'default' : 'pointer'};font-size:1.1rem">←</button>
     <span style="color:#888;font-size:0.8rem">${visibleIdx + 1} / ${visibleRows.length}</span>
-    <button onclick="spellPopupNav('${tableId}',1)" ${visibleIdx >= visibleRows.length - 1 ? 'disabled' : ''} style="background:none;border:1px solid rgba(255,255,255,0.2);color:${visibleIdx >= visibleRows.length - 1 ? '#444' : '#e0e0e0'};border-radius:6px;padding:4px 14px;cursor:${visibleIdx >= visibleRows.length - 1 ? 'default' : 'pointer'};font-size:1.1rem">→</button>
+    <button onclick="spellPopupNav('${tableId}',1)" ${visibleIdx >= visibleRows.length - 1 ? 'disabled' : ''} style="background:none;border:1px solid rgba(255,255,255,0.2);color:${visibleIdx >= visibleRows.length - 1 ? '#444' : '#e0e0e0'};border-radius:6px;padding:4px 12px;cursor:${visibleIdx >= visibleRows.length - 1 ? 'default' : 'pointer'};font-size:1.1rem">→</button>
   </div>`;
 
   popup.innerHTML = `
@@ -704,10 +704,10 @@ function openMonsterPopup(row, showField, visibleRows, visibleIdx, tableId) {
   popup.className = 'spell-popup';
   popup.style.cssText = 'background:#222323;border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:20px;width:100%;max-width:600px;position:relative;box-shadow:0 8px 40px rgba(0,0,0,0.7);margin:auto;';
 
-  const navHtml = visibleRows.length > 1 ? `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-    <button onclick="spellPopupNav('${tableId}',-1)" ${visibleIdx <= 0 ? 'disabled' : ''} style="background:none;border:1px solid rgba(255,255,255,0.2);color:${visibleIdx <= 0 ? '#444' : '#e0e0e0'};border-radius:6px;padding:4px 14px;cursor:${visibleIdx <= 0 ? 'default' : 'pointer'};font-size:1.1rem">←</button>
+  const navHtml = visibleRows.length > 1 ? `<div style="display:flex;justify-content:center;align-items:center;gap:8px;margin-bottom:10px">
+    <button onclick="spellPopupNav('${tableId}',-1)" ${visibleIdx <= 0 ? 'disabled' : ''} style="background:none;border:1px solid rgba(255,255,255,0.2);color:${visibleIdx <= 0 ? '#444' : '#e0e0e0'};border-radius:6px;padding:4px 12px;cursor:${visibleIdx <= 0 ? 'default' : 'pointer'};font-size:1.1rem">←</button>
     <span style="color:#888;font-size:0.8rem">${visibleIdx + 1} / ${visibleRows.length}</span>
-    <button onclick="spellPopupNav('${tableId}',1)" ${visibleIdx >= visibleRows.length - 1 ? 'disabled' : ''} style="background:none;border:1px solid rgba(255,255,255,0.2);color:${visibleIdx >= visibleRows.length - 1 ? '#444' : '#e0e0e0'};border-radius:6px;padding:4px 14px;cursor:${visibleIdx >= visibleRows.length - 1 ? 'default' : 'pointer'};font-size:1.1rem">→</button>
+    <button onclick="spellPopupNav('${tableId}',1)" ${visibleIdx >= visibleRows.length - 1 ? 'disabled' : ''} style="background:none;border:1px solid rgba(255,255,255,0.2);color:${visibleIdx >= visibleRows.length - 1 ? '#444' : '#e0e0e0'};border-radius:6px;padding:4px 12px;cursor:${visibleIdx >= visibleRows.length - 1 ? 'default' : 'pointer'};font-size:1.1rem">→</button>
   </div>` : '';
 
   popup.innerHTML = `
