@@ -7,6 +7,54 @@ const GITHUB_API = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/c
 const GITHUB_API_ROOT = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents`;
 
 function getPAT() { return localStorage.getItem('dnd_pat') || ''; }
+// ─── CACHE ────────────────────────────────────────────────────────────────────
+const CACHE_KEY = 'dnd_cache_v1';
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const cache = JSON.parse(raw);
+    if (Date.now() - cache.cachedAt > CACHE_TTL) return null;
+    return cache;
+  } catch { return null; }
+}
+
+function saveCache(configData, pagesData) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({
+      config: configData,
+      pages: pagesData,
+      cachedAt: Date.now()
+    }));
+  } catch(e) {
+    // localStorage full or unavailable — just skip caching
+    console.warn('Cache save failed:', e);
+  }
+}
+
+function bustCache() {
+  localStorage.removeItem(CACHE_KEY);
+}
+
+async function refreshCacheInBackground() {
+  try {
+    const freshConfig = await fetchJSON('config.json');
+    if (!freshConfig) return;
+    const freshPages = {};
+    const pageIndex = await fetchJSON('pages/index.json');
+    if (pageIndex) {
+      for (const id of pageIndex) {
+        const p = await fetchJSON(`pages/${id}.json`);
+        if (p) freshPages[id] = p;
+      }
+    }
+    saveCache(freshConfig, freshPages);
+  } catch(e) {
+    console.warn('Background cache refresh failed:', e);
+  }
+}
 
 async function githubSave(path, content, commitMsg) {
   const pat = getPAT();
@@ -37,29 +85,56 @@ window.addEventListener('load', async () => {
   const token = getTokenFromURL();
   if (!token) { showAccessDenied(); return; }
 
-  // Save token to localStorage so plain URL still works on same device
   localStorage.setItem('dnd_token', token);
 
+  const cache = loadCache();
+
+  if (cache && !currentPlayer?.isDM) {
+    // ── Cache hit: boot instantly ──────────────────────────────────
+    config = cache.config;
+    pages = cache.pages;
+
+    if (config.dmToken && token === config.dmToken) {
+      currentPlayer = { token, name: 'DM', canSee: '__ALL__', isDM: true };
+      // DM always gets fresh data — fall through to network load
+    } else {
+      if (token && config.players[token]) {
+        currentPlayer = { token, ...config.players[token], isDM: false };
+      } else {
+        currentPlayer = { token: '__PUBLIC__', name: '', canSee: [], isDM: false };
+      }
+      initApp();
+      document.getElementById('loading-screen').style.display = 'none';
+
+      // Refresh in background — update cache silently, no UI changes
+      refreshCacheInBackground();
+      return;
+    }
+  }
+
+  // ── No cache (or DM): full network load ───────────────────────────
   config = await fetchJSON('config.json');
   if (!config) { showAccessDenied(); return; }
 
-  // Check token against players
   if (config.dmToken && token === config.dmToken) {
     currentPlayer = { token, name: 'DM', canSee: '__ALL__', isDM: true };
   } else if (token && config.players[token]) {
     currentPlayer = { token, ...config.players[token], isDM: false };
   } else {
-    // Public visitor — sees only __ALL__ content
     currentPlayer = { token: '__PUBLIC__', name: '', canSee: [], isDM: false };
   }
 
-  // Load all pages
   const pageIndex = await fetchJSON('pages/index.json');
   if (pageIndex) {
     for (const id of pageIndex) {
       const p = await fetchJSON(`pages/${id}.json`);
       if (p) pages[id] = p;
     }
+  }
+
+  // Save to cache (players only — DM skips)
+  if (!currentPlayer.isDM) {
+    saveCache(config, pages);
   }
 
   initApp();
@@ -1177,6 +1252,7 @@ async function savePage() {
   }
   const ok = await githubSave(`pages/${id}.json`, pageData, `Update page: ${id}`);
   if (!ok) return;
+  bustCache();
   if (isNew) {
     const idx = await fetchJSON('pages/index.json') || [];
     if (!idx.includes(id)) idx.push(id);
