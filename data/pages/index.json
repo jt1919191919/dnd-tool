@@ -3,6 +3,7 @@
   "phb2",
   "phb3",
   "phb4",
+  "phb5",
   "spells-all",
   "class-cleric",
   "spells-cleric-grave",
@@ -10,6 +11,5 @@
   "druid-wildshapes",
   "session-summaries1",
   "session-summaries2",
-  "session-summaries3",
-  "phb5"
+  "session-summaries3"
 ]
