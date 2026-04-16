@@ -246,10 +246,73 @@ async function initApp() {
   }
   // Build spell search index from all table blocks in visible pages
   await buildSpellIndex();
+  buildContentIndex();
 }
 
-// ─── SPELL INDEX ──────────────────────────────────────────────────────────────
+// ─── SEARCH INDEX ─────────────────────────────────────────────────────────────
 let spellIndex = []; // [{ name, pageId, pageTitle, tableId, nearestHeading }]
+let contentIndex = []; // [{ pageId, pageTitle, headingText, bodyText }]
+let contentIndexReady = false;
+let lastSearchQuery = '';
+let searchDebounceTimer = null;
+
+function buildContentIndex() {
+  contentIndex = [];
+  for (const [pageId, page] of Object.entries(pages)) {
+    if (!canSee(pageId)) continue;
+    const div = document.createElement('div');
+    div.innerHTML = page.content || '';
+    div.querySelectorAll('.h-badge, .dnd-table-block').forEach(b => b.remove());
+
+    // Index each heading + the text under it as a chunk
+    const headings = Array.from(div.querySelectorAll('h1,h2,h3,h4'));
+    let lastHeading = null;
+    let buffer = [];
+
+    const flushBuffer = () => {
+      if (buffer.length) {
+        contentIndex.push({
+          pageId,
+          pageTitle: page.title,
+          headingText: lastHeading,
+          bodyText: buffer.join(' ').toLowerCase()
+        });
+        buffer = [];
+      }
+    };
+
+    const walk = (node) => {
+      if (node.nodeType === 1 && /^H[1-4]$/.test(node.tagName)) {
+        flushBuffer();
+        lastHeading = node.textContent.replace('🔗','').trim();
+        return;
+      }
+      if (node.nodeType === 3 && node.textContent.trim()) {
+        buffer.push(node.textContent.trim());
+        return;
+      }
+      for (const child of node.childNodes) walk(child);
+    };
+    walk(div);
+    flushBuffer();
+
+    // Also index tagged content
+    const tagDiv = document.createElement('div');
+    tagDiv.innerHTML = page.content || '';
+    tagDiv.querySelectorAll('.search-tag[data-tags]').forEach(span => {
+      contentIndex.push({
+        pageId,
+        pageTitle: page.title,
+        headingText: null,
+        bodyText: span.dataset.tags.toLowerCase() + ' ' + span.textContent.toLowerCase(),
+        isTag: true,
+        tagText: span.textContent.trim(),
+        tagValue: span.dataset.tags
+      });
+    });
+  }
+  contentIndexReady = true;
+}
 
 async function buildSpellIndex() {
   spellIndex = [];
@@ -806,6 +869,7 @@ function handleSearch(query) {
   const cards = document.getElementById('cards-grid');
 
   if (!query.trim()) {
+    lastSearchQuery = '';
     resultsWrap.classList.add('hidden');
     cards.classList.remove('hidden');
     if (currentPageId) {
@@ -814,6 +878,20 @@ function handleSearch(query) {
     }
     return;
   }
+
+  // ── Debounce: wait 200ms after typing stops ───────────────────────
+  clearTimeout(searchDebounceTimer);
+  searchDebounceTimer = setTimeout(() => runSearch(query), 200);
+}
+
+function runSearch(query) {
+  // ── Guard: skip if query unchanged ───────────────────────────────
+  if (query === lastSearchQuery) return;
+  lastSearchQuery = query;
+
+  const resultsWrap = document.getElementById('search-results');
+  const resultsList = document.getElementById('search-results-list');
+  const cards = document.getElementById('cards-grid');
 
   document.getElementById('view-page').classList.add('hidden');
   document.getElementById('view-dm-editor').classList.add('hidden');
@@ -825,52 +903,58 @@ function handleSearch(query) {
   window.scrollTo(0, 0);
 
   const q = query.toLowerCase().trim();
+  const REGULAR_CAP = 30;
 
-  // ── Priority results (shown individually at top) ─────────────────
-  const priorityResults = []; // { itemHtml, onClickFn, badge }
+  // ── Priority results (shown individually at top, uncapped) ────────
+  const priorityResults = [];
 
-  // ── Regular grouped results ───────────────────────────────────────
+  // ── Regular grouped results (capped at 30 total items) ───────────
   const groups = {};
+  let regularCount = 0;
+  let cappedCount = 0;
+
   const addResult = (pageId, pageTitle, itemHtml, onClickFn) => {
+    if (regularCount >= REGULAR_CAP) { cappedCount++; return; }
     if (!groups[pageId]) groups[pageId] = { title: pageTitle, items: [] };
     groups[pageId].items.push({ itemHtml, onClickFn });
+    regularCount++;
   };
 
-  // ── Page content search ──────────────────────────────────────────
+  // ── Page title / description matches ─────────────────────────────
   for (const [id, page] of Object.entries(pages)) {
     if (!canSee(id)) continue;
     const titleMatch = page.title?.toLowerCase().includes(q);
-    const contentText = stripHTML(page.content || '');
     const descMatch = page.description?.toLowerCase().includes(q);
-
     if (titleMatch || descMatch) {
       addResult(id, page.title, `
         <div class="search-result-title">${highlightMatch(page.title, query)}</div>
         <div class="search-result-snippet">${highlightMatch(page.description || '', query)}</div>`,
         () => { clearSearch(); navigateTo(id); });
     }
+  }
 
-    if (contentText.toLowerCase().includes(q) || (page.content || '').toLowerCase().includes(q)) {
-      const div = document.createElement('div');
-      div.innerHTML = page.content || '';
-      div.querySelectorAll('.h-badge').forEach(b => b.remove());
+  // ── Content index search (replaces live DOM walking) ──────────────
+  if (contentIndexReady) {
+    const seenHeadings = new Set();
 
-      // ── Rule 2: tagged content ────────────────────────────────────
-      div.querySelectorAll('.search-tag[data-tags]').forEach(span => {
-        const tags = span.dataset.tags.split(',').map(t => t.trim().toLowerCase());
-        if (tags.some(t => t === q || t.includes(q) || q.includes(t))) {
-          const snippet = getSnippet(span.textContent, query);
-          const tagText = span.textContent.trim();
-          const capturedTags = span.dataset.tags;
+    for (const chunk of contentIndex) {
+      if (!canSee(chunk.pageId)) continue;
+
+      if (chunk.isTag) {
+        // Tag match → priority
+        if (chunk.bodyText.includes(q)) {
+          const capturedTags = chunk.tagValue;
+          const tagText = chunk.tagText;
+          const snippet = getSnippet(chunk.tagText, query);
           priorityResults.push({
             badge: '🏷',
             itemHtml: `
-              <div class="search-result-title">🏷 ${highlightMatch(page.title, query)}</div>
+              <div class="search-result-title">🏷 ${highlightMatch(pages[chunk.pageId]?.title || '', query)}</div>
               <div class="search-result-heading">Tagged: ${capturedTags}</div>
               <div class="search-result-snippet">${highlightMatch(snippet, query)}</div>`,
             onClickFn: () => {
               clearSearch();
-              navigateTo(id);
+              navigateTo(chunk.pageId);
               const tryScrollToTag = (attempts) => {
                 const allTags = document.querySelectorAll('#page-content .search-tag');
                 const match = Array.from(allTags).find(el =>
@@ -883,73 +967,74 @@ function handleSearch(query) {
             }
           });
         }
-      });
+        continue;
+      }
 
-      // ── Rule 1: heading matches ───────────────────────────────────
-      div.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(h => {
-        const hText = h.textContent.replace('🔗','').trim();
-        if (hText.toLowerCase().includes(q)) {
-          priorityResults.push({
-            badge: '§',
-            itemHtml: `
-              <div class="search-result-title">${highlightMatch(hText, query)}</div>
-              <div class="search-result-heading">In: ${page.title}</div>`,
-            onClickFn: () => {
+      // Heading match → priority
+      if (chunk.headingText && chunk.headingText.toLowerCase().includes(q)) {
+        const hText = chunk.headingText;
+        const id = chunk.pageId;
+        priorityResults.push({
+          badge: '§',
+          itemHtml: `
+            <div class="search-result-title">${highlightMatch(hText, query)}</div>
+            <div class="search-result-heading">In: ${chunk.pageTitle}</div>`,
+          onClickFn: () => {
+            clearSearch();
+            navigateTo(id);
+            const tryScroll = (attempts) => {
+              const allH = document.querySelectorAll('#page-content h1,#page-content h2,#page-content h3,#page-content h4');
+              const match = Array.from(allH).find(h => h.textContent.replace('🔗','').trim() === hText);
+              if (match) match.scrollIntoView({ behavior: 'smooth' });
+              else if (attempts > 0) setTimeout(() => tryScroll(attempts - 1), 100);
+            };
+            setTimeout(() => tryScroll(15), 150);
+          }
+        });
+      }
+
+      // Body text match → regular grouped
+      if (chunk.bodyText.includes(q)) {
+        const headingKey = `${chunk.pageId}__${chunk.headingText || '__top__'}`;
+        if (!seenHeadings.has(headingKey)) {
+          seenHeadings.add(headingKey);
+          const snippet = getSnippet(chunk.bodyText, query);
+          const capturedHeading = chunk.headingText;
+          const id = chunk.pageId;
+          addResult(id, chunk.pageTitle, `
+            <div class="search-result-title">${highlightMatch(chunk.pageTitle, query)}</div>
+            ${capturedHeading ? `<div class="search-result-heading">Under: ${capturedHeading}</div>` : ''}
+            <div class="search-result-snippet">${highlightMatch(snippet, query)}</div>`,
+            () => {
               clearSearch();
               navigateTo(id);
-              const tryScroll = (attempts) => {
-                const allH = document.querySelectorAll('#page-content h1,#page-content h2,#page-content h3,#page-content h4,#page-content h5,#page-content h6');
-                const match = Array.from(allH).find(el => el.textContent.replace('🔗','').trim() === hText);
-                if (match) match.scrollIntoView({ behavior: 'smooth' });
-                else if (attempts > 0) setTimeout(() => tryScroll(attempts - 1), 100);
-              };
-              setTimeout(() => tryScroll(15), 150);
-            }
-          });
+              if (capturedHeading) {
+                const tryScroll = (attempts) => {
+                  const allH = document.querySelectorAll('#page-content h1,#page-content h2,#page-content h3,#page-content h4');
+                  const match = Array.from(allH).find(h => h.textContent.replace('🔗','').trim() === capturedHeading);
+                  if (match) match.scrollIntoView({ behavior: 'smooth' });
+                  else if (attempts > 0) setTimeout(() => tryScroll(attempts - 1), 100);
+                };
+                setTimeout(() => tryScroll(15), 150);
+              }
+            });
         }
-      });
-
-      // ── Regular content matches ───────────────────────────────────
-      const allHeadings = Array.from(div.querySelectorAll('h1,h2,h3,h4'));
-      let lastHeading = null;
-      const seenHeadings = new Set();
-
-      const walkNode = (node) => {
-        if (node.nodeType === 1 && /^H[1-4]$/.test(node.tagName)) lastHeading = node;
-        if (node.nodeType === 3 && node.textContent.toLowerCase().includes(q)) {
-          const headingText = lastHeading ? lastHeading.textContent.replace('🔗','').trim() : null;
-          const headingKey = headingText || '__top__';
-          if (!seenHeadings.has(headingKey)) {
-            seenHeadings.add(headingKey);
-            const snippet = getSnippet(node.textContent, query);
-            const capturedHeading = lastHeading;
-            addResult(id, page.title, `
-              <div class="search-result-title">${highlightMatch(page.title, query)}</div>
-              ${headingText ? `<div class="search-result-heading">Under: ${headingText}</div>` : ''}
-              <div class="search-result-snippet">${highlightMatch(snippet, query)}</div>`,
-              () => {
-                clearSearch();
-                navigateTo(id);
-                if (capturedHeading) {
-                  const hText = capturedHeading.textContent.replace('🔗','').trim();
-                  const tryScroll = (attempts) => {
-                    const allH = document.querySelectorAll('#page-content h1,#page-content h2,#page-content h3,#page-content h4');
-                    const match = Array.from(allH).find(h => h.textContent.replace('🔗','').trim() === hText);
-                    if (match) match.scrollIntoView({ behavior: 'smooth' });
-                    else if (attempts > 0) setTimeout(() => tryScroll(attempts - 1), 100);
-                  };
-                  setTimeout(() => tryScroll(15), 150);
-                }
-              });
-          }
-        }
-        for (const child of node.childNodes) walkNode(child);
-      };
-      walkNode(div);
+      }
+    }
+  } else {
+    // Index not ready yet — fall back to live search for this query only
+    for (const [id, page] of Object.entries(pages)) {
+      if (!canSee(id)) continue;
+      const contentText = stripHTML(page.content || '');
+      if (!contentText.toLowerCase().includes(q)) continue;
+      addResult(id, page.title, `
+        <div class="search-result-title">${highlightMatch(page.title, query)}</div>
+        <div class="search-result-snippet">Content match</div>`,
+        () => { clearSearch(); navigateTo(id); });
     }
   }
 
-  // ── Rule 1: Spell/Monster name matches ───────────────────────────
+  // ── Spell/Monster matches ─────────────────────────────────────────
   const spellMatches = spellIndex.filter(s => s.allText && s.allText.includes(q));
   for (const spell of spellMatches) {
     const resultIcon = spell.tableType === 'monster' ? '🐉' : '🔮';
@@ -991,7 +1076,7 @@ function handleSearch(query) {
     return;
   }
 
-  // Priority section
+  // Priority section (uncapped)
   if (priorityResults.length) {
     const section = document.createElement('div');
     section.style.cssText = 'margin-bottom:12px;border-bottom:1px solid rgba(226,185,111,0.2);padding-bottom:10px;';
@@ -1044,9 +1129,19 @@ function handleSearch(query) {
     }
     resultsList.appendChild(folder);
   }
+
+  // Cap notice
+  if (cappedCount > 0) {
+    const notice = document.createElement('p');
+    notice.style.cssText = 'color:#888;font-size:0.8rem;padding:8px 4px;';
+    notice.textContent = `${cappedCount} more result${cappedCount > 1 ? 's' : ''} — refine your search to see them.`;
+    resultsList.appendChild(notice);
+  }
 }
 
 function clearSearch() {
+  clearTimeout(searchDebounceTimer);
+  lastSearchQuery = '';
   document.getElementById('search-input').value = '';
   handleSearch('');
 }
