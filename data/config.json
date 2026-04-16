@@ -16,6 +16,9 @@
     "egg": {
       "name": "Sig",
       "color": "#7d7d7d"
+    },
+    "stunner": {
+      "name": "Kronk"
     }
   }
 }
