@@ -1,0 +1,9 @@
+{
+  "id": "item-garrote",
+  "title": "Item: Garrote",
+  "thumbnail": "https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg",
+  "description": "",
+  "content": "<div><br></div><div>Melee Weapon with Light and Finesse properties.&nbsp;</div><div>Reach 5 ft. Hit: (2d4 + Dex or Str) slashing damage, and the target is  grappled. Until this grapple ends, the target takes (2d4 + Dex or Str) slashing damage at the start of each of its turns.</div><div><br></div><div><br></div><div><br></div>",
+  "visibleTo": [],
+  "group": ""
+}
