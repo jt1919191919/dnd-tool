@@ -18,7 +18,8 @@
       "color": "#7d7d7d"
     },
     "stunner": {
-      "name": "Kronk"
+      "name": "Kronk",
+      "color": "#450198"
     }
   }
 }
