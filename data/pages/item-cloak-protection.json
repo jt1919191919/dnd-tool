@@ -1,0 +1,9 @@
+{
+  "id": "item-cloak-protection",
+  "title": "Cloak of Protection",
+  "thumbnail": "https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg",
+  "description": "",
+  "content": "<div><br></div><div>Wondrous Item, uncommon (requires attunement)&nbsp;</div><div><br></div><div>You gain a +1 bonus to Armor Class and saving throws while you wear this cloak.</div><div><br></div><div>from Nib, woven of gold</div><div><br></div><div><br></div>",
+  "visibleTo": [],
+  "group": ""
+}
