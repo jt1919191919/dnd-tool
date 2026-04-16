@@ -4,6 +4,8 @@
   "thumbnail": "https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg",
   "description": "",
   "content": "<div><br></div><div>Staff, rare (requires attunement by a Cleric, Druid, or Warlock)&nbsp;</div><div><br></div><div>This staff has 3 charges and regains 1d3 expended charges daily at dawn.\n\nThe staff can be wielded as a magic Quarterstaff. On a hit, it deals damage as a normal Quarterstaff , and you can expend 1 charge to deal an extra 2d10 Necrotic damage to the target and force it to make a DC 15 Constitution saving throw. On a failed save, the target has Disadvantage for 1 hour on any ability check or saving throw that uses Strength or Constitution.</div><div><br></div><div><br></div><div><br></div>",
-  "visibleTo": [],
+  "visibleTo": [
+    "egg"
+  ],
   "group": ""
 }
