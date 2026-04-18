@@ -496,9 +496,7 @@ function navigateTo(pageId, targetHeadingText, targetPageId, targetHeadingId) {
     btn.className = 'heading-anchor-btn';
     btn.title = 'Copy link to this section';
     btn.innerHTML = '🔗';
-    btn.style.cssText = 'background:none;border:none;cursor:pointer;opacity:0.35;font-size:0.75em;padding:0 4px;vertical-align:middle;transition:opacity 0.15s';
-    btn.onmouseenter = () => btn.style.opacity = '1';
-    btn.onmouseleave = () => btn.style.opacity = '0.35';
+    btn.style.cssText = 'background:none;border:none;cursor:pointer;transition:opacity 0.15s';
     btn.onclick = (e) => {
       e.stopPropagation();
       const headingId = h.id || `heading-${i}`;
