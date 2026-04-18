@@ -645,6 +645,11 @@ function buildOutline(group) {
     applyTocFilter(parseInt(this.value));
   });
 
+  // Apply saved default TOC level for this page
+  const savedTocLevel = pages[currentPageId]?.defaultTocLevel ?? 0;
+  document.getElementById('toc-level-filter').value = savedTocLevel;
+  applyTocFilter(savedTocLevel);
+
   document.getElementById('page-outline-wrap').style.display = '';
 }
 
@@ -1291,6 +1296,7 @@ function resetEditor() {
   document.getElementById('editor-thumb').value = 'https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg';
   document.getElementById('editor-description').value = '';
   document.getElementById('editor-area').innerHTML = '';
+  document.getElementById('editor-toc-level').value = 0;
   document.getElementById('editor-page-id').disabled = false;
   populateGroupDropdown(null);
   setTimeout(refreshHeadingBadges, 50);
@@ -1307,6 +1313,7 @@ function editCurrentPage() {
   document.getElementById('editor-page-title').value = page.title || '';
   document.getElementById('editor-thumb').value = page.thumbnail || '';
   document.getElementById('editor-description').value = page.description || '';
+  document.getElementById('editor-toc-level').value = page.defaultTocLevel ?? 0;
   const cleanDiv = document.createElement('div');
   cleanDiv.innerHTML = page.content || '';
   cleanDiv.querySelectorAll('.h-badge').forEach(b => b.remove());
@@ -1349,7 +1356,8 @@ async function savePage() {
     description: document.getElementById('editor-description').value.trim(),
     content: (() => { const d = document.createElement('div'); d.innerHTML = document.getElementById('editor-area').innerHTML; d.querySelectorAll('.h-badge').forEach(b => b.remove()); return d.innerHTML; })(),
     visibleTo: pages[id]?.visibleTo || [],
-    group: finalGroup || ''
+    group: finalGroup || '',
+    defaultTocLevel: parseInt(document.getElementById('editor-toc-level')?.value || '0')
   };
   pages[id] = pageData;
   // If this page is in a group, force all other group pages to re-read from memory on next ToC build
@@ -2453,6 +2461,7 @@ function editPageById(pageId) {
   document.getElementById('editor-page-title').value = page.title || '';
   document.getElementById('editor-thumb').value = page.thumbnail || '';
   document.getElementById('editor-description').value = page.description || '';
+  document.getElementById('editor-toc-level').value = page.defaultTocLevel ?? 0;
   const cleanDiv = document.createElement('div');
   cleanDiv.innerHTML = page.content || '';
   cleanDiv.querySelectorAll('.h-badge').forEach(b => b.remove());
