@@ -201,7 +201,13 @@ function updateSiteTitle() {
   const titleEl = document.getElementById('site-title');
   if (!titleEl) return;
   const onHome = document.getElementById('view-home') && !document.getElementById('view-home').classList.contains('hidden');
-  titleEl.textContent = onHome ? 'CAMPAIGN WIKI' : '← Home';
+  if (onHome) {
+    titleEl.textContent = 'CAMPAIGN WIKI';
+    titleEl.onclick = () => showView('home');
+  } else {
+    titleEl.textContent = '← Home';
+    titleEl.onclick = () => { showView('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  }
 }
 
 function buildURL(token, pageId, headingId) {
