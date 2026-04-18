@@ -2047,12 +2047,54 @@ function toolbarImage() {
     </div>
     <div style="margin-bottom:10px">
       <div style="font-size:0.8rem;color:#aaa;margin-bottom:4px">Or upload from device:</div>
-      <input id="img-file-input" type="file" accept="image/*" style="font-size:0.8rem;color:#aaa"/>
+      <div id="img-drop-zone" style="border:2px dashed rgba(255,255,255,0.2);border-radius:6px;padding:18px 10px;text-align:center;color:#aaa;font-size:0.8rem;cursor:pointer;transition:border-color 0.15s,background 0.15s;margin-bottom:6px">
+        Drop image here or <span style="color:#e2b96f;text-decoration:underline;cursor:pointer" onclick="document.getElementById('img-file-input').click()">browse</span>
+        <div id="img-drop-filename" style="margin-top:6px;color:#e2b96f;font-size:0.75rem;min-height:14px"></div>
+      </div>
+      <input id="img-file-input" type="file" accept="image/*" style="display:none"/>
     </div>
     <div style="display:flex;gap:8px;margin-top:8px">
       <button onclick="applyImage()" style="flex:1;padding:6px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer">Insert</button>
       <button onclick="this.closest('.toolbar-popup').remove()" style="flex:1;padding:6px;border:1px solid #666;background:transparent;color:#aaa;border-radius:4px;cursor:pointer">Cancel</button>
     </div>`;
+
+  // Wire up drag-and-drop after innerHTML is set
+  const dropZone = popup.querySelector('#img-drop-zone');
+  const fileInput = popup.querySelector('#img-file-input');
+  const fileLabel = popup.querySelector('#img-drop-filename');
+
+  const setFile = (file) => {
+    if (!file || !file.type.startsWith('image/')) return;
+    // Use DataTransfer to assign dropped file to the real file input
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    fileInput.files = dt.files;
+    fileLabel.textContent = file.name;
+    dropZone.style.borderColor = '#e2b96f';
+    dropZone.style.background = 'rgba(226,185,111,0.06)';
+  };
+
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.style.borderColor = '#e2b96f';
+    dropZone.style.background = 'rgba(226,185,111,0.06)';
+  });
+  dropZone.addEventListener('dragleave', () => {
+    if (!fileInput.files?.length) {
+      dropZone.style.borderColor = 'rgba(255,255,255,0.2)';
+      dropZone.style.background = '';
+    }
+  });
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    setFile(e.dataTransfer.files[0]);
+  });
+  dropZone.addEventListener('click', (e) => {
+    if (e.target.tagName !== 'SPAN') fileInput.click();
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files[0]) setFile(fileInput.files[0]);
+  });
   document.body.appendChild(popup);
 }
 
