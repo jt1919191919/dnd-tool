@@ -197,6 +197,13 @@ function getBaseURL() {
   return `${window.location.origin}${window.location.pathname}`;
 }
 
+function updateSiteTitle() {
+  const titleEl = document.getElementById('site-title');
+  if (!titleEl) return;
+  const onHome = document.getElementById('view-home') && !document.getElementById('view-home').classList.contains('hidden');
+  titleEl.textContent = onHome ? 'CAMPAIGN WIKI' : '← Home';
+}
+
 function buildURL(token, pageId, headingId) {
   let url = `${getBaseURL()}?token=${token}`;
   if (pageId) url += `&page=${pageId}`;
@@ -412,7 +419,9 @@ function showView(view) {
   if (view === 'home') {
     document.getElementById('view-home').classList.remove('hidden');
     renderCards();
-  } else if (view === 'dm-editor') {
+  }
+  updateSiteTitle();
+  if (view === 'dm-editor') {
     document.getElementById('view-dm-editor').classList.remove('hidden');
     resetEditor();
   } else if (view === 'dm-config') {
@@ -501,6 +510,7 @@ function navigateTo(pageId, targetHeadingText, targetPageId, targetHeadingId) {
     document.getElementById('dm-page-controls').classList.remove('hidden');
     buildVisibilityCheckboxes(page);
   }
+  updateSiteTitle();
 
   // If we need to scroll to a heading after render
   if (targetHeadingId) {
