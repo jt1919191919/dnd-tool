@@ -110,6 +110,16 @@
           <input type="text" id="editor-group-new" placeholder="New group name..." style="width:100%;margin-bottom:0"/>
         </div>
       </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <label style="font-size:0.85rem;color:#aaa;white-space:nowrap">Default Table of Contents Level:</label>
+        <select id="editor-toc-level" style="background:rgba(255,255,255,0.06);color:#e0e0e0;border:1px solid rgba(255,255,255,0.12);border-radius:4px;padding:5px 8px;font-size:0.85rem">
+          <option value="0">Show top level only</option>
+          <option value="1">Expand through H1</option>
+          <option value="2">Expand through H2</option>
+          <option value="3">Expand through H3</option>
+          <option value="4">Expand through H4</option>
+        </select>
+      </div>
       <div id="editor-toolbar" class="editor-toolbar">
         <div class="toolbar-group">
           <select id="toolbar-heading" onchange="toolbarHeading(this.value)" title="Heading level">
