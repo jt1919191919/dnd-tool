@@ -260,10 +260,10 @@ main { padding: 16px; }
   overflow-x: hidden;
   max-width: 100%;
 }
-#page-content h1 { font-size: 35px; color: var(--gold); margin: 20px 0 10px; }
-#page-content h2 { font-size: 27px; color: var(--gold); margin: 18px 0 8px; }
-#page-content h3 { font-size: 22px; color: var(--gold); margin: 14px 0 6px; }
-#page-content h4 { font-size: 18px; color: var(--gold); margin: 12px 0 6px; }
+#page-content h1 { font-size: 22px; color: var(--gold); margin: 20px 0 10px; font-weight: 400; }
+#page-content h2 { font-size: 20px; color: var(--gold); margin: 18px 0 8px; font-weight: 400; }
+#page-content h3 { font-size: 18px; color: var(--gold); margin: 14px 0 6px; font-weight: 400; }
+#page-content h4 { font-size: 16px; color: var(--gold); margin: 12px 0 6px; font-weight: 400; }
 #page-content p { margin-bottom: 10px; font-size: 14px; }
 #page-content a { color: #ffffff; }
 #page-content a[style*="color"] { color: unset; }
@@ -899,5 +899,17 @@ input[type="checkbox"]:hover {
 h1, h2, h3, h4 {
   scroll-margin-top: 100px;
 }
+
+.heading-anchor-btn {
+  font-size: 0.55em !important;
+  opacity: 0.3;
+  margin-left: -1.4em;
+  margin-right: 0.3em;
+  vertical-align: middle;
+  padding: 0 2px !important;
+  position: relative;
+  top: -1px;
+}
+.heading-anchor-btn:hover { opacity: 1 !important; }
 
 </style>
