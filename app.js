@@ -1537,7 +1537,9 @@ function openVisibilityPopup(pageId, btn) {
 async function saveVisibility() {
   if (!currentPageId) return;
   const checkboxes = document.querySelectorAll('#visibility-checkboxes input[type=checkbox]');
-  pages[currentPageId].visibleTo = Array.from(checkboxes).filter(c=>c.checked).map(c=>c.value);
+  pages[currentPageId].visibleTo = Array.from(checkboxes)
+    .filter(c => c.checked && c.value !== '__NONE__')
+    .map(c => c.value);
   const ok = await githubSave(`pages/${currentPageId}.json`, pages[currentPageId], `Update visibility: ${currentPageId}`);
   if (ok) alert('Visibility saved!');
 }
