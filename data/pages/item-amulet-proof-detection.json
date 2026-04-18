@@ -5,7 +5,7 @@
   "description": "",
   "content": "<div><br></div><div>Daterra - Amulet of Proof against Detection and Location (from Nib, circlet made of gold)</div><div><br></div><div>Wondrous Item, uncommon (requires attunement)&nbsp;</div><div><br></div><div>While wearing this amulet, you can’t be targeted by Divination spells or perceived through magical scrying sensors unless you allow it.</div><div><br></div><div><br></div><div><br></div><div><br></div><div><br></div>",
   "visibleTo": [
-    "__ALL__"
+    "__NONE__"
   ],
   "group": ""
 }
