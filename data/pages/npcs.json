@@ -1,0 +1,9 @@
+{
+  "id": "npcs",
+  "title": "NPCs & PCs",
+  "thumbnail": "https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg",
+  "description": "Pictures and Descriptions",
+  "content": "<div><br></div><div>Shrump</div><div><br></div><div><br></div>",
+  "visibleTo": [],
+  "group": ""
+}
