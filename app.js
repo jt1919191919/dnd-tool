@@ -2367,7 +2367,6 @@ function initTableCellPaste() {
   area.addEventListener('click', (e) => {
     const cell = e.target.closest('td, th');
     if (!cell || !cell.closest('.editor-table')) {
-      removePasteBtn();
       activePasteCell = null;
       return;
     }
@@ -2409,7 +2408,6 @@ async function pasteIntoTable() {
     });
   });
 
-  removePasteBtn();
   activePasteCell = null;
 }
 
