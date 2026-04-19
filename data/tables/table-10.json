@@ -1,6 +1,5 @@
 {
   "id": "table-10",
-  "tableType": "monster",
   "rows": [
     {
       "Name": "Aberrant Spirit",
@@ -37,7 +36,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -75,7 +74,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -113,7 +112,7 @@
       "Regional Effects": "",
       "Environment": "Forest",
       "Treasure": "",
-      "_crRaw": "1/2 (XP 100; PB +2)",
+      "_crRaw": "1/2",
       "_crNum": 0.5
     },
     {
@@ -151,7 +150,7 @@
       "Regional Effects": "",
       "Environment": "Forest",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -189,7 +188,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Mountain, Underdark, Urban",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -227,7 +226,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -265,7 +264,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -303,7 +302,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -341,7 +340,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -379,7 +378,7 @@
       "Regional Effects": "",
       "Environment": "Forest",
       "Treasure": "",
-      "_crRaw": "1/2 (XP 100; PB +2)",
+      "_crRaw": "1/2",
       "_crNum": 0.5
     },
     {
@@ -417,7 +416,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Grassland, Hill",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -455,7 +454,7 @@
       "Regional Effects": "",
       "Environment": "Arctic, Forest, Hill",
       "Treasure": "",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -493,7 +492,7 @@
       "Regional Effects": "",
       "Environment": "Desert",
       "Treasure": "",
-      "_crRaw": "1/8 (XP 25; PB +2)",
+      "_crRaw": "1/8",
       "_crNum": 0.125
     },
     {
@@ -531,7 +530,7 @@
       "Regional Effects": "",
       "Environment": "Desert, Forest, Grassland, Urban",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -569,7 +568,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -607,7 +606,7 @@
       "Regional Effects": "",
       "Environment": "Desert, Forest, Swamp, Underwater",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -645,7 +644,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -683,7 +682,7 @@
       "Regional Effects": "",
       "Environment": "Coastal, Underwater",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -721,7 +720,7 @@
       "Regional Effects": "",
       "Environment": "Coastal, Swamp, Urban",
       "Treasure": "",
-      "_crRaw": "1/2 (XP 100; PB +2)",
+      "_crRaw": "1/2",
       "_crNum": 0.5
     },
     {
@@ -759,7 +758,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Grassland",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -797,7 +796,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Hill",
       "Treasure": "",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -835,7 +834,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -873,7 +872,7 @@
       "Regional Effects": "",
       "Environment": "Urban",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -911,7 +910,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -949,7 +948,7 @@
       "Regional Effects": "",
       "Environment": "Grassland",
       "Treasure": "",
-      "_crRaw": "4 (XP 1,100; PB +2)",
+      "_crRaw": "4",
       "_crNum": 4
     },
     {
@@ -987,7 +986,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Grassland, Hill",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -1025,7 +1024,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -1063,7 +1062,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -1101,7 +1100,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Swamp",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -1139,7 +1138,7 @@
       "Regional Effects": "",
       "Environment": "Forest",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -1177,7 +1176,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Mountain, Underdark",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -1215,7 +1214,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Grassland, Hill",
       "Treasure": "",
-      "_crRaw": "2 (XP 450; PB +2)",
+      "_crRaw": "2",
       "_crNum": 2
     },
     {
@@ -1253,7 +1252,7 @@
       "Regional Effects": "",
       "Environment": "Underdark, Urban",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -1291,7 +1290,7 @@
       "Regional Effects": "",
       "Environment": "Desert, Forest, Swamp, Underwater",
       "Treasure": "",
-      "_crRaw": "2 (XP 450; PB +2)",
+      "_crRaw": "2",
       "_crNum": 2
     },
     {
@@ -1329,7 +1328,7 @@
       "Regional Effects": "",
       "Environment": "Coastal, Underwater",
       "Treasure": "",
-      "_crRaw": "1/8 (XP 25; PB +2)",
+      "_crRaw": "1/8",
       "_crNum": 0.125
     },
     {
@@ -1367,7 +1366,7 @@
       "Regional Effects": "",
       "Environment": "Coastal, Swamp",
       "Treasure": "",
-      "_crRaw": "5 (XP 1,800; PB +3)",
+      "_crRaw": "5",
       "_crNum": 5
     },
     {
@@ -1405,7 +1404,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "1/2 (XP 100; PB +2)",
+      "_crRaw": "1/2",
       "_crNum": 0.5
     },
     {
@@ -1443,7 +1442,7 @@
       "Regional Effects": "",
       "Environment": "Coastal, Grassland, Hill, Mountain",
       "Treasure": "",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -1481,7 +1480,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Grassland, Hill",
       "Treasure": "",
-      "_crRaw": "2 (XP 450; PB +2)",
+      "_crRaw": "2",
       "_crNum": 2
     },
     {
@@ -1519,7 +1518,7 @@
       "Regional Effects": "",
       "Environment": "Underdark",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -1557,7 +1556,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "0 (PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -1595,7 +1594,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Swamp",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -1633,7 +1632,7 @@
       "Regional Effects": "",
       "Environment": "Grassland, Hill, Mountain",
       "Treasure": "",
-      "_crRaw": "1/2 (XP 100; PB +2)",
+      "_crRaw": "1/2",
       "_crNum": 0.5
     },
     {
@@ -1671,7 +1670,7 @@
       "Regional Effects": "",
       "Environment": "Desert, Forest, Grassland, Hill",
       "Treasure": "",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -1709,7 +1708,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -1747,7 +1746,7 @@
       "Regional Effects": "",
       "Environment": "Coastal, Desert, Forest, Swamp, Underdark",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -1785,7 +1784,7 @@
       "Regional Effects": "",
       "Environment": "Underwater",
       "Treasure": "",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -1823,7 +1822,7 @@
       "Regional Effects": "",
       "Environment": "Arctic, Forest, Hill",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -1861,7 +1860,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Swamp, Underdark, Urban",
       "Treasure": "",
-      "_crRaw": "1/8 (XP 25; PB +2)",
+      "_crRaw": "1/8",
       "_crNum": 0.125
     },
     {
@@ -1899,7 +1898,7 @@
       "Regional Effects": "",
       "Environment": "Desert",
       "Treasure": "",
-      "_crRaw": "3 (XP 700; PB +2)",
+      "_crRaw": "3",
       "_crNum": 3
     },
     {
@@ -1937,7 +1936,7 @@
       "Regional Effects": "",
       "Environment": "Underwater",
       "Treasure": "",
-      "_crRaw": "1/2 (XP 100; PB +2)",
+      "_crRaw": "1/2",
       "_crNum": 0.5
     },
     {
@@ -1975,7 +1974,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -2013,7 +2012,7 @@
       "Regional Effects": "",
       "Environment": "Desert, Forest, Swamp, Underdark, Urban",
       "Treasure": "",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -2051,7 +2050,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -2089,7 +2088,7 @@
       "Regional Effects": "",
       "Environment": "Coastal, Forest, Swamp, Underdark",
       "Treasure": "",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -2127,7 +2126,7 @@
       "Regional Effects": "",
       "Environment": "Coastal, Desert, Forest, Grassland, Hill, Swamp",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -2165,7 +2164,7 @@
       "Regional Effects": "",
       "Environment": "Desert, Grassland, Hill",
       "Treasure": "",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -2203,7 +2202,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Grassland, Urban",
       "Treasure": "",
-      "_crRaw": "1/2 (XP 100; PB +2)",
+      "_crRaw": "1/2",
       "_crNum": 0.5
     },
     {
@@ -2241,7 +2240,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Grassland, Hill",
       "Treasure": "",
-      "_crRaw": "1/8 (XP 25; PB +2)",
+      "_crRaw": "1/8",
       "_crNum": 0.125
     },
     {
@@ -2279,7 +2278,7 @@
       "Regional Effects": "",
       "Environment": "Coastal, Desert, Forest, Grassland, Hill",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -2317,7 +2316,7 @@
       "Regional Effects": "",
       "Environment": "Grassland, Hill, Mountain, Urban",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -2355,7 +2354,7 @@
       "Regional Effects": "",
       "Environment": "Arctic, Coastal, Forest, Grassland, Hill, Mountain",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -2393,7 +2392,7 @@
       "Regional Effects": "",
       "Environment": "Desert, Forest, Grassland, Hill",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -2431,7 +2430,7 @@
       "Regional Effects": "",
       "Environment": "Any",
       "Treasure": "",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -2469,7 +2468,7 @@
       "Regional Effects": "",
       "Environment": "Desert, Grassland",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -2507,7 +2506,7 @@
       "Regional Effects": "",
       "Environment": "Desert, Grassland, Hill, Mountain",
       "Treasure": "",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -2545,7 +2544,7 @@
       "Regional Effects": "",
       "Environment": "Coastal, Desert, Forest, Swamp, Underdark",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -2583,7 +2582,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Hill, Urban",
       "Treasure": "",
-      "_crRaw": "1/8 (XP 25; PB +2)",
+      "_crRaw": "1/8",
       "_crNum": 0.125
     },
     {
@@ -2621,7 +2620,7 @@
       "Regional Effects": "",
       "Environment": "Desert, Hill, Urban",
       "Treasure": "",
-      "_crRaw": "1/8 (XP 25; PB +2)",
+      "_crRaw": "1/8",
       "_crNum": 0.125
     },
     {
@@ -2659,7 +2658,7 @@
       "Regional Effects": "",
       "Environment": "Underwater",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -2697,7 +2696,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -2735,7 +2734,7 @@
       "Regional Effects": "",
       "Environment": "Arctic, Forest, Hill",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -2773,7 +2772,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Grassland, Hill",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -2811,7 +2810,7 @@
       "Regional Effects": "",
       "Environment": "Underwater",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -2849,7 +2848,7 @@
       "Regional Effects": "",
       "Environment": "Grassland, Urban",
       "Treasure": "",
-      "_crRaw": "1/8 (XP 25; PB +2)",
+      "_crRaw": "1/8",
       "_crNum": 0.125
     },
     {
@@ -2887,7 +2886,7 @@
       "Regional Effects": "",
       "Environment": "Coastal, Desert, Forest, Hill, Mountain, Urban",
       "Treasure": "Arcana",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -2925,7 +2924,7 @@
       "Regional Effects": "",
       "Environment": "Planar (Abyss)",
       "Treasure": "",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -2963,7 +2962,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Swamp, Underdark, Urban",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -3001,7 +3000,7 @@
       "Regional Effects": "",
       "Environment": "Hill, Swamp, Urban",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -3039,7 +3038,7 @@
       "Regional Effects": "",
       "Environment": "Underwater",
       "Treasure": "",
-      "_crRaw": "1/2 (XP 100; PB +2)",
+      "_crRaw": "1/2",
       "_crNum": 0.5
     },
     {
@@ -3077,7 +3076,7 @@
       "Regional Effects": "",
       "Environment": "Grassland, Urban",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -3115,7 +3114,7 @@
       "Regional Effects": "",
       "Environment": "Desert",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -3153,7 +3152,7 @@
       "Regional Effects": "",
       "Environment": "Underwater",
       "Treasure": "",
-      "_crRaw": "0 (PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -3191,7 +3190,7 @@
       "Regional Effects": "",
       "Environment": "Planar (Shadowfell), Underdark, Urban",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -3229,7 +3228,7 @@
       "Regional Effects": "",
       "Environment": "Planar (Limbo)",
       "Treasure": "Any",
-      "_crRaw": "1/8 (XP 25; PB +2)",
+      "_crRaw": "1/8",
       "_crNum": 0.125
     },
     {
@@ -3267,7 +3266,7 @@
       "Regional Effects": "",
       "Environment": "Desert, Planar (Upper Planes)",
       "Treasure": "Arcana",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -3305,7 +3304,7 @@
       "Regional Effects": "",
       "Environment": "Desert, Forest, Swamp, Underdark, Urban",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -3343,7 +3342,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Planar (Feywild)",
       "Treasure": "Armaments",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -3381,7 +3380,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Mountain, Underdark, Urban",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -3419,7 +3418,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -3457,7 +3456,7 @@
       "Regional Effects": "",
       "Environment": "Desert, Forest, Grassland, Hill, Swamp, Underdark, Urban",
       "Treasure": "",
-      "_crRaw": "1/2 (XP 100; PB +2)",
+      "_crRaw": "1/2",
       "_crNum": 0.5
     },
     {
@@ -3495,7 +3494,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Swamp, Underdark, Urban",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -3533,7 +3532,7 @@
       "Regional Effects": "",
       "Environment": "Hill, Swamp, Urban",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -3571,7 +3570,7 @@
       "Regional Effects": "",
       "Environment": "Coastal, Desert, Forest, Grassland, Hill, Swamp",
       "Treasure": "",
-      "_crRaw": "2 (XP 450; PB +2)",
+      "_crRaw": "2",
       "_crNum": 2
     },
     {
@@ -3609,7 +3608,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Grassland",
       "Treasure": "",
-      "_crRaw": "1 (XP 200; PB +2)",
+      "_crRaw": "1",
       "_crNum": 1
     },
     {
@@ -3647,7 +3646,7 @@
       "Regional Effects": "",
       "Environment": "",
       "Treasure": "",
-      "_crRaw": "None (XP 0; PB equals your Proficiency Bonus)",
+      "_crRaw": "None",
       "_crNum": 0
     },
     {
@@ -3685,7 +3684,7 @@
       "Regional Effects": "",
       "Environment": "Coastal, Desert, Forest, Grassland, Hill, Swamp",
       "Treasure": "",
-      "_crRaw": "1/8 (XP 25; PB +2)",
+      "_crRaw": "1/8",
       "_crNum": 0.125
     },
     {
@@ -3723,7 +3722,7 @@
       "Regional Effects": "",
       "Environment": "Urban",
       "Treasure": "",
-      "_crRaw": "1/2 (XP 100; PB +2)",
+      "_crRaw": "1/2",
       "_crNum": 0.5
     },
     {
@@ -3761,7 +3760,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Grassland, Hill",
       "Treasure": "",
-      "_crRaw": "0 (XP 10; PB +2)",
+      "_crRaw": "0",
       "_crNum": 0
     },
     {
@@ -3799,7 +3798,7 @@
       "Regional Effects": "",
       "Environment": "Forest, Grassland, Hill",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     },
     {
@@ -3837,7 +3836,7 @@
       "Regional Effects": "",
       "Environment": "Planar (Shadowfell), Underdark, Urban",
       "Treasure": "",
-      "_crRaw": "1/4 (XP 50; PB +2)",
+      "_crRaw": "1/4",
       "_crNum": 0.25
     }
   ],
@@ -3851,7 +3850,16 @@
       "Size",
       "AC",
       "HP",
-      "Speed"
+      "Speed",
+      "Damage Vulnerabilities",
+      "Damage Resistances",
+      "Damage Immunities",
+      "Condition Immunities",
+      "Senses",
+      "Traits",
+      "Actions",
+      "Bonus Actions",
+      "Reactions"
     ],
     "popupHiddenCols": [
       "Alignment",
@@ -3864,8 +3872,7 @@
       "Environment",
       "Treasure"
     ],
-    "tableType": "monster",
-    "displayName": "monsters-all"
+    "tableType": "monster"
   },
   "tableType": "monster"
 }
