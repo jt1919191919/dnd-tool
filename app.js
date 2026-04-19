@@ -1659,14 +1659,21 @@ function clearDeviceMemory() {
 
 // ─── FETCH HELPERS ────────────────────────────────────────────────────────────
 async function fetchJSON(path) {
-  const pat = getPAT();
-  const headers = pat ? { Authorization: `token ${pat}` } : {};
+  const pat = typeof getPAT === 'function' ? getPAT() : '';
   try {
-    const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/${path}?_=${Date.now()}`, { headers });
-    if (!res.ok) { console.warn(`fetchJSON failed for ${path}:`, res.status); return null; }
-    const json = await res.json();
-    const decoded = decodeURIComponent(escape(atob(json.content)));
-    return JSON.parse(decoded);
+    // Use raw URL for players (no rate limit) — API only for DM who has a PAT
+    if (pat) {
+      const headers = { Authorization: `token ${pat}` };
+      const res = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/data/${path}?_=${Date.now()}`, { headers });
+      if (!res.ok) { console.warn(`fetchJSON failed for ${path}:`, res.status); return null; }
+      const json = await res.json();
+      const decoded = decodeURIComponent(escape(atob(json.content)));
+      return JSON.parse(decoded);
+    } else {
+      const res = await fetch(`${RAW_BASE}/${path}?_=${Date.now()}`);
+      if (!res.ok) { console.warn(`fetchJSON failed for ${path}:`, res.status); return null; }
+      return await res.json();
+    }
   } catch(e) { console.error(`fetchJSON error for ${path}:`, e); return null; }
 }
 
