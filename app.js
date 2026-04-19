@@ -515,11 +515,20 @@ function navigateTo(pageId, targetHeadingText, targetPageId, targetHeadingId) {
     a.rel = 'noopener noreferrer';
   });
   document.getElementById('page-content').innerHTML = pageHeader + prevNextHtml + tempDiv.innerHTML + prevNextHtml;
-  // Wire up sortable HTML table headers in page view
-  document.querySelectorAll('#page-content table.sticky-header th').forEach(th => {
-    th.style.cursor = 'pointer';
-    th.title = 'Click to sort';
-    th.addEventListener('click', () => sortHtmlTable(th));
+  // Wrap sticky-header tables in a scroll container and wire up sorting
+  document.querySelectorAll('#page-content table.sticky-header').forEach(table => {
+    // Only wrap if not already inside a sticky-header-wrap
+    if (!table.parentElement.classList.contains('sticky-header-wrap')) {
+      const wrap = document.createElement('div');
+      wrap.className = 'sticky-header-wrap';
+      table.parentNode.insertBefore(wrap, table);
+      wrap.appendChild(table);
+    }
+    table.querySelectorAll('thead th').forEach(th => {
+      th.style.cursor = 'pointer';
+      th.title = 'Click to sort';
+      th.addEventListener('click', () => sortHtmlTable(th));
+    });
   });
   window.scrollTo(0, 0);
   renderAllTableBlocks(currentPlayer.isDM);
