@@ -1046,10 +1046,10 @@ function runSearch(query) {
         if (allWordsMatch(chunk.bodyText)) {
           const capturedTags = chunk.tagValue;
           const tagText = chunk.tagText;
-          priorityBuckets[11].push({
+          priorityBuckets[0].push({
             itemHtml: `
-              <div class="sr-label">Tag · Page: ${highlightMatch(pages[chunk.pageId]?.title || '', query)}</div>
-              <div class="sr-title">🏷 ${highlightMatch(capturedTags, query)}</div>
+              <div class="sr-label">Page: ${highlightMatch(pages[chunk.pageId]?.title || '', query)}</div>
+              <div class="sr-title">${highlightMatch(tagText, query)}<span class="sr-tag-hint">🏷</span></div>
               <div class="sr-snippet">${highlightMatch(getSnippet(tagText, q), query)}</div>`,
             onClickFn: () => {
               clearSearch();
