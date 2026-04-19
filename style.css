@@ -924,7 +924,16 @@ h1, h2, h3, h4 {
   position: sticky;
   left: 0;
   z-index: 2;
-  background: #222323;
+  background: #222323 !important;
+}
+.sticky-col tbody tr:nth-child(odd) td:first-child {
+  background: #1e1f1f !important;
+}
+.sticky-col tbody tr:nth-child(even) td:first-child {
+  background: #252626 !important;
+}
+.sticky-col tbody tr:hover td:first-child {
+  background: #2a2b2b !important;
 }
 /* sticky-header: wrap table in a div with max-height for vertical scroll */
 .sticky-header-wrap {
