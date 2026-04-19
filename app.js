@@ -531,7 +531,7 @@ function navigateTo(pageId, targetHeadingText, targetPageId, targetHeadingId) {
     });
   });
   window.scrollTo(0, 0);
-  renderAllTableBlocks(currentPlayer.isDM);
+  renderAllTableBlocks(currentPlayer.isDM).then(() => initScrollHints());
   buildOutline(group);
   // Inject anchor link buttons into all headings
   document.querySelectorAll('#page-content h1, #page-content h2, #page-content h3, #page-content h4').forEach((h, i) => {
@@ -2328,6 +2328,24 @@ function sortHtmlTable(th) {
 
 // ── Cell paste system ─────────────────────────────────────────────────────────
 let activePasteCell = null;
+
+function initScrollHints() {
+  // Add right-edge gold fade to any horizontally scrollable container
+  document.querySelectorAll('.scroll-box, .spell-table-scroll, .sticky-header-wrap').forEach(el => {
+    // Only add if content actually overflows
+    if (el.scrollWidth <= el.clientWidth) return;
+    const hint = document.createElement('div');
+    hint.className = 'scroll-hint-right';
+    // Must be relative-positioned parent
+    const pos = getComputedStyle(el).position;
+    if (pos === 'static') el.style.position = 'relative';
+    el.appendChild(hint);
+    el.addEventListener('scroll', () => {
+      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4;
+      hint.style.opacity = atEnd ? '0' : '1';
+    }, { passive: true });
+  });
+}
 
 function initTableCellPaste() {
   // Attach click listeners to all editor-table cells
