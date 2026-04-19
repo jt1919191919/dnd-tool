@@ -2813,6 +2813,58 @@ function removeTableControls() {
   document.getElementById('table-controls')?.remove();
 }
 
+function insertRow(table, rowIdx, position) {
+  const rows = table.querySelectorAll('tr');
+  const refRow = rows[rowIdx];
+  if (!refRow) return;
+  const colCount = refRow.querySelectorAll('td,th').length;
+  const newRow = document.createElement('tr');
+  for (let i = 0; i < colCount; i++) {
+    const td = document.createElement('td');
+    td.contentEditable = 'true';
+    td.innerHTML = '<br/>';
+    newRow.appendChild(td);
+  }
+  if (position === 'before') refRow.parentNode.insertBefore(newRow, refRow);
+  else refRow.parentNode.insertBefore(newRow, refRow.nextSibling);
+  removeTableControls();
+}
+
+function deleteRow(table, rowIdx) {
+  const rows = table.querySelectorAll('tr');
+  if (rows.length <= 1) return;
+  rows[rowIdx]?.remove();
+  removeTableControls();
+}
+
+function insertCol(table, colIdx, position) {
+  table.querySelectorAll('tr').forEach(row => {
+    const cells = row.querySelectorAll('td,th');
+    const refCell = cells[colIdx];
+    if (!refCell) return;
+    const isHeader = refCell.tagName === 'TH';
+    const newCell = document.createElement(isHeader ? 'th' : 'td');
+    newCell.contentEditable = 'true';
+    newCell.innerHTML = '<br/>';
+    if (isHeader) newCell.onclick = () => sortHtmlTable(newCell);
+    if (position === 'before') refCell.parentNode.insertBefore(newCell, refCell);
+    else refCell.parentNode.insertBefore(newCell, refCell.nextSibling);
+  });
+  removeTableControls();
+}
+
+function deleteCol(table, colIdx) {
+  let canDelete = true;
+  table.querySelectorAll('tr').forEach(row => {
+    if (row.querySelectorAll('td,th').length <= 1) canDelete = false;
+  });
+  if (!canDelete) return;
+  table.querySelectorAll('tr').forEach(row => {
+    row.querySelectorAll('td,th')[colIdx]?.remove();
+  });
+  removeTableControls();
+}
+
 // ─── TABLE COLUMN RESIZE ──────────────────────────────────────────────────────
 function initTableColResize(table) {
   table.querySelectorAll('th, td').forEach(cell => {
