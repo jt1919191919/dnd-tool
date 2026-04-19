@@ -314,16 +314,19 @@ function buildContentIndex() {
           pageId,
           pageTitle: page.title,
           headingText: lastHeading,
+          headingLevel: lastHeadingLevel,
           bodyText: buffer.join(' ').toLowerCase()
         });
         buffer = [];
       }
     };
 
+    let lastHeadingLevel = 1;
     const walk = (node) => {
       if (node.nodeType === 1 && /^H[1-4]$/.test(node.tagName)) {
         flushBuffer();
         lastHeading = node.textContent.replace('🔗','').trim();
+        lastHeadingLevel = parseInt(node.tagName[1]);
         return;
       }
       if (node.nodeType === 3 && node.textContent.trim()) {
@@ -930,7 +933,6 @@ function handleSearch(query) {
 }
 
 function runSearch(query) {
-  // ── Guard: skip if query unchanged ───────────────────────────────
   if (query === lastSearchQuery) return;
   lastSearchQuery = query;
 
@@ -948,16 +950,27 @@ function runSearch(query) {
   window.scrollTo(0, 0);
 
   const q = query.toLowerCase().trim();
+  const qWords = q.split(/\s+/).filter(Boolean);
   const REGULAR_CAP = 30;
 
-  // ── Priority results (shown individually at top, uncapped) ────────
-  const priorityResults = [];
+  // Multi-word match: all words present anywhere in text, any order
+  const allWordsMatch = (text) => qWords.every(w => text.toLowerCase().includes(w));
+  const isExact = (text) => text.toLowerCase().trim() === q;
+  const isExactWord = (text) => {
+    const t = text.toLowerCase().trim();
+    return t === q || new RegExp(`\\b${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`).test(t);
+  };
 
-  // ── Regular grouped results (capped at 30 total items) ───────────
+  // Priority buckets — rendered top to bottom, gold bordered
+  // [0] page exact, [1] page partial, [2] spell/monster exact, [3] spell/monster partial,
+  // [4] h1 exact, [5] h1 partial, [6] h2 exact, [7] h2 partial,
+  // [8] h3 exact, [9] h3 partial, [10] h4 exact, [11] h4 partial
+  const priorityBuckets = Array.from({length: 12}, () => []);
+
+  // Regular grouped results (body content, capped)
   const groups = {};
   let regularCount = 0;
   let cappedCount = 0;
-
   const addResult = (pageId, pageTitle, itemHtml, onClickFn) => {
     if (regularCount >= REGULAR_CAP) { cappedCount++; return; }
     if (!groups[pageId]) groups[pageId] = { title: pageTitle, items: [] };
@@ -965,38 +978,79 @@ function runSearch(query) {
     regularCount++;
   };
 
-  // ── Page title / description matches ─────────────────────────────
+  // ── Page name matches → priority ──────────────────────────────────
   for (const [id, page] of Object.entries(pages)) {
     if (!canSee(id)) continue;
-    const titleMatch = page.title?.toLowerCase().includes(q);
-    const descMatch = page.description?.toLowerCase().includes(q);
-    if (titleMatch || descMatch) {
-      addResult(id, page.title, `
-        <div class="search-result-title">${highlightMatch(page.title, query)}</div>
-        <div class="search-result-snippet">${highlightMatch(page.description || '', query)}</div>`,
-        () => { clearSearch(); navigateTo(id); });
+    const titleLower = (page.title || '').toLowerCase();
+    const descLower = (page.description || '').toLowerCase();
+    const titleHit = allWordsMatch(titleLower);
+    const descHit = allWordsMatch(descLower);
+    if (!titleHit && !descHit) continue;
+
+    const exact = isExact(page.title || '');
+    const bucket = exact ? 0 : 1;
+    priorityBuckets[bucket].push({
+      itemHtml: `
+        <div class="sr-label">Page</div>
+        <div class="sr-title">${highlightMatch(page.title, query)}</div>
+        ${page.description ? `<div class="sr-snippet">${highlightMatch(page.description, query)}</div>` : ''}`,
+      onClickFn: () => { clearSearch(); navigateTo(id); }
+    });
+  }
+
+  // ── Spell/Monster matches → priority ──────────────────────────────
+  const spellMatches = spellIndex.filter(s => s.allText && allWordsMatch(s.allText));
+  for (const spell of spellMatches) {
+    const resultIcon = spell.tableType === 'monster' ? '🐉' : '🔮';
+    const nameExact = isExact(spell.name);
+    const nameHit = allWordsMatch(spell.name.toLowerCase());
+    let snippet = '';
+    if (spell.cells) {
+      for (const [k, v] of Object.entries(spell.cells)) {
+        if (k === 'Name') continue;
+        if (allWordsMatch(v.toLowerCase())) {
+          snippet = `${highlightMatch(getSnippet(v, q), query)}`;
+          break;
+        }
+      }
+    }
+    const itemHtml = `
+      <div class="sr-label">${spell.tableType === 'monster' ? 'Monster' : 'Spell'} · Page: ${highlightMatch(spell.pageTitle, query)}</div>
+      <div class="sr-title">${resultIcon} ${highlightMatch(spell.name, query)}</div>
+      ${spell.nearestHeading ? `<div class="sr-heading">Heading: ${highlightMatch(spell.nearestHeading, query)}</div>` : ''}
+      ${snippet ? `<div class="sr-snippet">${snippet}</div>` : ''}`;
+    const onClickFn = () => {
+      clearSearch();
+      navigateTo(spell.pageId);
+      const waitForTable = (attempts) => {
+        const wrap = document.getElementById(`tbl-${spell.tableId}`);
+        if (wrap && wrap.__rows) navigateToSpellRow(spell.tableId, spell.name);
+        else if (attempts > 0) setTimeout(() => waitForTable(attempts - 1), 200);
+      };
+      setTimeout(() => waitForTable(20), 300);
+    };
+    if (nameHit) {
+      priorityBuckets[nameExact ? 2 : 3].push({ itemHtml, onClickFn });
+    } else {
+      addResult(spell.pageId, spell.pageTitle, itemHtml, onClickFn);
     }
   }
 
-  // ── Content index search (replaces live DOM walking) ──────────────
+  // ── Content index: headings → priority, body → grouped ────────────
   if (contentIndexReady) {
     const seenHeadings = new Set();
-
     for (const chunk of contentIndex) {
       if (!canSee(chunk.pageId)) continue;
 
       if (chunk.isTag) {
-        // Tag match → priority
-        if (chunk.bodyText.includes(q)) {
+        if (allWordsMatch(chunk.bodyText)) {
           const capturedTags = chunk.tagValue;
           const tagText = chunk.tagText;
-          const snippet = getSnippet(chunk.tagText, query);
-          priorityResults.push({
-            badge: '🏷',
+          priorityBuckets[11].push({
             itemHtml: `
-              <div class="search-result-title">🏷 ${highlightMatch(pages[chunk.pageId]?.title || '', query)}</div>
-              <div class="search-result-heading">Tagged: ${capturedTags}</div>
-              <div class="search-result-snippet">${highlightMatch(snippet, query)}</div>`,
+              <div class="sr-label">Tag · Page: ${highlightMatch(pages[chunk.pageId]?.title || '', query)}</div>
+              <div class="sr-title">🏷 ${highlightMatch(capturedTags, query)}</div>
+              <div class="sr-snippet">${highlightMatch(getSnippet(tagText, q), query)}</div>`,
             onClickFn: () => {
               clearSearch();
               navigateTo(chunk.pageId);
@@ -1015,15 +1069,18 @@ function runSearch(query) {
         continue;
       }
 
-      // Heading match → priority
-      if (chunk.headingText && chunk.headingText.toLowerCase().includes(q)) {
+      // Heading match → priority bucket by level
+      if (chunk.headingText && allWordsMatch(chunk.headingText.toLowerCase())) {
         const hText = chunk.headingText;
         const id = chunk.pageId;
-        priorityResults.push({
-          badge: '§',
+        const level = chunk.headingLevel || 1; // 1-4
+        const exact = isExact(hText);
+        const bucketBase = 4 + (level - 1) * 2; // h1=4/5, h2=6/7, h3=8/9, h4=10/11
+        const bucket = exact ? bucketBase : bucketBase + 1;
+        priorityBuckets[bucket].push({
           itemHtml: `
-            <div class="search-result-title">${highlightMatch(hText, query)}</div>
-            <div class="search-result-heading">In: ${chunk.pageTitle}</div>`,
+            <div class="sr-label">H${level} · Page: ${highlightMatch(pages[id]?.title || '', query)}</div>
+            <div class="sr-title">${highlightMatch(hText, query)}</div>`,
           onClickFn: () => {
             clearSearch();
             navigateTo(id);
@@ -1038,18 +1095,18 @@ function runSearch(query) {
         });
       }
 
-      // Body text match → regular grouped
-      if (chunk.bodyText.includes(q)) {
+      // Body text match → grouped
+      if (chunk.bodyText && allWordsMatch(chunk.bodyText)) {
         const headingKey = `${chunk.pageId}__${chunk.headingText || '__top__'}`;
         if (!seenHeadings.has(headingKey)) {
           seenHeadings.add(headingKey);
-          const snippet = getSnippet(chunk.bodyText, query);
+          const snippet = getSnippet(chunk.bodyText, q);
           const capturedHeading = chunk.headingText;
           const id = chunk.pageId;
-          addResult(id, chunk.pageTitle, `
-            <div class="search-result-title">${highlightMatch(chunk.pageTitle, query)}</div>
-            ${capturedHeading ? `<div class="search-result-heading">Under: ${capturedHeading}</div>` : ''}
-            <div class="search-result-snippet">${highlightMatch(snippet, query)}</div>`,
+          addResult(id, pages[id]?.title || id, `
+            <div class="sr-label">Page: ${highlightMatch(pages[id]?.title || '', query)}</div>
+            ${capturedHeading ? `<div class="sr-heading">Heading: ${highlightMatch(capturedHeading, query)}</div>` : ''}
+            <div class="sr-snippet">${highlightMatch(snippet, query)}</div>`,
             () => {
               clearSearch();
               navigateTo(id);
@@ -1067,65 +1124,31 @@ function runSearch(query) {
       }
     }
   } else {
-    // Index not ready yet — fall back to live search for this query only
+    // Fallback if index not ready
     for (const [id, page] of Object.entries(pages)) {
       if (!canSee(id)) continue;
       const contentText = stripHTML(page.content || '');
-      if (!contentText.toLowerCase().includes(q)) continue;
+      if (!allWordsMatch(contentText.toLowerCase())) continue;
       addResult(id, page.title, `
-        <div class="search-result-title">${highlightMatch(page.title, query)}</div>
-        <div class="search-result-snippet">Content match</div>`,
+        <div class="sr-label">Page: ${highlightMatch(page.title, query)}</div>
+        <div class="sr-snippet">Content match</div>`,
         () => { clearSearch(); navigateTo(id); });
     }
   }
 
-  // ── Spell/Monster matches ─────────────────────────────────────────
-  const spellMatches = spellIndex.filter(s => s.allText && s.allText.includes(q));
-  for (const spell of spellMatches) {
-    const resultIcon = spell.tableType === 'monster' ? '🐉' : '🔮';
-    const isNameMatch = spell.name.toLowerCase().includes(q);
-    let snippet = '';
-    if (spell.cells) {
-      for (const [k, v] of Object.entries(spell.cells)) {
-        if (k === 'Name') continue;
-        if (v.toLowerCase().includes(q)) {
-          snippet = `<em>${k}:</em> ${highlightMatch(getSnippet(v, query), query)}`;
-          break;
-        }
-      }
-    }
-    const itemHtml = `
-      <div class="search-result-title">${resultIcon} ${highlightMatch(spell.name, query)}</div>
-      ${spell.nearestHeading ? `<div class="search-result-heading">${spell.nearestHeading}</div>` : ''}
-      ${snippet ? `<div class="search-result-snippet">${snippet}</div>` : ''}`;
-    const onClickFn = () => {
-      clearSearch();
-      navigateTo(spell.pageId);
-      const waitForTable = (attempts) => {
-        const wrap = document.getElementById(`tbl-${spell.tableId}`);
-        if (wrap && wrap.__rows) navigateToSpellRow(spell.tableId, spell.name);
-        else if (attempts > 0) setTimeout(() => waitForTable(attempts - 1), 200);
-      };
-      setTimeout(() => waitForTable(20), 300);
-    };
-    if (isNameMatch) {
-      priorityResults.push({ badge: resultIcon, itemHtml, onClickFn });
-    } else {
-      addResult(spell.pageId, spell.pageTitle, itemHtml, onClickFn);
-    }
-  }
+  // ── Render ─────────────────────────────────────────────────────────
+  const allPriority = priorityBuckets.flat();
 
-  // ── Render ────────────────────────────────────────────────────────
-  if (!priorityResults.length && !Object.keys(groups).length) {
+  if (!allPriority.length && !Object.keys(groups).length) {
     resultsList.innerHTML = '<p style="color:#aaa;padding:10px">No results found.</p>';
     return;
   }
 
-  // Priority section (uncapped)
-  if (priorityResults.length) {
+  // Priority section
+  if (allPriority.length) {
     const section = document.createElement('div');
     section.style.cssText = 'margin-bottom:12px;border-bottom:1px solid rgba(226,185,111,0.2);padding-bottom:10px;';
-    priorityResults.forEach(({ itemHtml, onClickFn }) => {
+    allPriority.forEach(({ itemHtml, onClickFn }) => {
       const item = document.createElement('div');
       item.className = 'search-result-item search-result-priority';
       item.innerHTML = itemHtml;
@@ -1135,13 +1158,19 @@ function runSearch(query) {
     resultsList.appendChild(section);
   }
 
-  // Regular grouped section
+  // Grouped regular results — always collapsed
   for (const [pageId, group] of Object.entries(groups)) {
-    const isMulti = group.items.length > 1;
     const folder = document.createElement('div');
     folder.style.cssText = 'margin-bottom:8px;';
 
-    if (isMulti) {
+    if (group.items.length === 1) {
+      const { itemHtml, onClickFn } = group.items[0];
+      const item = document.createElement('div');
+      item.className = 'search-result-item';
+      item.innerHTML = itemHtml;
+      item.onclick = onClickFn;
+      folder.appendChild(item);
+    } else {
       const header = document.createElement('div');
       header.style.cssText = 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:6px;padding:8px 14px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;';
       header.innerHTML = `<span style="display:flex;align-items:center;gap:8px;color:#e0e0e0;font-weight:bold"><span class="folder-caret" style="color:#888;font-size:0.85rem;min-width:12px">▸</span>${group.title}</span><span style="color:#888;font-size:0.8rem">${group.items.length} results</span>`;
@@ -1154,23 +1183,13 @@ function runSearch(query) {
         item.onclick = onClickFn;
         children.appendChild(item);
       });
-      let open = group.items.length <= 5;
-      children.style.display = open ? '' : 'none';
-      header.querySelector('.folder-caret').textContent = open ? '▾' : '▸';
       header.onclick = () => {
-        open = !open;
-        children.style.display = open ? '' : 'none';
-        header.querySelector('.folder-caret').textContent = open ? '▾' : '▸';
+        const open = children.style.display === '';
+        children.style.display = open ? 'none' : '';
+        header.querySelector('.folder-caret').textContent = open ? '▸' : '▾';
       };
       folder.appendChild(header);
       folder.appendChild(children);
-    } else {
-      const { itemHtml, onClickFn } = group.items[0];
-      const item = document.createElement('div');
-      item.className = 'search-result-item';
-      item.innerHTML = itemHtml;
-      item.onclick = onClickFn;
-      folder.appendChild(item);
     }
     resultsList.appendChild(folder);
   }
