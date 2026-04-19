@@ -2775,6 +2775,18 @@ function showTableControls(cell) {
   ctrl.appendChild(btn('+ Col Left', 'Insert column left', () => insertCol(table, colIdx, 'before')));
   ctrl.appendChild(btn('+ Col Right', 'Insert column right', () => insertCol(table, colIdx, 'after')));
   ctrl.appendChild(btn('− Col', 'Delete this column', () => deleteCol(table, colIdx)));
+  const hasStickyHeader = table.classList.contains('sticky-header');
+  const hasStickyCol = table.classList.contains('sticky-col');
+  ctrl.appendChild(btn(`${hasStickyHeader ? '✓' : '○'} Sticky Header`, 'Toggle sticky first row', () => {
+    table.classList.toggle('sticky-header');
+    removeTableControls();
+    showTableControls(cell);
+  }));
+  ctrl.appendChild(btn(`${hasStickyCol ? '✓' : '○'} Sticky Col', 'Toggle sticky first column', () => {
+    table.classList.toggle('sticky-col');
+    removeTableControls();
+    showTableControls(cell);
+  }));
 
   // Paste button — separate, gold tinted
   const pasteBtn = document.createElement('button');
