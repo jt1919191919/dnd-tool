@@ -2332,25 +2332,7 @@ function initTableCellPaste() {
       return;
     }
     activePasteCell = cell;
-    showPasteBtn(cell);
   });
-}
-
-function showPasteBtn(cell) {
-  removePasteBtn();
-  const btn = document.createElement('button');
-  btn.className = 'cell-paste-btn';
-  btn.textContent = '⎘ Paste from clipboard';
-  btn.onclick = (e) => { e.stopPropagation(); pasteIntoTable(); };
-  document.body.appendChild(btn);
-  // Position near the cell
-  const rect = cell.getBoundingClientRect();
-  btn.style.top = Math.max(8, rect.top - 34) + 'px';
-  btn.style.left = rect.left + 'px';
-}
-
-function removePasteBtn() {
-  document.querySelectorAll('.cell-paste-btn').forEach(b => b.remove());
 }
 
 async function pasteIntoTable() {
@@ -2731,89 +2713,77 @@ function removeTableControls() {
 function showTableControls(cell) {
   removeTableControls();
   const table = cell.closest('table');
-  if (!table) return;
+  if (!table || !table.closest('#editor-area')) return;
 
-  const bar = document.createElement('div');
-  bar.className = 'table-ctrl-bar';
-  bar.style.cssText = 'position:fixed;background:#16213e;border:1px solid #e2b96f;border-radius:6px;padding:4px 8px;display:flex;gap:6px;z-index:200;box-shadow:0 2px 8px rgba(0,0,0,0.5);font-size:0.8rem;';
-
-  const rect = cell.getBoundingClientRect();
-  bar.style.top = `${rect.top - 40}px`;
-  bar.style.left = `${rect.left}px`;
+  const ctrl = document.createElement('div');
+  ctrl.id = 'table-controls';
+  ctrl.style.cssText = 'position:fixed;z-index:300;background:rgba(20,21,21,0.97);border:1px solid rgba(226,185,111,0.4);border-radius:8px;padding:8px;display:flex;flex-wrap:wrap;gap:6px;box-shadow:0 4px 16px rgba(0,0,0,0.6);max-width:calc(100vw - 24px);';
 
   const btn = (label, title, fn) => {
     const b = document.createElement('button');
     b.textContent = label;
     b.title = title;
-    b.style.cssText = 'background:transparent;border:1px solid #0f3460;color:#e0e0e0;border-radius:4px;padding:2px 7px;cursor:pointer;font-size:0.8rem;white-space:nowrap;';
-    b.onmouseenter = () => b.style.borderColor = '#e2b96f';
-    b.onmouseleave = () => b.style.borderColor = '#0f3460';
-    b.onclick = (e) => { e.stopPropagation(); fn(table, cell); };
+    b.style.cssText = 'background:transparent;border:1px solid rgba(255,255,255,0.15);color:#e0e0e0;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:0.75rem;font-family:Roboto,sans-serif;white-space:nowrap;transition:border-color 0.15s,background 0.15s';
+    b.onmouseenter = () => { b.style.borderColor = '#e2b96f'; b.style.background = 'rgba(226,185,111,0.1)'; };
+    b.onmouseleave = () => { b.style.borderColor = 'rgba(255,255,255,0.15)'; b.style.background = 'transparent'; };
+    b.onclick = (e) => { e.stopPropagation(); fn(); };
     return b;
   };
 
-  bar.appendChild(btn('+Row↓', 'Add row below', (t, c) => {
-    const row = c.closest('tr');
-    const newRow = document.createElement('tr');
-    const cols = row.querySelectorAll('td,th').length;
-    for (let i = 0; i < cols; i++) {
-      const td = document.createElement('td');
-      td.style.cssText = 'border:1px solid #4a5568;padding:6px 10px;min-width:60px';
-      td.contentEditable = 'true';
-      td.innerHTML = '<br/>';
-      newRow.appendChild(td);
-    }
-    row.parentNode.insertBefore(newRow, row.nextSibling);
-    removeTableControls();
-  }));
+  const rows = table.querySelectorAll('tr');
+  const rowIdx = Array.from(rows).indexOf(cell.closest('tr'));
+  const cells = Array.from(cell.closest('tr').querySelectorAll('td,th'));
+  const colIdx = cells.indexOf(cell);
 
-  bar.appendChild(btn('+Col→', 'Add column right', (t, c) => {
-    const row = c.closest('tr');
-    const colIdx = Array.from(row.querySelectorAll('td,th')).indexOf(c);
-    Array.from(t.querySelectorAll('tr')).forEach((r, ri) => {
-      const cells = r.querySelectorAll('td,th');
-      const tag = ri === 0 && cells[0]?.tagName === 'TH' ? 'th' : 'td';
-      const newCell = document.createElement(tag);
-      newCell.style.cssText = tag === 'th'
-        ? 'border:1px solid #4a5568;padding:6px 10px;min-width:60px;background:#0f3460;color:#e2b96f'
-        : 'border:1px solid #4a5568;padding:6px 10px;min-width:60px';
-      newCell.contentEditable = 'true';
-      newCell.innerHTML = '<br/>';
-      const ref = cells[colIdx + 1];
-      r.insertBefore(newCell, ref || null);
-    });
-    removeTableControls();
-  }));
+  ctrl.appendChild(btn('+ Row Above', 'Insert row above', () => insertRow(table, rowIdx, 'before')));
+  ctrl.appendChild(btn('+ Row Below', 'Insert row below', () => insertRow(table, rowIdx, 'after')));
+  ctrl.appendChild(btn('− Row', 'Delete this row', () => deleteRow(table, rowIdx)));
+  ctrl.appendChild(btn('+ Col Left', 'Insert column left', () => insertCol(table, colIdx, 'before')));
+  ctrl.appendChild(btn('+ Col Right', 'Insert column right', () => insertCol(table, colIdx, 'after')));
+  ctrl.appendChild(btn('− Col', 'Delete this column', () => deleteCol(table, colIdx)));
 
-  bar.appendChild(btn('-Row', 'Delete this row', (t, c) => {
-    const row = c.closest('tr');
-    if (t.querySelectorAll('tr').length <= 1) { t.remove(); removeTableControls(); return; }
-    row.remove();
-    removeTableControls();
-  }));
+  // Paste button — separate, gold tinted
+  const pasteBtn = document.createElement('button');
+  pasteBtn.textContent = '⎘ Paste here';
+  pasteBtn.title = 'Paste clipboard content starting from this cell';
+  pasteBtn.style.cssText = 'background:rgba(211,154,57,0.12);border:1px solid rgba(226,185,111,0.5);color:#e2b96f;border-radius:4px;padding:4px 8px;cursor:pointer;font-size:0.75rem;font-family:Roboto,sans-serif;white-space:nowrap;transition:border-color 0.15s,background 0.15s';
+  pasteBtn.onmouseenter = () => { pasteBtn.style.background = 'rgba(211,154,57,0.25)'; };
+  pasteBtn.onmouseleave = () => { pasteBtn.style.background = 'rgba(211,154,57,0.12)'; };
+  pasteBtn.onclick = (e) => { e.stopPropagation(); activePasteCell = cell; pasteIntoTable(); };
+  ctrl.appendChild(pasteBtn);
 
-  bar.appendChild(btn('-Col', 'Delete this column', (t, c) => {
-    const row = c.closest('tr');
-    const colIdx = Array.from(row.querySelectorAll('td,th')).indexOf(c);
-    const allRows = t.querySelectorAll('tr');
-    if (allRows[0].querySelectorAll('td,th').length <= 1) { t.remove(); removeTableControls(); return; }
-    allRows.forEach(r => {
-      const cells = r.querySelectorAll('td,th');
-      if (cells[colIdx]) cells[colIdx].remove();
-    });
-    removeTableControls();
-  }));
+  document.body.appendChild(ctrl);
 
-  document.body.appendChild(bar);
+  // Position: below cell, clamped to viewport
+  const rect = cell.getBoundingClientRect();
+  const ctrlH = 80; // estimated height before render
+  let top = rect.bottom + 6;
+  if (top + ctrlH > window.innerHeight - 8) top = rect.top - ctrlH - 6;
+  top = Math.max(8, top);
 
-  setTimeout(() => {
-    document.addEventListener('click', function handler(e) {
-      if (!bar.contains(e.target) && !e.target.closest('td,th')) {
-        removeTableControls();
-        document.removeEventListener('click', handler);
-      }
-    });
-  }, 50);
+  const ctrlW = 400; // estimated width
+  let left = rect.left;
+  if (left + ctrlW > window.innerWidth - 8) left = window.innerWidth - ctrlW - 8;
+  left = Math.max(8, left);
+
+  ctrl.style.top = top + 'px';
+  ctrl.style.left = left + 'px';
+
+  // Reposition after actual render
+  requestAnimationFrame(() => {
+    const actualW = ctrl.offsetWidth;
+    const actualH = ctrl.offsetHeight;
+    let t = rect.bottom + 6;
+    if (t + actualH > window.innerHeight - 8) t = rect.top - actualH - 6;
+    ctrl.style.top = Math.max(8, t) + 'px';
+    let l = rect.left;
+    if (l + actualW > window.innerWidth - 8) l = window.innerWidth - actualW - 8;
+    ctrl.style.left = Math.max(8, l) + 'px';
+  });
+}
+
+function removeTableControls() {
+  document.getElementById('table-controls')?.remove();
 }
 
 // ─── TABLE COLUMN RESIZE ──────────────────────────────────────────────────────
