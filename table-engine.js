@@ -478,6 +478,7 @@ async function renderAllTableBlocks(isDM) {
     const tableId = block.dataset.tableId;
     if (tableId) await renderTableBlock(block, tableId, isDM);
   }
+  return true;
 }
 
 // Get next available table ID
