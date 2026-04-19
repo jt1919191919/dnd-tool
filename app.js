@@ -2108,7 +2108,7 @@ function toolbarScrollBox() {
   const isEmpty = !selected.textContent.trim() && !selected.querySelector('table,img');
   const box = document.createElement('div');
   box.className = 'scroll-box';
-  box.style.cssText = 'overflow-x:auto;overflow-y:visible;max-width:100%;margin:10px 0;padding:2px 0;';
+  box.style.cssText = 'max-width:100%;margin:10px 0;padding:2px 0;';
   if (isEmpty) {
     // Insert empty scroll box with placeholder table
     const table = document.createElement('table');
@@ -2779,6 +2779,25 @@ function showTableControls(cell) {
   const hasStickyCol = table.classList.contains('sticky-col');
   ctrl.appendChild(btn(`${hasStickyHeader ? '✓' : '○'} Sticky Header`, 'Toggle sticky first row', () => {
     table.classList.toggle('sticky-header');
+    if (table.classList.contains('sticky-header')) {
+      // Ensure first row is in a real <thead>
+      const tbody = table.querySelector('tbody');
+      if (tbody && !table.querySelector('thead')) {
+        const firstRow = tbody.querySelector('tr');
+        if (firstRow) {
+          const thead = document.createElement('thead');
+          thead.appendChild(firstRow);
+          table.insertBefore(thead, tbody);
+          // Convert tds to ths in header row
+          thead.querySelectorAll('td').forEach(td => {
+            const th = document.createElement('th');
+            th.innerHTML = td.innerHTML;
+            th.contentEditable = 'true';
+            td.replaceWith(th);
+          });
+        }
+      }
+    }
     removeTableControls();
     showTableControls(cell);
   }));
