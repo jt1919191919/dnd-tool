@@ -1,7 +1,5 @@
 {
   "id": "table-14",
-  "name": "warlockGOOSpells",
-  "tableType": "spell",
   "rows": [
     {
       "Name": "Arcane Gate",
@@ -266,7 +264,7 @@
       "Level": "1st",
       "Casting Time": "Action",
       "Duration": "1 hour",
-      "School": "Divination (ritual)",
+      "School": "Divination",
       "Range": "Self",
       "Components": "V, S, M (a pinch of soot and salt)",
       "Classes": "Bard (PHB'24), Sorcerer (PHB'24), Warlock (PHB'24), Wizard (PHB'24)",
@@ -298,7 +296,7 @@
       "Level": "5th",
       "Casting Time": "1 Min.",
       "Duration": "1 minute",
-      "School": "Divination (ritual)",
+      "School": "Divination",
       "Range": "Self",
       "Components": "V",
       "Classes": "Warlock (PHB'24), Wizard (PHB'24)",
@@ -442,7 +440,7 @@
       "Level": "1st",
       "Casting Time": "Action",
       "Duration": "Concentration, up to 10 minutes",
-      "School": "Divination (ritual)",
+      "School": "Divination",
       "Range": "Self",
       "Components": "V, S",
       "Classes": "Artificer (EFA), Bard (PHB'24), Cleric (PHB'24), Druid (PHB'24), Paladin (PHB'24), Ranger (PHB'24), Sorcerer (PHB'24), Warlock (PHB'24), Wizard (PHB'24)",
@@ -1034,7 +1032,7 @@
       "Level": "1st",
       "Casting Time": "1 Min.",
       "Duration": "10 days",
-      "School": "Illusion (ritual)",
+      "School": "Illusion",
       "Range": "Touch",
       "Components": "S, M (ink worth 10+ GP, which the spell consumes)",
       "Classes": "Bard (PHB'24), Warlock (PHB'24), Wizard (PHB'24)",
@@ -1722,7 +1720,7 @@
       "Level": "1st",
       "Casting Time": "Action",
       "Duration": "10 minutes",
-      "School": "Divination (ritual)",
+      "School": "Divination",
       "Range": "Self",
       "Components": "V, S",
       "Classes": "Bard (PHB'24), Druid (PHB'24), Ranger (PHB'24), Warlock (PHB'24)",
@@ -2058,7 +2056,7 @@
       "Level": "1st",
       "Casting Time": "Action",
       "Duration": "1 hour",
-      "School": "Conjuration (ritual)",
+      "School": "Conjuration",
       "Range": "60 feet",
       "Components": "V, S, M (a bit of string and of wood)",
       "Classes": "Bard (PHB'24), Warlock (PHB'24), Wizard (PHB'24)",
@@ -2133,6 +2131,8 @@
     }
   ],
   "config": {
+    "defaultSort": "Level",
+    "defaultSortDir": "asc",
     "visibleCols": [
       "Name",
       "Level",
@@ -2140,10 +2140,18 @@
       "School",
       "_concentration",
       "_ritual",
-      "Range"
+      "Range",
+      "_durationClean",
+      "Components",
+      "Text",
+      "At Higher Levels"
     ],
-    "defaultSort": "Name",
-    "defaultSortDir": "asc",
+    "popupHiddenCols": [
+      "Classes",
+      "Optional/Variant Classes",
+      "Subclasses"
+    ],
     "tableType": "spell"
-  }
+  },
+  "tableType": "spell"
 }
