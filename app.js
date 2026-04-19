@@ -16,9 +16,19 @@ function loadCache() {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const cache = JSON.parse(raw);
-    if (Date.now() - cache.cachedAt > CACHE_TTL) return null;
+    if (!cache || !cache.config || !cache.pages || !cache.cachedAt) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    if (Date.now() - cache.cachedAt > CACHE_TTL) {
+      localStorage.removeItem(CACHE_KEY);
+      return null;
+    }
     return cache;
-  } catch { return null; }
+  } catch {
+    localStorage.removeItem(CACHE_KEY);
+    return null;
+  }
 }
 
 function saveCache(configData, pagesData) {
@@ -82,6 +92,7 @@ let currentPageId = null;
 
 // ─── BOOT ─────────────────────────────────────────────────────────────────────
 window.addEventListener('load', async () => {
+  try {
   const token = getTokenFromURL();
   if (!token) { showAccessDenied(); return; }
 
@@ -138,7 +149,15 @@ window.addEventListener('load', async () => {
   }
 
   initApp();
-  document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('loading-screen').style.display = 'none';
+    // Push an initial state so popstate always has something to fire against
+    history.pushState({ dnd: 'home' }, '');
+  } catch(e) {
+    console.error('Boot error:', e);
+    bustCache();
+    document.getElementById('loading-screen').style.display = 'none';
+    showAccessDenied();
+  }
 });
 
 window.addEventListener('load', () => {
@@ -225,6 +244,13 @@ window.addEventListener('scroll', () => {
   const btn = document.getElementById('back-to-top');
   if (!btn) return;
   btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
+});
+window.addEventListener('popstate', () => {
+  // Always treat back button as "go home" — push state again so
+  // subsequent back presses keep firing popstate rather than leaving the site
+  history.pushState({ dnd: 'home' }, '');
+  showView('home');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 async function initApp() {
