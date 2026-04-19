@@ -245,9 +245,9 @@ window.addEventListener('scroll', () => {
   if (!btn) return;
   btn.style.display = window.scrollY > 300 ? 'flex' : 'none';
 });
-window.addEventListener('popstate', () => {
-  // Always treat back button as "go home" — push state again so
-  // subsequent back presses keep firing popstate rather than leaving the site
+window.addEventListener('popstate', (e) => {
+  // Ignore hash-only changes (e.g. href="#" nav links)
+  if (window.location.hash && !e.state) return;
   history.pushState({ dnd: 'home' }, '');
   showView('home');
   window.scrollTo({ top: 0, behavior: 'smooth' });
