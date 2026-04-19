@@ -2468,8 +2468,9 @@ function applyTable() {
   const cols = parseInt(document.getElementById('tbl-cols')?.value) || 3;
   const hasHeader = document.getElementById('tbl-header')?.checked;
   const stickyCol = document.getElementById('tbl-sticky-col')?.checked;
-  const classes = ['editor-table', hasHeader ? 'sticky-header' : '', stickyCol ? 'sticky-col' : ''].filter(Boolean).join(' ');
-  let html = `<table class="${classes}">`;
+  const classes = ['editor-table'].join(' ');
+  const stickyAttrs = `${hasHeader ? 'data-sticky-header=""' : ''} ${stickyCol ? 'data-sticky-col=""' : ''}`.trim();
+  let html = `<table class="${classes}" ${stickyAttrs}>`;
   if (hasHeader) {
     html += '<thead><tr>';
     for (let c = 0; c < cols; c++) {
@@ -2779,12 +2780,14 @@ function showTableControls(cell) {
   ctrl.appendChild(btn('+ Col Left', 'Insert column left', () => insertCol(table, colIdx, 'before')));
   ctrl.appendChild(btn('+ Col Right', 'Insert column right', () => insertCol(table, colIdx, 'after')));
   ctrl.appendChild(btn('− Col', 'Delete this column', () => deleteCol(table, colIdx)));
-  const hasStickyHeader = table.classList.contains('sticky-header');
-  const hasStickyCol = table.classList.contains('sticky-col');
+  const hasStickyHeader = table.hasAttribute('data-sticky-header');
+  const hasStickyCol = table.hasAttribute('data-sticky-col');
   ctrl.appendChild(btn(`${hasStickyHeader ? '✓' : '○'} Sticky Header`, 'Toggle sticky first row', () => {
-    table.classList.toggle('sticky-header');
-    if (table.classList.contains('sticky-header')) {
-      // Ensure first row is in a real <thead>
+    if (hasStickyHeader) {
+      table.removeAttribute('data-sticky-header');
+    } else {
+      table.setAttribute('data-sticky-header', '');
+      // Promote first row to thead if missing
       const tbody = table.querySelector('tbody');
       if (tbody && !table.querySelector('thead')) {
         const firstRow = tbody.querySelector('tr');
@@ -2792,7 +2795,6 @@ function showTableControls(cell) {
           const thead = document.createElement('thead');
           thead.appendChild(firstRow);
           table.insertBefore(thead, tbody);
-          // Convert tds to ths in header row
           thead.querySelectorAll('td').forEach(td => {
             const th = document.createElement('th');
             th.innerHTML = td.innerHTML;
@@ -2806,7 +2808,8 @@ function showTableControls(cell) {
     showTableControls(cell);
   }));
   ctrl.appendChild(btn(`${hasStickyCol ? '✓' : '○'} Sticky Col`, 'Toggle sticky first column', () => {
-    table.classList.toggle('sticky-col');
+    if (hasStickyCol) table.removeAttribute('data-sticky-col');
+    else table.setAttribute('data-sticky-col', '');
     removeTableControls();
     showTableControls(cell);
   }));
