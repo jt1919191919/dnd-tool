@@ -514,6 +514,10 @@ blockquote {
 .search-result-title { color: #ffffff; font-weight: bold; font-size: 0.9rem; }
 .search-result-snippet { font-size: 0.8rem; color: #888; margin-top: 4px; }
 .search-result-heading { font-size: 0.75rem; color: #aaa; margin: 3px 0; }
+.sr-label { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px; }
+.sr-title { color: #ffffff; font-weight: bold; font-size: 0.9rem; margin-bottom: 2px; }
+.sr-heading { font-size: 0.75rem; color: #aaa; margin: 2px 0; }
+.sr-snippet { font-size: 0.8rem; color: #888; margin-top: 3px; }
 mark {
   background: rgba(211,154,57,0.28);
   color: #f0d080;
