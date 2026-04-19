@@ -979,4 +979,25 @@ h1, h2, h3, h4 {
 .scroll-box { scrollbar-color: #D39A39 rgba(211,154,57,0.08); scrollbar-width: auto; }
 .spell-table-scroll { scrollbar-color: #D39A39 rgba(211,154,57,0.08); scrollbar-width: auto; }
 
+
+/* ── Scroll hint indicators ───────────────────────────────────────── */
+.scroll-box {
+  position: relative;
+}
+.scroll-hint-right {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 32px;
+  height: 100%;
+  background: linear-gradient(to right, transparent, rgba(211,154,57,0.35));
+  pointer-events: none;
+  border-radius: 0 4px 4px 0;
+  transition: opacity 0.3s;
+  z-index: 5;
+}
+.spell-table-scroll {
+  position: relative;
+}
+
 </style>
