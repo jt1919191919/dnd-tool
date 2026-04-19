@@ -1637,6 +1637,7 @@ function renderConfig() {
           Color: <input type="color" value="${color}" onchange="setPlayerColor('${token}',this.value)" style="width:32px;height:24px;border:none;background:none;cursor:pointer;padding:0"/>
         </label>
         <button onclick="previewAsPlayer('${token}','${player.name}')" style="padding:2px 8px;border:1px solid #7eb8f7;background:transparent;color:#7eb8f7;border-radius:4px;cursor:pointer;font-size:0.8rem">Preview</button>
+        <button onclick="copyPlayerHomeLink('${token}','${player.name}')" style="padding:2px 8px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer;font-size:0.8rem">🔗 Copy Link</button>
         <button onclick="removePlayer('${token}')" style="padding:2px 8px;border:1px solid #c44;background:transparent;color:#c44;border-radius:4px;cursor:pointer;font-size:0.8rem">Remove</button>
       </div>`;
     list.appendChild(div);
@@ -1681,6 +1682,12 @@ async function addPlayer() {
 function previewAsPlayer(token, name) {
   if (!confirm(`Preview site as ${name}? Opens in new tab.`)) return;
   window.open(buildURL(token), '_blank');
+}
+
+function copyPlayerHomeLink(token, name) {
+  const url = buildURL(token);
+  navigator.clipboard.writeText(url);
+  alert(`Copied home link for ${name}!\n\n${url}`);
 }
 
 function clearDeviceMemory() {
