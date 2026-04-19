@@ -924,7 +924,7 @@ h1, h2, h3, h4 {
   position: sticky;
   left: 0;
   z-index: 2;
-  background: rgba(34,35,35,0.97);
+  background: #222323;
 }
 /* sticky-header: wrap table in a div with max-height for vertical scroll */
 .sticky-header-wrap {
