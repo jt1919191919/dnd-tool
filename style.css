@@ -1022,4 +1022,26 @@ h1, h2, h3, h4 {
   position: relative;
 }
 
+
+/* ── Force sticky via attribute — bypasses all specificity issues ── */
+table[data-sticky-header] > thead > tr > th,
+table[data-sticky-header] > tbody > tr:first-child > td,
+table[data-sticky-header] > tbody > tr:first-child > th {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 3 !important;
+  background: rgba(40,40,40,0.97) !important;
+}
+table[data-sticky-col] > thead > tr > th:first-child,
+table[data-sticky-col] > tbody > tr > td:first-child,
+table[data-sticky-col] > tbody > tr > th:first-child {
+  position: sticky !important;
+  left: 0 !important;
+  z-index: 2 !important;
+  background: #222323 !important;
+}
+table[data-sticky-header][data-sticky-col] > thead > tr > th:first-child {
+  z-index: 4 !important;
+}
+
 </style>
