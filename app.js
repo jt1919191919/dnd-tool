@@ -515,6 +515,12 @@ function navigateTo(pageId, targetHeadingText, targetPageId, targetHeadingId) {
     a.rel = 'noopener noreferrer';
   });
   document.getElementById('page-content').innerHTML = pageHeader + prevNextHtml + tempDiv.innerHTML + prevNextHtml;
+  // Wire up sortable HTML table headers in page view
+  document.querySelectorAll('#page-content table.sticky-header th').forEach(th => {
+    th.style.cursor = 'pointer';
+    th.title = 'Click to sort';
+    th.addEventListener('click', () => sortHtmlTable(th));
+  });
   window.scrollTo(0, 0);
   renderAllTableBlocks(currentPlayer.isDM);
   buildOutline(group);
@@ -2285,6 +2291,106 @@ function promptImageName(originalName) {
   });
 }
 
+// ── HTML Table sorting ────────────────────────────────────────────────────────
+function sortHtmlTable(th) {
+  // Only sort when viewing (not in editor contenteditable context actively)
+  const table = th.closest('table');
+  if (!table) return;
+  const ths = Array.from(th.closest('tr').querySelectorAll('th'));
+  const colIdx = ths.indexOf(th);
+  const tbody = table.querySelector('tbody');
+  if (!tbody) return;
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  const currentDir = th.dataset.sortDir || 'asc';
+  const newDir = currentDir === 'asc' ? 'desc' : 'asc';
+  // Reset all headers
+  ths.forEach(h => { h.dataset.sortDir = ''; h.style.color = ''; });
+  th.dataset.sortDir = newDir;
+  th.style.color = '#e2b96f';
+  rows.sort((a, b) => {
+    const av = a.querySelectorAll('td')[colIdx]?.textContent.trim() || '';
+    const bv = b.querySelectorAll('td')[colIdx]?.textContent.trim() || '';
+    const an = parseFloat(av); const bn = parseFloat(bv);
+    if (!isNaN(an) && !isNaN(bn)) return newDir === 'asc' ? an - bn : bn - an;
+    return newDir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+  });
+  rows.forEach(r => tbody.appendChild(r));
+}
+
+// ── Cell paste system ─────────────────────────────────────────────────────────
+let activePasteCell = null;
+
+function initTableCellPaste() {
+  // Attach click listeners to all editor-table cells
+  const area = document.getElementById('editor-area');
+  if (!area) return;
+  area.addEventListener('click', (e) => {
+    const cell = e.target.closest('td, th');
+    if (!cell || !cell.closest('.editor-table')) {
+      removePasteBtn();
+      activePasteCell = null;
+      return;
+    }
+    activePasteCell = cell;
+    showPasteBtn(cell);
+  });
+}
+
+function showPasteBtn(cell) {
+  removePasteBtn();
+  const btn = document.createElement('button');
+  btn.className = 'cell-paste-btn';
+  btn.textContent = '⎘ Paste from clipboard';
+  btn.onclick = (e) => { e.stopPropagation(); pasteIntoTable(); };
+  document.body.appendChild(btn);
+  // Position near the cell
+  const rect = cell.getBoundingClientRect();
+  btn.style.top = Math.max(8, rect.top - 34) + 'px';
+  btn.style.left = rect.left + 'px';
+}
+
+function removePasteBtn() {
+  document.querySelectorAll('.cell-paste-btn').forEach(b => b.remove());
+}
+
+async function pasteIntoTable() {
+  if (!activePasteCell) return;
+  let text = '';
+  try {
+    text = await navigator.clipboard.readText();
+  } catch {
+    alert('Clipboard access denied. Try Ctrl/Cmd+V in a cell directly.');
+    return;
+  }
+  if (!text.trim()) return;
+
+  const table = activePasteCell.closest('table');
+  if (!table) return;
+
+  // Parse clipboard: rows split by newline, cells by tab
+  const clipRows = text.trimEnd().split(/\r?\n/).map(r => r.split('\t'));
+
+  // Find starting cell position
+  const allRows = Array.from(table.querySelectorAll('tr'));
+  const startRowIdx = allRows.indexOf(activePasteCell.closest('tr'));
+  const startCells = Array.from(activePasteCell.closest('tr').querySelectorAll('td, th'));
+  const startColIdx = startCells.indexOf(activePasteCell);
+
+  clipRows.forEach((clipRow, ri) => {
+    const targetRow = allRows[startRowIdx + ri];
+    if (!targetRow) return;
+    const targetCells = Array.from(targetRow.querySelectorAll('td, th'));
+    clipRow.forEach((val, ci) => {
+      const targetCell = targetCells[startColIdx + ci];
+      if (!targetCell) return;
+      targetCell.textContent = val;
+    });
+  });
+
+  removePasteBtn();
+  activePasteCell = null;
+}
+
 function toolbarClearFormat() {
   const area = document.getElementById('editor-area');
   area.focus();
@@ -2324,8 +2430,11 @@ function toolbarTable() {
       ×
       <input id="tbl-cols" type="number" value="3" min="1" max="10" style="width:60px;padding:6px;background:#0f3460;border:1px solid #0f3460;border-radius:4px;color:#e0e0e0"/> cols
     </div>
+    <label style="font-size:0.8rem;display:flex;align-items:center;gap:6px;margin-bottom:6px">
+      <input type="checkbox" id="tbl-header" checked/> First row is header (sticky + sortable)
+    </label>
     <label style="font-size:0.8rem;display:flex;align-items:center;gap:6px;margin-bottom:10px">
-      <input type="checkbox" id="tbl-header" checked/> First row is header
+      <input type="checkbox" id="tbl-sticky-col"/> First column sticky
     </label>
     <div style="display:flex;gap:8px">
       <button onclick="applyTable()" style="flex:1;padding:6px;border:1px solid #e2b96f;background:transparent;color:#e2b96f;border-radius:4px;cursor:pointer">Insert</button>
@@ -2338,12 +2447,21 @@ function applyTable() {
   const rows = parseInt(document.getElementById('tbl-rows')?.value) || 3;
   const cols = parseInt(document.getElementById('tbl-cols')?.value) || 3;
   const hasHeader = document.getElementById('tbl-header')?.checked;
-  let html = '<table class="editor-table"><tbody>';
-  for (let r = 0; r < rows; r++) {
+  const stickyCol = document.getElementById('tbl-sticky-col')?.checked;
+  const classes = ['editor-table', hasHeader ? 'sticky-header' : '', stickyCol ? 'sticky-col' : ''].filter(Boolean).join(' ');
+  let html = `<table class="${classes}">`;
+  if (hasHeader) {
+    html += '<thead><tr>';
+    for (let c = 0; c < cols; c++) {
+      html += `<th contenteditable="true" onclick="sortHtmlTable(this)"><br/></th>`;
+    }
+    html += '</tr></thead>';
+  }
+  html += '<tbody>';
+  for (let r = hasHeader ? 1 : 0; r < rows; r++) {
     html += '<tr>';
     for (let c = 0; c < cols; c++) {
-      const tag = (r === 0 && hasHeader) ? 'th' : 'td';
-      html += `<${tag} contenteditable="true"><br/></${tag}>`;
+      html += `<td contenteditable="true"><br/></td>`;
     }
     html += '</tr>';
   }
@@ -2430,6 +2548,7 @@ function initEditor() {
   });
 
   area.addEventListener('input', refreshHeadingBadges);
+  initTableCellPaste();
   area.addEventListener('paste', () => setTimeout(refreshHeadingBadges, 100));
   // Update heading dropdown on cursor move
   area.addEventListener('keyup', updateToolbarState);
