@@ -515,6 +515,12 @@ function navigateTo(pageId, targetHeadingText, targetPageId, targetHeadingId) {
     a.rel = 'noopener noreferrer';
   });
   document.getElementById('page-content').innerHTML = pageHeader + prevNextHtml + tempDiv.innerHTML + prevNextHtml;
+  // Fix legacy scroll-box inline overflow styles that block sticky
+  document.querySelectorAll('#page-content .scroll-box').forEach(box => {
+    box.style.overflow = '';
+    box.style.overflowX = '';
+    box.style.overflowY = '';
+  });
   // Wrap sticky-header tables in a scroll container and wire up sorting
   document.querySelectorAll('#page-content table.sticky-header').forEach(table => {
     // Only wrap if not already inside a sticky-header-wrap
