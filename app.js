@@ -2782,7 +2782,7 @@ function showTableControls(cell) {
     removeTableControls();
     showTableControls(cell);
   }));
-  ctrl.appendChild(btn(`${hasStickyCol ? '✓' : '○'} Sticky Col', 'Toggle sticky first column', () => {
+  ctrl.appendChild(btn(`${hasStickyCol ? '✓' : '○'} Sticky Col`, 'Toggle sticky first column', () => {
     table.classList.toggle('sticky-col');
     removeTableControls();
     showTableControls(cell);
