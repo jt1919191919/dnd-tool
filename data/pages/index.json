@@ -14,6 +14,7 @@
   "session-summaries3",
   "druid",
   "spells-druid-spore",
+  "npcs",
   "warlock-class",
   "paladin-class-ancients",
   "fighter-class-battlemaster",
@@ -56,6 +57,5 @@
   "shop-fey-weapon",
   "shop-fey-armor",
   "shop-food",
-  "npcs",
   "npc-2"
 ]
