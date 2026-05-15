@@ -1051,13 +1051,19 @@ table[data-sticky-header][data-sticky-col] > thead > tr > th:first-child {
 #page-content strong,
 .content-editable b,
 .content-editable strong {
-  color: var(--gold-light);
+  color: var(--gold);
 }
 #page-content [style*="font-weight: bold"],
 #page-content [style*="font-weight:bold"],
 .content-editable [style*="font-weight: bold"],
 .content-editable [style*="font-weight:bold"] {
-  color: var(--gold-light) !important;
+  color: var(--gold) !important;
+}
+#page-content [style*="font-weight: 700"],
+#page-content [style*="font-weight:700"],
+.content-editable [style*="font-weight: 700"],
+.content-editable [style*="font-weight:700"] {
+  color: var(--gold) !important;
 }
 
 </style>
