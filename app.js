@@ -1924,7 +1924,35 @@ function restoreSelection() {
 
 function toolbarExec(cmd) {
   document.getElementById('editor-area').focus();
+  if (cmd === 'bold') {
+    applyGoldBold();
+    return;
+  }
   document.execCommand(cmd, false, null);
+}
+
+function applyGoldBold() {
+  const sel = window.getSelection();
+  if (!sel.rangeCount || sel.isCollapsed) return;
+  const range = sel.getRangeAt(0);
+  // Check if already wrapped in our gold-bold span
+  let node = range.commonAncestorContainer;
+  if (node.nodeType === 3) node = node.parentNode;
+  if (node.classList && node.classList.contains('bold-gold')) {
+    // Unwrap it
+    const parent = node.parentNode;
+    while (node.firstChild) parent.insertBefore(node.firstChild, node);
+    parent.removeChild(node);
+    return;
+  }
+  const span = document.createElement('span');
+  span.className = 'bold-gold';
+  try { range.surroundContents(span); }
+  catch(e) {
+    const frag = range.extractContents();
+    span.appendChild(frag);
+    range.insertNode(span);
+  }
 }
 
 function toolbarHeading(tag) {
