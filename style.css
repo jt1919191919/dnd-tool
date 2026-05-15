@@ -1046,9 +1046,11 @@ table[data-sticky-header][data-sticky-col] > thead > tr > th:first-child {
   background: rgba(40,40,40,0.97) !important;
 }
 
-/* ── Gold Bold ───────────────────────────────────────────────────────── */
-.bold-gold {
-  font-weight: bold;
+/* ── Bold text is always gold ───────────────────────────────────────── */
+#page-content b,
+#page-content strong,
+.content-editable b,
+.content-editable strong {
   color: var(--gold-light);
 }
 
