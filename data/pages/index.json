@@ -20,6 +20,7 @@
   "spore-scar",
   "dm-sporescar",
   "mushrooms-daterra",
+  "mushrooms-dm",
   "warlock-class",
   "fighter-class-battlemaster",
   "paladin-class-ancients",
@@ -58,6 +59,5 @@
   "shop-fey-weapon",
   "shop-fey-armor",
   "shop-food",
-  "item-staff-birdcalls",
-  "mushrooms-dm"
+  "item-staff-birdcalls"
 ]
