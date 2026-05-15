@@ -1053,5 +1053,11 @@ table[data-sticky-header][data-sticky-col] > thead > tr > th:first-child {
 .content-editable strong {
   color: var(--gold-light);
 }
+#page-content [style*="font-weight: bold"],
+#page-content [style*="font-weight:bold"],
+.content-editable [style*="font-weight: bold"],
+.content-editable [style*="font-weight:bold"] {
+  color: var(--gold-light) !important;
+}
 
 </style>
