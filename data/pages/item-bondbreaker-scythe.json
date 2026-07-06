@@ -4,7 +4,9 @@
   "thumbnail": "https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg",
   "description": "",
   "content": "<div><br></div><div><br></div><div>Knight Light Revenant's Scythe (custom weapon)</div><div><br><ul><li><span style=\"white-space: normal;\">See Knight Light Revenant image for appearance.</span></li><li><span style=\"white-space: normal;\">+1 Magical weapon, +1 to attack, 2d6+1+Str slashing damage.</span></li><li><span style=\"white-space: normal;\">Properties: Heavy, Reach, Two-Handed.</span></li><li><span style=\"white-space: normal;\">Mastery: Graze, counts as a Glaive.</span></li><li><span style=\"white-space: normal;\">6lbs.</span></li><li><span style=\"white-space: normal;\">Cost: equivalent to Jamie's +2 Weapon price.</span></li><li><span style=\"white-space: normal;\">Extra Ability: Wielder can swear vengeance against a creature. Only 1 creature can ever be sworn against per wielder. On each Hit, if the target is the creature sworn against, the target takes an extra 4d6 slashing damage. Instead of dealing damage, wielder can grapple the target (escape DC 14) provided the target is Large or smaller.<br></span></li></ul></div><div>Perry made this scythe SENTIENT when naming it Bondbreaker</div><div><br></div>",
-  "visibleTo": [],
+  "visibleTo": [
+    "steveslayer"
+  ],
   "group": "",
   "defaultTocLevel": 0
 }
