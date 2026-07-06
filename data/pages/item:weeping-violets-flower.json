@@ -4,7 +4,9 @@
   "thumbnail": "https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg",
   "description": "",
   "content": "<div><br></div><div><p data-pm-slice=\"0 0 []\"><strong>Weeping Violets</strong> Daterra named these, dripping flowers transition art in underdark found in pentagram Lost Tunnels Puzzle area. Found 20x of them. Their liquid can be used as a very weak temporary glue like 1min.</p></div><div><br></div><div><br></div>",
-  "visibleTo": [],
+  "visibleTo": [
+    "__ALL__"
+  ],
   "group": "",
   "defaultTocLevel": 0
 }
