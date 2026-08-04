@@ -1,0 +1,10 @@
+{
+  "id": "item-shuushar-nib-bag-holding",
+  "title": "Item: Nib's Bag of Holding",
+  "thumbnail": "https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg",
+  "description": "Made by Nib, lined with gold thread. Was looted from Shuushar",
+  "content": "<div><br></div><div>Made by Nib, lined with gold thread. Was looted from Shuushar</div><div><br></div><div><br></div><div><br></div>",
+  "visibleTo": [],
+  "group": "",
+  "defaultTocLevel": 0
+}
