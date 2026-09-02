@@ -2,8 +2,8 @@
   "id": "item-zaraks-mask",
   "title": "Item: Zarak's Mask - Periapt of Proof against Poison (DMG'24)",
   "thumbnail": "https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg",
-  "description": "",
-  "content": "<div><br></div><div><br><p>This delicate silver chain (MASK) has a brilliant-cut black gem pendant. While you wear it, you have&nbsp;&nbsp;Immunity to the Poisoned condition and Poison damage</p></div>",
+  "description": "REQUIRES ATTUNEMENT",
+  "content": "<div><br></div><div><span style=\"color: rgb(187, 187, 187); font-family: Convergence, Arial, sans-serif; font-size: 12.6px; font-style: italic; background-color: rgb(34, 34, 34);\">Wondrous Item, Rare (Requires Attunement)</span><br><p>This delicate silver chain (MASK) has a brilliant-cut black gem pendant. While you wear it, you have&nbsp;&nbsp;Immunity to the Poisoned condition and Poison damage</p></div>",
   "visibleTo": [],
   "group": "",
   "defaultTocLevel": 0
