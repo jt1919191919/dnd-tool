@@ -5,7 +5,7 @@
   "description": "",
   "content": "<div><br></div><div><span style=\"border: 0px; font-family: &quot;gg sans&quot;, &quot;Noto Sans&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 16px; vertical-align: baseline; outline: 0px; color: oklab(0.952693 0.000792831 -0.00253612); white-space-collapse: break-spaces; background-color: oklab(0.678923 0.00325415 -0.0111644 / 0.0784314);\">Wondrous Item, rare</span></div><div><span style=\"border: 0px; font-family: &quot;gg sans&quot;, &quot;Noto Sans&quot;, &quot;Helvetica Neue&quot;, Helvetica, Arial, sans-serif; font-size: 16px; vertical-align: baseline; outline: 0px; color: oklab(0.952693 0.000792831 -0.00253612); white-space-collapse: break-spaces; background-color: oklab(0.678923 0.00325415 -0.0111644 / 0.0784314);\">\nYou can use an action to place these shackles on an incapacitated creature. The shackles adjust to fit a creature of Small to Large size. In addition to serving as mundane manacles, the shackles prevent a creature bound by them from using any method of extradimensional movement, including teleportation or travel to a different plane of existence. They don't prevent the creature from passing through an interdimensional portal.\n\nYou and any creature you designate when you use the shackles can use an action to remove them. Once every 30 days, the bound creature can make a DC 30 Strength (Athletics) check. On a success, the creature breaks free and destroys the shackles.</span></div><div><br></div><div><br></div><div><br></div><div><br></div>",
   "visibleTo": [
-    "__ALL__"
+    "gobbo"
   ],
   "group": ""
 }
