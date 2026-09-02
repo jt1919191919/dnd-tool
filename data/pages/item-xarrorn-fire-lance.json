@@ -4,7 +4,9 @@
   "thumbnail": "https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg",
   "description": "",
   "content": "<div>Reward from Graz'zt / Mr. Sixx in Gracklstugh</div><div><br></div><div><!--StartFragment--><!-- obsidian --><p>Custom weapon from Gracklstugh's Duergar military special forces called the Xarrorn.</p><p>Literally on fire.</p><p><br></p><p>Attack: Str + Prof + 1</p><p>Reach 10ft (2 squares)</p><p>Damage: 1d12 + Str +1 piercing damage, plus 1d6 fire damage</p><!--EndFragment--></div><div><br></div><div><br></div><div><br></div><div><br></div>",
-  "visibleTo": [],
+  "visibleTo": [
+    "steveslayer"
+  ],
   "group": "",
   "defaultTocLevel": 0
 }
