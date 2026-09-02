@@ -4,7 +4,9 @@
   "thumbnail": "https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg",
   "description": "",
   "content": "<div>Reward from Graz'zt / Mr. Sixx in Gracklstugh</div><div>1000g given to EACH: Daterra, Perry, and Sig. Jib refused, Kronk missed that session.&nbsp;</div><div>A magic bag of coins that MUST be tracked separately from regular money. Other money can be added to it, but that must then be considered SixxCoin and tracked with this.&nbsp;</div><div><br></div><div><br></div>",
-  "visibleTo": [],
+  "visibleTo": [
+    "__ALL__"
+  ],
   "group": "",
   "defaultTocLevel": 0
 }
