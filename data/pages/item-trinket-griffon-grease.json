@@ -1,0 +1,10 @@
+{
+  "id": "item-trinket-griffon-grease",
+  "title": "Item: Trinket \"Griffon Grease\"",
+  "thumbnail": "https://raw.githubusercontent.com/jt1919191919/dnd-tool/refs/heads/main/data/images/d20-placeholder2.jpg",
+  "description": "",
+  "content": "<div><br></div><div>Trinket worth 0 gp</div><div><br></div><div>A glass jar containing lard with a label that reads, \"Griffon Grease\"</div><div><br></div><div>Worthless but Kronk could get creative using it as grease or a flammable substance</div><div><br></div><div><br></div><div><br></div>",
+  "visibleTo": [],
+  "group": "",
+  "defaultTocLevel": 0
+}
